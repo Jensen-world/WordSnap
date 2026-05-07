@@ -90,7 +90,8 @@
       "Bash(sed -n '74,78p' \"D:\\\\Project\\\\CodeProjects\\\\ClaudeWork\\\\WordSnap\\\\.superpowers\\\\brainstorm\\\\970-1778067419\\\\content\\\\all-pages.html\")",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__evaluate_script"
     ]
   }
 }

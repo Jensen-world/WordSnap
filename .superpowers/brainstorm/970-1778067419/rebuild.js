@@ -84,7 +84,9 @@ const tail = `
     <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">2</td><td style="padding:8px">学习设置</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">BottomSheet</td><td style="padding:8px">从铅笔图标弹出，切换本子 + 每日上限</td></tr>
     <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">3</td><td style="padding:8px">学习/复习中</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">/learn/study</td><td style="padding:8px">翻转卡片 + 认识/不认识 + 进度条</td></tr>
     <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">4</td><td style="padding:8px">单词本列表</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">/wordbook</td><td style="padding:8px">Notebook 卡片列表 + 新建入口</td></tr>
+    <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">新建</td><td style="padding:8px">新建单词本</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">BottomSheet</td><td style="padding:8px">输入名称即创建，上限默认10</td></tr>
     <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">5</td><td style="padding:8px">单词本详情</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">/wordbook/:id</td><td style="padding:8px">本子内单词列表（含 SRS 状态）</td></tr>
+    <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">单词</td><td style="padding:8px">单词详情</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">/word/:id</td><td style="padding:8px">释义+例句+SRS状态+标签+来源</td></tr>
     <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">6</td><td style="padding:8px">档案卡</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">/archive</td><td style="padding:8px">学习统计 + 成就里程碑</td></tr>
     <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">7</td><td style="padding:8px">设置</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">/settings</td><td style="padding:8px">导入/导出 + 剪贴板开关 + 关于</td></tr>
     <tr><td style="padding:8px">8</td><td style="padding:8px">录入弹出</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">BottomSheet</td><td style="padding:8px">底部拍照/手动输入选择，含存入本子提示</td></tr>
@@ -173,15 +175,15 @@ const speakerI = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" st
 const p1 = mockup('1', '记单词 · 主页', SCREEN, `
 ${headerBar('learn')}
     <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:10px">
-      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px">
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:18px 18px 14px;display:flex;flex-direction:column;gap:14px">
         <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.06em">正在学习的单词本</div>
-        <div style="display:flex;align-items:center;gap:14px">
-          <div style="width:42px;height:54px;border-radius:5px;background:linear-gradient(135deg,#f0f0f5,#e8e8f0);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #e2e2ea">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f5cff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H2z"/><path d="M22 3h-7a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h7z"/></svg>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="width:64px;height:84px;border-radius:5px;background:linear-gradient(135deg,#f0f0f5,#e8e8f0);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid #e2e2ea">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2f5cff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H2z"/><path d="M22 3h-7a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h7z"/></svg>
           </div>
           <div style="flex:1;min-width:0">
             <div style="font-family:Inter,sans-serif;font-size:16px;font-weight:600;color:#0b0b0f">拾词集</div>
-            <div style="display:flex;gap:12px;margin-top:3px">
+            <div style="display:flex;gap:12px;margin-top:4px">
               <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#2f5cff">12 待复习</span>
               <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#00c896">21 掌握</span>
               <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#999">35 总计</span>
@@ -190,6 +192,13 @@ ${headerBar('learn')}
           <button style="width:34px;height:34px;border:1px solid #e2e2ea;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
+        </div>
+        <div style="height:4px;background:#f0f0f5;border-radius:2px;overflow:hidden">
+          <div style="width:60%;height:100%;background:#00c896;border-radius:2px"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-family:Inter,sans-serif;font-size:9px;color:#00c896;font-weight:500">已掌握 60%</span>
+          <span style="font-family:Inter,sans-serif;font-size:9px;color:#bbb">21 / 35</span>
         </div>
       </div>
       <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px">
@@ -219,16 +228,21 @@ ${headerBar('learn')}
           <span style="font-family:Inter,sans-serif;font-size:10px;color:#bbb">来自 GRE 核心词汇</span>
         </div>
         <span style="font-family:Source Serif 4,serif;font-size:22px;font-weight:600;color:#0b0b0f">ephemeral</span>
-        <div style="display:flex;align-items:center;justify-content:center;gap:8px">
-          <button style="padding:3px 10px;border:1px solid #e2e2ea;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:11px;color:#0b0b0f;font-weight:500">美式</button>
-          <span style="font-family:Inter,sans-serif;font-size:12px;color:#999">/ɪˈfemərəl/</span>
-          <button style="width:28px;height:28px;border:none;border-radius:50%;background:#eef0ff;display:flex;align-items:center;justify-content:center">${speakerI}</button>
-        </div>
+	        <div style="display:flex;align-items:center;justify-content:center">
+	          <div style="display:flex;align-items:center;gap:0;background:#f0f0f5;border-radius:100px;padding:3px">
+	            <button style="padding:5px 10px;border:none;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:11px;color:#0b0b0f;font-weight:600;display:flex;align-items:center;gap:5px">
+	              美
+	              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+	            </button>
+	            <span style="font-family:Inter,sans-serif;font-size:12px;color:#999;padding:0 8px">/ɪˈfemərəl/</span>
+	            <button style="width:28px;height:28px;border:none;border-radius:50%;background:#eef0ff;display:flex;align-items:center;justify-content:center">${speakerI}</button>
+	          </div>
+	        </div>
         <div style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;line-height:1.5">
           <span style="font-weight:600;color:#2f5cff">adj.</span> 短暂的，转瞬即逝的
         </div>
         <div style="font-family:Inter,sans-serif;font-size:11px;color:#666;font-style:italic;line-height:1.6;padding:8px 0;border-top:1px solid #f0f0f5;border-bottom:1px solid #f0f0f5;width:100%">
-          "Fame is ephemeral — don't chase it."
+          "Fame is ephemeral — don't chase it." <button style="width:22px;height:22px;border:none;border-radius:50%;background:#eef0ff;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2f5cff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
         </div>
         <div style="font-family:Inter,sans-serif;font-size:11px;color:#999">名声是短暂的，不要追逐它。</div>
       </div>
@@ -287,10 +301,17 @@ const p3a = mockup('3a', '学习 · 卡片', SCREEN, `
     </div>
     <div style="flex:1;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
       <div style="font-family:Inter,sans-serif;font-size:11px;color:#999">新词</div>
-      <div style="width:100%;max-width:260px;aspect-ratio:1.6;background:#fff;border:1px solid #e2e2ea;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
-        <span style="font-family:Source Serif 4,serif;font-size:32px;color:#0b0b0f">ephemeral</span>
-        <span style="font-family:Inter,sans-serif;font-size:13px;color:#999">/ɪˈfemərəl/</span>
-      </div>
+	      <div style="width:100%;max-width:280px;aspect-ratio:1.5;background:#fff;border:1px solid #e2e2ea;border-radius:20px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px">
+	        <span style="font-family:Source Serif 4,serif;font-size:32px;color:#0b0b0f">ephemeral</span>
+	        <div style="display:flex;align-items:center;background:#f0f0f5;border-radius:100px;padding:3px">
+	          <button style="padding:5px 10px;border:none;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:11px;color:#0b0b0f;font-weight:600;display:flex;align-items:center;gap:5px">
+	            美
+	            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+	          </button>
+	          <span style="font-family:Inter,sans-serif;font-size:12px;color:#999;padding:0 8px">/ɪˈfemərəl/</span>
+	          <button style="width:28px;height:28px;border:none;border-radius:50%;background:#eef0ff;display:flex;align-items:center;justify-content:center">${speakerI}</button>
+	        </div>
+	      </div>
       <div style="display:flex;gap:12px;width:100%;max-width:260px">
         <button style="flex:1;padding:12px;border:1px solid #e2e2ea;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:14px;color:#0b0b0f">不认识</button>
         <button style="flex:1;padding:12px;border:none;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:14px;color:#fff;font-weight:600">认识 ✓</button>
@@ -312,19 +333,31 @@ const p3b = mockup('3b', '学习 · 释义', SCREEN, `
       <div style="font-family:JetBrains Mono,monospace;font-size:12px;color:#999">3/8</div>
     </div>
     <div style="flex:1;padding:20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto">
-      <div style="text-align:center">
-        <div style="font-family:Source Serif 4,serif;font-size:28px;color:#0b0b0f;font-weight:600">ephemeral</div>
-        <div style="font-family:Inter,sans-serif;font-size:14px;color:#999;margin-top:4px">/ɪˈfemərəl/</div>
-        <div style="display:inline-block;margin-top:8px;padding:3px 10px;border-radius:100px;background:#eef0ff;font-family:Inter,sans-serif;font-size:12px;color:#2f5cff;font-weight:500">adj.</div>
-      </div>
-      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:14px">
-        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:6px">释义</div>
-        <div style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;line-height:1.6">1. 短暂的，转瞬即逝的<br>2. 朝生暮死的（生物）</div>
-      </div>
-      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:14px">
-        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:6px">例句</div>
-        <div style="font-family:Inter,sans-serif;font-size:12px;color:#666;line-height:1.8">"Fame is ephemeral — don't chase it."<br>"The cherry blossoms are ephemeral, lasting only a few days."</div>
-      </div>
+	      <div style="text-align:center">
+	        <div style="font-family:Source Serif 4,serif;font-size:28px;color:#0b0b0f;font-weight:600">ephemeral</div>
+	        <div style="display:flex;align-items:center;justify-content:center;margin-top:10px">
+	          <div style="display:flex;align-items:center;background:#f0f0f5;border-radius:100px;padding:3px">
+	            <button style="padding:5px 10px;border:none;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:11px;color:#0b0b0f;font-weight:600;display:flex;align-items:center;gap:5px">
+	              美
+	              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+	            </button>
+	            <span style="font-family:Inter,sans-serif;font-size:12px;color:#999;padding:0 8px">/ɪˈfemərəl/</span>
+	            <button style="width:28px;height:28px;border:none;border-radius:50%;background:#eef0ff;display:flex;align-items:center;justify-content:center">${speakerI}</button>
+	          </div>
+	        </div>
+	      </div>
+	      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:14px">
+	        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:6px">释义</div>
+	        <div style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;line-height:1.6"><span style="font-weight:600;color:#2f5cff">adj.</span></div>
+        <div style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;line-height:1.6;margin-top:6px">1. 短暂的，转瞬即逝的<br>2. 朝生暮死的（生物）</div>
+	      </div>
+	      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:14px">
+	        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:8px">例句</div>
+	        <div style="font-family:Inter,sans-serif;font-size:12px;color:#666;line-height:1.8;margin-bottom:6px">"Fame is ephemeral — don't chase it." <button style="width:22px;height:22px;border:none;border-radius:50%;background:#eef0ff;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2f5cff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button></div>
+	        <div style="font-family:Inter,sans-serif;font-size:11px;color:#999;margin-bottom:12px">名声是短暂的，不要追逐它。</div>
+	        <div style="font-family:Inter,sans-serif;font-size:12px;color:#666;line-height:1.8;margin-bottom:6px">"The cherry blossoms are ephemeral, lasting only a few days." <button style="width:22px;height:22px;border:none;border-radius:50%;background:#eef0ff;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2f5cff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button></div>
+	        <div style="font-family:Inter,sans-serif;font-size:11px;color:#999">樱花转瞬即逝，只开几天。</div>
+	      </div>
       <button style="padding:12px;border:none;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:14px;color:#fff;font-weight:600;margin-top:auto">下一词 →</button>
     </div>`);
 
@@ -336,7 +369,9 @@ const notebookCard = (name, badge, stats) => `
           <div style="display:flex;align-items:center;gap:6px"><span style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#0b0b0f">${name}</span>${badge?`<span style="padding:1px 6px;border-radius:4px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:9px;color:#999">${badge}</span>`:''}</div>
           <div style="font-family:Inter,sans-serif;font-size:11px;color:#999;margin-top:2px">${stats}</div>
         </div>
-        <span style="font-family:Inter,sans-serif;font-size:11px;color:#bbb">▸</span>
+        <button style="width:30px;height:30px;border:1px solid #e2e2ea;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+	          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+	        </button>
       </div>`;
 
 const p4 = mockup('4', '单词本（Notebook 列表）', SCREEN, `
@@ -349,32 +384,127 @@ ${notebookCard('工作英语', null, '13待复习 · 5掌握 · 18总计')}
     </div>
 ${bottomPill()}`);
 
+
+// ===== PAGE 4b · 新建单词本 =====
+const p4b = mockup('新建', '新建单词本（弹出）', SCREEN+';position:relative', `
+    <div style="flex:1;background:rgba(0,0,0,0.15);display:flex;align-items:flex-end">
+      <div style="background:#fff;border-radius:18px 18px 0 0;width:100%;padding:18px 18px 24px;display:flex;flex-direction:column;gap:18px">
+        <div style="width:30px;height:4px;border-radius:2px;background:#ddd;margin:0 auto -6px"></div>
+        <div style="font-family:Inter,sans-serif;font-size:17px;font-weight:600;color:#0b0b0f;text-align:center">新建单词本</div>
+        <div>
+          <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:8px">名称</div>
+          <input style="width:100%;padding:12px 14px;border:1px solid #e2e2ea;border-radius:12px;font-family:Inter,sans-serif;font-size:14px;color:#0b0b0f;outline:none;background:#f9f9fb" placeholder="输入单词本名称...">
+        </div>
+        <button style="padding:14px;border:none;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:15px;color:#fff;font-weight:600">创建</button>
+        <button style="padding:0;border:none;background:none;font-family:Inter,sans-serif;font-size:13px;color:#999;text-align:center">取消</button>
+      </div>
+    </div>`);
+
 // ===== PAGE 5 =====
-const wordRow = (word, def, status, color) => {
-  const sc = {color:'#00c896', bg:'#e8f8f2', label:'掌握'};
-  const st = status==='新词' ? {color:'#2f5cff', bg:'#eef0ff', label:'新词'} : {color:'#ffa940', bg:'#fff7e8', label:status};
-  const s = status==='掌握' ? sc : st;
-  return `
-      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
-        <div><span style="font-family:Source Serif 4,serif;font-size:16px;color:#0b0b0f;font-weight:600">${word}</span><span style="font-family:Inter,sans-serif;font-size:11px;color:#999;margin-left:6px">${def}</span></div>
-        <span style="font-family:JetBrains Mono,monospace;font-size:10px;color:${s.color};background:${s.bg};padding:2px 6px;border-radius:4px">${s.label}</span>
-      </div>`;
-};
+const menuDots = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="5" r="1.5" fill="#999"/><circle cx="12" cy="12" r="1.5" fill="#999"/><circle cx="12" cy="19" r="1.5" fill="#999"/></svg>';
+
+const wordRow5 = (word, pos, def) => `
+	      <div style="background:#fff;border-bottom:1px solid #f0f0f5;padding:14px 16px;display:flex;align-items:center;gap:10px">
+	        <div style="flex:1;min-width:0">
+	          <div style="display:flex;align-items:baseline;gap:6px">
+	            <span style="font-family:Source Serif 4,serif;font-size:16px;color:#0b0b0f;font-weight:600">${word}</span>
+	            <span style="font-family:Inter,sans-serif;font-size:11px;color:#2f5cff;font-weight:500">${pos}</span>
+	            <span style="font-family:Inter,sans-serif;font-size:12px;color:#999">${def}</span>
+	          </div>
+	        </div>
+	        <button style="width:28px;height:28px;border:none;border-radius:50%;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0">${menuDots}</button>
+	      </div>`;
+
+const dateHeader = (label) => `
+	      <div style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:#bbb;padding:10px 16px 4px;text-transform:uppercase;letter-spacing:0.04em">${label}</div>`;
 
 const p5 = mockup('5', '单词本详情（本子内单词）', SCREEN, `
-    <div style="background:#fff;border-bottom:1px solid #e2e2ea;padding:12px 14px;display:flex;align-items:center;gap:12px">
-      <span style="font-size:18px;color:#0b0b0f;cursor:pointer">&larr;</span>
-      <span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0b0b0f">拾词集</span>
-      <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#999;margin-left:auto">35 词</span>
-    </div>
-    <div style="flex:1;padding:14px;display:flex;flex-direction:column;gap:6px;overflow-y:auto">
-${wordRow('ephemeral', '短暂的', '掌握')}
-${wordRow('serendipity', '意外发现', '3/10')}
-${wordRow('ubiquitous', '无处不在的', '7/10')}
-${wordRow('eloquent', '雄辩的', '新词')}
-${wordRow('pragmatic', '务实的', '新词')}
-${wordRow('resilience', '韧性', '5/10')}
-    </div>`);
+	    <div style="background:#fff;border-bottom:1px solid #e2e2ea;padding:12px 14px;display:flex;align-items:center;gap:12px">
+	      <span style="font-size:18px;color:#0b0b0f;cursor:pointer">&larr;</span>
+	      <span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0b0b0f">拾词集</span>
+	      <button style="margin-left:auto;padding:5px 12px;border:1px solid #e2e2ea;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:12px;color:#666;display:flex;align-items:center;gap:4px">
+	        管理
+	        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+	      </button>
+	    </div>
+	    <div style="background:#fff;border-bottom:1px solid #e2e2ea;padding:0 14px;display:flex;gap:0">
+	      <button style="padding:8px 18px;border:none;border-bottom:2px solid #2f5cff;background:transparent;font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:#2f5cff">全部</button>
+	      <button style="padding:8px 18px;border:none;border-bottom:2px solid transparent;background:transparent;font-family:Inter,sans-serif;font-size:12px;color:#999">新词</button>
+	      <button style="padding:8px 18px;border:none;border-bottom:2px solid transparent;background:transparent;font-family:Inter,sans-serif;font-size:12px;color:#999">掌握</button>
+	    </div>
+	    <div style="flex:1;display:flex;flex-direction:column;overflow-y:auto">
+${dateHeader('5月7日')}
+${wordRow5('ephemeral', 'adj.', '短暂的')}
+${wordRow5('serendipity', 'n.', '意外发现')}
+${dateHeader('5月5日')}
+${wordRow5('ubiquitous', 'adj.', '无处不在的')}
+${wordRow5('eloquent', 'adj.', '雄辩的')}
+${dateHeader('2025/12/3')}
+${wordRow5('pragmatic', 'adj.', '务实的')}
+${wordRow5('resilience', 'n.', '韧性')}
+	    </div>`);
+
+// ===== PAGE 5b · 单词详情 =====
+const p5b = mockup('单词', '单词详情', SCREEN, `
+	    <div style="background:#fff;border-bottom:1px solid #e2e2ea;padding:12px 14px;display:flex;align-items:center;gap:12px">
+	      <span style="font-size:18px;color:#0b0b0f;cursor:pointer">&larr;</span>
+	      <span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0b0b0f">单词详情</span>
+	      <button style="margin-left:auto;width:30px;height:30px;border:1px solid #e2e2ea;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center">
+	        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+	      </button>
+	    </div>
+	    <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto">
+	      <div style="text-align:center">
+	        <div style="font-family:Source Serif 4,serif;font-size:28px;color:#0b0b0f;font-weight:600">ephemeral</div>
+	        <div style="display:flex;align-items:center;justify-content:center;margin-top:10px">
+	          <div style="display:flex;align-items:center;background:#f0f0f5;border-radius:100px;padding:3px">
+	            <button style="padding:5px 10px;border:none;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:11px;color:#0b0b0f;font-weight:600;display:flex;align-items:center;gap:5px">
+	              美
+	              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+	            </button>
+	            <span style="font-family:Inter,sans-serif;font-size:12px;color:#999;padding:0 8px">/ɪˈfemərəl/</span>
+	            <button style="width:28px;height:28px;border:none;border-radius:50%;background:#eef0ff;display:flex;align-items:center;justify-content:center">${speakerI}</button>
+	          </div>
+	        </div>
+	      </div>
+	      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:14px">
+	        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:6px">释义</div>
+	        <div style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;line-height:1.6"><span style="font-weight:600;color:#2f5cff">adj.</span></div>
+	        <div style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;line-height:1.6;margin-top:6px">1. 短暂的，转瞬即逝的<br>2. 朝生暮死的（生物）</div>
+	      </div>
+	      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:14px">
+	        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:8px">例句</div>
+	        <div style="font-family:Inter,sans-serif;font-size:12px;color:#666;line-height:1.8;margin-bottom:6px">"Fame is ephemeral — don't chase it." <button style="width:22px;height:22px;border:none;border-radius:50%;background:#eef0ff;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2f5cff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button></div>
+	        <div style="font-family:Inter,sans-serif;font-size:11px;color:#999;margin-bottom:12px">名声是短暂的，不要追逐它。</div>
+	        <div style="font-family:Inter,sans-serif;font-size:12px;color:#666;line-height:1.8;margin-bottom:6px">"The cherry blossoms are ephemeral, lasting only a few days." <button style="width:22px;height:22px;border:none;border-radius:50%;background:#eef0ff;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2f5cff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button></div>
+	        <div style="font-family:Inter,sans-serif;font-size:11px;color:#999">樱花转瞬即逝，只开几天。</div>
+	      </div>
+		      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:14px">
+		        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:8px">学习状态</div>
+		        <div style="display:flex;text-align:center">
+		          <div style="flex:1"><span style="font-family:Inter,sans-serif;font-size:11px;color:#999">录入时间</span><div style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;margin-top:2px">2026/5/7</div></div>
+		          <div style="flex:1"><span style="font-family:Inter,sans-serif;font-size:11px;color:#999">状态</span><div style="font-family:Inter,sans-serif;font-size:13px;color:#ffa940;font-weight:500;margin-top:2px">复习中</div></div>
+		          <div style="flex:1"><span style="font-family:Inter,sans-serif;font-size:11px;color:#999">复习次数</span><div style="font-family:JetBrains Mono,monospace;font-size:16px;color:#ffa940;margin-top:2px">7/10</div></div>
+		        </div>
+		      </div>
+	      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:14px">
+	        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:8px">标签</div>
+	        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+	          <span style="padding:3px 10px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:11px;color:#666">GRE</span>
+	          <span style="padding:3px 10px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:11px;color:#666">高频</span>
+	          <button style="padding:3px 10px;border:1px dashed #ddd;border-radius:100px;background:transparent;font-family:Inter,sans-serif;font-size:11px;color:#bbb">+ 添加</button>
+	        </div>
+	      </div>
+	      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:14px">
+	        <div style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase;margin-bottom:8px">录入来源</div>
+	        <div style="display:flex;align-items:center;gap:8px">
+	          <span style="font-size:15px">📋</span>
+	          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+	          <span style="font-family:Inter,sans-serif;font-size:11px;color:#bbb">2026/5/7</span>
+	        </div>
+	      </div>
+	    </div>`);
+
 
 // ===== PAGE 6 =====
 const p6 = mockup('6', '档案卡', SCREEN, `
@@ -470,7 +600,7 @@ const p8 = mockup('8', '录入弹出（点底部拍照/记录）', SCREEN+';posi
     </div>`);
 
 // ===== ASSEMBLE =====
-const allMockups = [p1, p2, p3a, p3b, p4, p5, p6, p7, p8].join('\n\n');
+const allMockups = [p1, p2, p3a, p3b, p4, p4b, p5, p5b, p6, p7, p8].join('\n\n');
 
 const result = head +
   '\n<div class="section" style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">\n' +
