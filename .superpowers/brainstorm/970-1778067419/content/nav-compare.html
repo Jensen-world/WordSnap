@@ -1,0 +1,61 @@
+<h2>录入入口 · 导航权重对比</h2>
+<p class="subtitle">产品核心是「随机捕捉生词」，录入按钮不该藏在角落</p>
+
+<div class="cards">
+  <div class="card" data-choice="center-nav" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f9f9fb;padding:0;display:flex;align-items:center;justify-content:center">
+      <!-- Mock: Center tab nav -->
+      <div style="width:100%;max-width:280px">
+        <div style="display:flex;align-items:flex-end;justify-content:center;background:#fff;border-top:1px solid #e2e2ea;padding:8px 16px 12px;border-radius:20px 20px 0 0">
+          <div style="flex:1;text-align:center;font-family:Inter,sans-serif;font-size:11px;color:#2f5cff;font-weight:600">复习</div>
+          <div style="flex:1;text-align:center;font-family:Inter,sans-serif;font-size:11px;color:#999">单词本</div>
+          <div style="width:56px;height:56px;border-radius:50%;background:#ffa940;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;margin-top:-24px;box-shadow:0 2px 12px rgba(255,169,64,0.35)">+</div>
+          <div style="flex:1;text-align:center;font-family:Inter,sans-serif;font-size:11px;color:#999">我的</div>
+          <div style="flex:1"></div>
+        </div>
+        <p style="font-family:Inter,sans-serif;font-size:10px;color:#999;text-align:center;margin-top:4px">点击 + 弹出底部面板</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A · 导航栏居中凸起按钮</h3>
+      <p>四 Tab 结构，录入按钮在中间凸出，视觉权重最高。点击弹出底部面板（拍照/粘贴/手动）。类似 Instagram 发布按钮。推荐。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>拇指区最容易触达的位置</li><li>视觉权重与功能重要性匹配</li><li>任何页面都能一键录入</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>需要自定义 BottomNav（原 Flutter 组件不支持凸起）</li><li>占用一个导航位</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="dedicated-tab" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f9f9fb;padding:0;display:flex;align-items:center;justify-content:center">
+      <div style="width:100%;max-width:280px">
+        <div style="display:flex;justify-content:space-around;align-items:center;background:#fff;border-top:1px solid #e2e2ea;padding:8px 0 12px;border-radius:20px 20px 0 0">
+          <div style="text-align:center;font-family:Inter,sans-serif;font-size:11px;color:#999">复习</div>
+          <div style="text-align:center;font-family:Inter,sans-serif;font-size:11px;color:#999">单词本</div>
+          <div style="text-align:center">
+            <div style="width:44px;height:44px;border-radius:50%;background:#ffa940;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;margin-bottom:2px">+</div>
+            <span style="font-family:Inter,sans-serif;font-size:11px;color:#ffa940;font-weight:600">录入</span>
+          </div>
+          <div style="text-align:center;font-family:Inter,sans-serif;font-size:11px;color:#999">我的</div>
+        </div>
+        <p style="font-family:Inter,sans-serif;font-size:10px;color:#999;text-align:center;margin-top:4px">四个等宽 Tab，录入为独立页</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B · 录入独立 Tab</h3>
+      <p>四个等宽 Tab，"录入"是独立页面而非面板。打开后是拍照/粘贴/手动三选一。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>标准 BottomNav 实现，无自定义成本</li><li>录入页有完整空间</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>与产品文档「录入不占导航位」思路相悖</li><li>Tab 太多，核心的复习/单词本被稀释</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>我的推荐：A · 居中凸起按钮</h3>
+  <p>录入是 WordSnap 的「动词」，和「名词」（复习、单词本、我的）平级但在交互上做区分：
+  <strong>名词走 Tab 切换，动词走面板弹出。</strong>
+  底部面板三个入口（拍照、粘贴/手动、从相册）始终从这里触发，逻辑统一。
+  Flutter 实现：用 Stack 在 BottomNav 上覆盖一个居中按钮，点击触发 <code>showModalBottomSheet</code>。</p>
+</div>

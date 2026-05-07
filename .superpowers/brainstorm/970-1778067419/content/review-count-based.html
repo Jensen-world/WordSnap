@@ -1,0 +1,190 @@
+<h2>新复习规则 · 基于次数而非天数</h2>
+<p class="subtitle">10新 + 1旧 穿插 / 按学习顺序排队 / 一次失败打回原形 / 连过10次=掌握</p>
+
+<div class="section" style="display:flex;gap:24px;align-items:flex-start">
+
+<!-- 规则说明 -->
+<div class="mockup" style="flex:1">
+  <div class="mockup-header">复习机制</div>
+  <div class="mockup-body" style="padding:20px">
+
+    <div style="margin-bottom:20px">
+      <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#0b0b0f;margin-bottom:12px">穿插节奏</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;background:#f0f0f5;border-radius:12px;font-family:JetBrains Mono,monospace;font-size:12px;color:#0b0b0f;overflow-x:auto">
+        <span style="background:#2f5cff;color:#fff;padding:4px 10px;border-radius:8px;white-space:nowrap">新×10</span>
+        <span style="color:#999">→</span>
+        <span style="background:#ffa940;color:#fff;padding:4px 10px;border-radius:8px;white-space:nowrap">旧×1</span>
+        <span style="color:#999">→</span>
+        <span style="background:#2f5cff;color:#fff;padding:4px 10px;border-radius:8px;white-space:nowrap">新×10</span>
+        <span style="color:#999">→</span>
+        <span style="background:#ffa940;color:#fff;padding:4px 10px;border-radius:8px;white-space:nowrap">旧×1</span>
+        <span style="color:#999">→</span>
+        <span style="background:#2f5cff;color:#fff;padding:4px 10px;border-radius:8px;white-space:nowrap">新×10</span>
+        <span style="color:#999">→</span>
+        <span style="background:#ffa940;color:#fff;padding:4px 10px;border-radius:8px;white-space:nowrap">旧×1</span>
+        <span style="color:#999">→</span>
+        <span style="color:#bbb">...</span>
+      </div>
+      <p style="font-family:Inter,sans-serif;font-size:12px;color:#999;margin-top:8px">每学 10 个新词，自动插入 1 个旧词的复习</p>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#0b0b0f;margin-bottom:8px">复习排队</div>
+      <div style="background:#f0f0f5;border-radius:12px;padding:14px">
+        <p style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;line-height:1.8;margin:0">
+          所有词按<strong>录入时间先后</strong>排队。<br>
+          每次轮到旧词复习时，取<strong>队头最早的那个词</strong>。<br>
+          同一天录入的多个词 → 按录入顺序排列。
+        </p>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#0b0b0f;margin-bottom:8px">掌握判定</div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <tr style="border-bottom:1px solid #e2e2ea">
+          <td style="padding:10px 8px;width:40px;text-align:center;font-size:18px">✓</td>
+          <td style="padding:10px 8px">复习时选"认识"</td>
+          <td style="padding:10px 8px;font-family:JetBrains Mono,monospace;font-size:12px;color:#00c896">复习次数 +1</td>
+        </tr>
+        <tr style="border-bottom:1px solid #e2e2ea">
+          <td style="padding:10px 8px;text-align:center;font-size:18px">✗</td>
+          <td style="padding:10px 8px">复习时选"不认识"</td>
+          <td style="padding:10px 8px;font-family:JetBrains Mono,monospace;font-size:12px;color:#2f5cff">复习次数 → 0，回到队尾</td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
+      <div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:#0b0b0f;margin-bottom:8px">掌握条件</div>
+      <div style="background:#00c896;color:#fff;border-radius:12px;padding:16px;text-align:center">
+        <p style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;margin:0">
+          连续 <strong style="font-size:20px">10 次</strong> 复习都答"认识"<br>
+          → <strong>标记为已掌握，移出复习队列</strong>
+        </p>
+      </div>
+      <p style="font-family:Inter,sans-serif;font-size:11px;color:#999;margin-top:8px">中间只要有一次不认识 → 归零 → 排到队尾重新来。不看时间，看强度。</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- 模拟一个词的历程 -->
+<div class="mockup" style="flex:1">
+  <div class="mockup-header">一个词的完整复习历程</div>
+  <div class="mockup-body" style="padding:20px">
+
+    <table style="width:100%;font-size:12px;border-collapse:collapse;margin-bottom:20px">
+      <tr style="border-bottom:1px solid #e2e2ea">
+        <th style="text-align:center;padding:6px;color:#999;font-weight:500">次数</th>
+        <th style="text-align:center;padding:6px;color:#999;font-weight:500">结果</th>
+        <th style="text-align:center;padding:6px;color:#999;font-weight:500">累计</th>
+        <th style="text-align:left;padding:6px;color:#999;font-weight:500">说明</th>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace">1</td>
+        <td style="text-align:center;padding:6px;font-size:14px">✓</td>
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace;color:#2f5cff">1/10</td>
+        <td style="padding:6px;font-size:11px;color:#999">第一个复习轮次</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace">2</td>
+        <td style="text-align:center;padding:6px;font-size:14px">✓</td>
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace;color:#2f5cff">2/10</td>
+        <td style="padding:6px;font-size:11px;color:#999">又学了 10 个新词后才轮到他</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace">3</td>
+        <td style="text-align:center;padding:6px;font-size:14px">✓</td>
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace;color:#2f5cff">3/10</td>
+        <td style="padding:6px;font-size:11px;color:#999"></td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace">4</td>
+        <td style="text-align:center;padding:6px;font-size:14px">✗</td>
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace;color:#ff0000">0/10</td>
+        <td style="padding:6px;font-size:11px;color:#ff0000"><strong>不认识！归零，排到队尾</strong></td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace">1</td>
+        <td style="text-align:center;padding:6px;font-size:14px">✓</td>
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace;color:#2f5cff">1/10</td>
+        <td style="padding:6px;font-size:11px;color:#999">重新开始</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace">...</td>
+        <td style="text-align:center;padding:6px;font-size:14px">✓</td>
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace;color:#2f5cff">...</td>
+        <td style="padding:6px;font-size:11px;color:#999"></td>
+      </tr>
+      <tr>
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace">10</td>
+        <td style="text-align:center;padding:6px;font-size:14px">✓</td>
+        <td style="text-align:center;padding:6px;font-family:JetBrains Mono,monospace;color:#00c896;font-weight:600">10/10</td>
+        <td style="padding:6px;font-size:11px;color:#00c896"><strong>掌握 🎉</strong></td>
+      </tr>
+    </table>
+
+    <div style="background:#f0f0f5;border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:#0b0b0f;margin-bottom:6px">时间估算</div>
+      <p style="font-family:Inter,sans-serif;font-size:12px;color:#666;line-height:1.8;margin:0">
+        假设每天学 10 个新词：<br>
+        每 10 个新词插入 1 次旧词复习<br>
+        → 一天学完，产生 1 次旧词复习<br>
+        → 最快 10 天可掌握（每天复习的那个旧词都答对）<br>
+        → 但如果词库大、队很长，间隔也会自然拉长
+      </p>
+    </div>
+
+    <div style="background:#fff3e0;border-radius:12px;padding:14px">
+      <div style="font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:#ffa940;margin-bottom:6px">对比原 SM-2 方案</div>
+      <table style="width:100%;font-size:12px;border-collapse:collapse">
+        <tr style="border-bottom:1px solid #ffe0b0">
+          <td style="padding:6px;color:#999">SM-2</td>
+          <td style="padding:6px">按日历间隔（1→3→7→14天...）</td>
+        </tr>
+        <tr>
+          <td style="padding:6px;color:#2f5cff;font-weight:600">新方案</td>
+          <td style="padding:6px;color:#2f5cff">按学习量触发（每 10 新词 → 1 旧词）</td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<div class="section" style="margin-top:20px">
+  <h3>规则总结</h3>
+  <table style="width:100%">
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <th style="text-align:left;padding:8px;color:var(--text-secondary)">规则</th>
+      <th style="text-align:left;padding:8px;color:var(--text-secondary)">内容</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px;font-weight:600">穿插比例</td>
+      <td style="padding:8px">每学 <strong>10 个新词</strong>，插入 <strong>1 个旧词</strong> 复习</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px;font-weight:600">复习顺序</td>
+      <td style="padding:8px">按录入时间先后，<strong>FIFO 队列</strong>，最早学的先复习</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px;font-weight:600">复习轮次</td>
+      <td style="padding:8px">每个词需要完成 <strong>10 次</strong> 复习</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px;font-weight:600">失败惩罚</td>
+      <td style="padding:8px;color:#2f5cff">只要有一次"不认识" → 计数归零，<strong>打回原形</strong>，排到队尾</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px;font-weight:600">掌握条件</td>
+      <td style="padding:8px;color:#00c896">连续 <strong>10 次</strong> 复习都答"认识" → 已掌握，移出队列</td>
+    </tr>
+    <tr>
+      <td style="padding:8px;font-weight:600">核心指标</td>
+      <td style="padding:8px">学习强度（新词数量），而非日历天数</td>
+    </tr>
+  </table>
+</div>
