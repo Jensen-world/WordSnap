@@ -67,7 +67,7 @@ const head = `<!DOCTYPE html>
 <body>
 
 <h2>见词 WordSnap · 全部页面</h2>
-<p class="subtitle">记单词 · 学习设置 · 学习卡片 · 学习释义 · 单词本 · 新建单词本 · 单词本详情 · 单词详情 · 档案卡 · 设置 · 导出成功 · 导入预览 · 导入完成 · 手动输入 · 拍照识别</p>
+<p class="subtitle">记单词 · 学习设置 · 学习卡片 · 学习释义 · 单词本 · 新建单词本 · 单词本详情 · 单词详情 · 档案卡 · 设置 · 导出 · 导入预览 · 导入完成 · 手动输入 · 拍照识别 · 分享收录</p>
 `;
 
 const tail = `
@@ -93,7 +93,8 @@ const tail = `
     <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">导入</td><td style="padding:8px">导入预览</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">Dialog</td><td style="padding:8px">解析JSON后预览单词本+新增词数+确认</td></tr>
     <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">导入</td><td style="padding:8px">导入完成</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">Dialog</td><td style="padding:8px">导入结果摘要弹窗</td></tr>
     <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">8a</td><td style="padding:8px">手动输入</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">BottomSheet</td><td style="padding:8px">点记录按钮弹出，输入单词→自动查释义→存入</td></tr>
-    <tr><td style="padding:8px">8b</td><td style="padding:8px">拍照识别</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">FullScreen</td><td style="padding:8px">点拍照按钮弹出，相机取景→OCR提词→点选添加</td></tr>
+    <tr style="border-bottom:1px solid #e2e2ea"><td style="padding:8px">8b</td><td style="padding:8px">拍照识别</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">FullScreen</td><td style="padding:8px">点拍照按钮弹出，相机取景→OCR提词→点选添加</td></tr>
+    <tr><td style="padding:8px">8c</td><td style="padding:8px">分享收录</td><td style="padding:8px;font-family:JetBrains Mono,monospace;font-size:11px">BottomSheet</td><td style="padding:8px">其他App分享到见词，自动查释义→确认收录</td></tr>
   </table>
 </div>
 
@@ -794,8 +795,40 @@ const p8b = mockup('8b', '拍照识别', SCREEN, `
       </div>
     </div>`);
 
+// ===== PAGE 8c =====
+const p8c = mockup('8c', '分享收录', SCREEN+';position:relative', `
+    <div style="flex:1;background:rgba(0,0,0,0.15);display:flex;align-items:flex-end">
+      <div style="background:#fff;border-radius:18px 18px 0 0;width:100%;padding:18px 18px 22px;display:flex;flex-direction:column;gap:14px">
+        <div style="width:30px;height:4px;border-radius:2px;background:#ddd;margin:0 auto -4px"></div>
+        <div style="text-align:center">
+          <div style="font-family:Inter,sans-serif;font-size:16px;font-weight:600;color:#0b0b0f">已收到单词</div>
+          <div style="font-family:Inter,sans-serif;font-size:11px;color:#bbb;margin-top:2px">来自 Chrome</div>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e2ea;border-radius:14px;padding:16px">
+          <div style="font-family:Source Serif 4,serif;font-size:22px;font-weight:600;color:#0b0b0f;text-align:center;margin-bottom:10px">ephemeral</div>
+          <div style="display:flex;align-items:center;justify-content:center;background:#f0f0f5;border-radius:100px;padding:3px;margin-bottom:12px">
+            <button style="padding:5px 10px;border:none;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:11px;color:#0b0b0f;display:flex;align-items:center;gap:3px">美<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 3.13-5.36L1 10"/></svg></button>
+            <span style="font-family:JetBrains Mono,monospace;font-size:12px;color:#0b0b0f;padding:0 10px">/ɪˈfemərəl/</span>
+            <button style="width:26px;height:26px;border-radius:50%;border:none;background:#fff;display:flex;align-items:center;justify-content:center">${speakerI}</button>
+          </div>
+          <div style="font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:#2f5cff;margin-bottom:6px">adj.</div>
+          <div style="font-family:Inter,sans-serif;font-size:12px;color:#0b0b0f;line-height:1.8">1. 短暂的，转瞬即逝的</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;background:#f9f9fb;border-radius:10px;padding:10px 14px">
+          <span style="font-family:Inter,sans-serif;font-size:12px;color:#999">存入</span>
+          <span style="font-family:Inter,sans-serif;font-size:12px;font-weight:600;color:#0b0b0f">拾词集</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button style="flex:1;padding:12px;border:1px solid #e2e2ea;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#999">忽略</button>
+          <button style="flex:1;padding:12px;border:none;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:13px;color:#fff;font-weight:500">收录</button>
+        </div>
+      </div>
+    </div>`);
+
+
 // ===== ASSEMBLE =====
-const allMockups = [p1, p2, p3a, p3b, p4, p4b, p5, p5b, p6, p7, p7_export, p7_import_preview, p7_import_done, p8a, p8b].join('\n\n');
+const allMockups = [p1, p2, p3a, p3b, p4, p4b, p5, p5b, p6, p7, p7_export, p7_import_preview, p7_import_done, p8a, p8b, p8c].join('\n\n');
 
 const result = head +
   '\n<div class="section" style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">\n' +
