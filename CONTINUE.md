@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-08（Session 4 完成：空数据状态 UI 调整全部完成）
+> 最后更新：2026-05-09（LearnPage 今日配额逻辑修复 + 种子数据 + 存储分离）
 
 ## 一、现在到哪了
 
@@ -66,6 +66,21 @@
 | 单词本列表 | 默认"拾词集"笔记本，可新建/编辑 |
 | 单词本详情 | 全屏独立页，暂无单词提示 |
 | 底部 Pill Bar | 品牌蓝80%透明、白色图标（拍照/edit_note）、两端分散 |
+
+### Session 5：LearnPage 今日配额逻辑（2026-05-09）
+
+| 改动 | 说明 |
+|------|------|
+| LearnPage 新学词/待复习 | 改为今日会话配额：`dailyLimit − 今日已学`，新复比 10:1（ceil） |
+| 新复比计算 | 新词 ≤10 → 1 复习；11~20 → 2 复习；以此类推 |
+| WebStorage 默认 dailyLimit | 从 0 改为 10，与 SQLite 版一致 |
+| 种子数据双存储 | seed_data.dart 条件导出：web 用 seed_data_web.dart（WebStorage），native 用 seed_data_native.dart（DatabaseHelper） |
+| ReviewRepository web stub | `getToday()` 返回 null → 初始配额 = dailyLimit；`getOrCreateToday()` 不持久化 |
+
+### 构建注意事项
+- `flutter build web` 后可能有旧 Python 进程残留，需 `pkill` 后重启
+- 浏览器 service worker 会缓存旧版本，换端口（8080→9090）可绕过
+- 端口 8080 被多个 Python 进程监听时，`build/web` 目录无法删除
 
 ## 二、关键技术决策
 
