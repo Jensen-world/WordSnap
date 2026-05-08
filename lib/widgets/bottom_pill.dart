@@ -9,27 +9,24 @@ class BottomPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 16, right: 16, bottom: 32 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.only(left: 48, right: 48, bottom: 32 + MediaQuery.of(context).padding.bottom),
       child: Container(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: const Color(0xCC2F5CFF),
           borderRadius: BorderRadius.circular(100),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _PillButton(
-              icon: Icons.camera_alt_outlined,
-              label: '拍照',
+            _IconPillButton(
+              outlinedIcon: Icons.camera_alt_outlined,
+              filledIcon: Icons.camera_alt,
               onTap: () => context.push('/capture/photo'),
             ),
-            const SizedBox(width: 8),
-            Container(width: 1, height: 12, color: const Color(0xFFDDDDDD)),
-            const SizedBox(width: 8),
-            _PillButton(
-              icon: Icons.edit_outlined,
-              label: '记录',
+            _IconPillButton(
+              outlinedIcon: Icons.edit_note_outlined,
+              filledIcon: Icons.edit_note,
               onTap: () {
                 showModalBottomSheet(
                   context: context,
@@ -49,35 +46,39 @@ class BottomPill extends StatelessWidget {
   }
 }
 
-class _PillButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
+class _IconPillButton extends StatefulWidget {
+  final IconData outlinedIcon;
+  final IconData filledIcon;
   final VoidCallback onTap;
 
-  const _PillButton({
-    required this.icon,
-    required this.label,
+  const _IconPillButton({
+    required this.outlinedIcon,
+    required this.filledIcon,
     required this.onTap,
   });
 
   @override
+  State<_IconPillButton> createState() => _IconPillButtonState();
+}
+
+class _IconPillButtonState extends State<_IconPillButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(100),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(100),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 14, color: const Color(0xFF0B0B0F)),
-              const SizedBox(width: 4),
-              Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF0B0B0F))),
-            ],
-          ),
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Icon(
+          _pressed ? widget.filledIcon : widget.outlinedIcon,
+          size: 24,
+          color: Colors.white,
         ),
       ),
     );
