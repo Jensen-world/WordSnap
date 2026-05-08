@@ -1,160 +1,194 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-07
+> 最后更新：2026-05-08（Session 4：底部 Pill Bar 品牌蓝透明 + 纯图标按钮重构 + 烧制 web 构建工作流）
 
 ## 一、现在到哪了
 
-**阶段：全部 15 个页面 mockup 审阅完成。**
+**阶段：P0 MVP 全部实现完成，APK 构建通过（174MB debug APK）。**
 
-### 已审阅完成（全部）
+### P0 MVP 完成清单（12/12）
 
-| 页面 | 名称 | 状态 |
-|------|------|------|
-| 1 | 记单词主页 | ✓ 已确认 |
-| 2 | 学习设置（BottomSheet） | ✓ 已确认 |
-| 3a | 学习卡片 | ✓ 已确认 |
-| 3b | 学习释义 | ✓ 已确认 |
-| 4 | 单词本列表 | ✓ 已确认 |
-| 新建 | 新建单词本（BottomSheet） | ✓ 已确认 |
-| 5 | 单词本详情 | ✓ 已确认 |
-| 单词 | 单词详情 | ✓ 已确认 |
-| 6 | 档案卡 | ✓ 已确认 |
-| 7 | 设置 | ✓ 已确认 |
-| 导出 | 导出成功（Dialog） | ✓ 已确认 |
-| 导入 | 导入预览 / 导入完成（Dialog） | ✓ 已确认 |
-| 8a | 手动输入（BottomSheet） | ✓ 已确认 |
-| 8b | 拍照识别（FullScreen） | ✓ 暂定 |
-| 8c | 分享收录（BottomSheet） | ✓ 已确认 |
+| # | 模块 | 状态 |
+|---|------|------|
+| 1 | 项目脚手架 + 主题（colors/typo/spacing/radius） | ✓ |
+| 2 | SQLite 数据库（3表：notebooks/words/review_sessions） | ✓ |
+| 3 | Repository 层（Notebook/Word/Review） | ✓ |
+| 4 | 路由 + 导航壳（StatefulShellRoute + CapsuleTabBar + BottomPill） | ✓ |
+| 5 | 记单词主页（LearnPage + LearnSettingsSheet） | ✓ |
+| 6 | SRS 学习流程（新词/复习 10:1 交错，10次正确=掌握） | ✓ |
+| 7 | 单词本列表 + 新建/编辑（WordbookPage + CreateNotebookSheet） | ✓ |
+| 8 | 单词本详情 + 单词详情（NotebookDetail + WordDetail） | ✓ |
+| 9 | 档案卡（ArchivePage + 10 成就里程碑） | ✓ |
+| 10 | 手动录入 + 词典查词（CaptureSheet + Free Dictionary API） | ✓ |
+| 11 | 剪贴板监听 + JSON 导出（ClipboardService + ExportImportService） | ✓ |
+| 12 | 拍照识别 OCR（ML Kit + image_picker） | ✓ |
 
-## 二、本次会话设计决策
+### Session 2 追加：边缘情况处理（2026-05-08）
 
-### 页面 1 · 记单词主页
-- 拾词集模块放大：书图标 64×84，SVG 32×32，卡片内边距加大
-- 底部新增绿色进度条（已掌握 60% · 21/35）
-- 每日一词发音改为胶囊形式：`[美 🔄] /音标/ [🔊]` 整合在一个灰底圆角 pill 内
-- 例句后加小喇叭按钮，点击可朗读整句
-
-### 页面 2 · 学习设置
-- 点击拾词集右侧铅笔 → BottomSheet 弹出
-- 切换单词本：点击 ▾ 展开搜索框+列表，选中后自动收起
-- 仅一个设置项：每日新词上限 [− 10 +]
-- 推导信息：剩余 X 新词 · 预计 Y 天
-
-### 页面 3a · 学习卡片
-- 单词卡片内加入发音胶囊，与每日一词一致
-- 进入页面自动播放一遍发音，点击 🔊 再次播放，点击 🔄 切换英/美
-
-### 页面 3b · 学习释义
-- 发音胶囊与 3a 一致
-- 释义模块：词性单独一行（如 `adj.`），下方编号释义
-- 每条例句带中文翻译 + 朗读喇叭
-
-### 页面 4 · 单词本列表
-- 右侧箭头 → 改为铅笔编辑按钮
-- 点击书名/图标 → 跳转单词本详情
-- 点击铅笔 → BottomSheet 编辑名称（与新建相同布局）
-
-### 新建单词本
-- BottomSheet：标题 + 名称输入框 + 创建按钮 + 取消
-- 编辑单词本复用同一布局，标题改为"编辑单词本"，按钮改为"保存"
-
-### 页面 5 · 单词本详情
-- 标题 + 管理按钮（下拉：批量删除/清空/删除）
-- Tab：全部 | 新词 | 掌握
-- 按录入日期分组：本年显示月日，往年显示完整年月日
-- 每行：单词 + 词性 + 中文释义 + 右侧 ⋯ 按钮（删除该词）
-- 点击单词 → 单词详情页
-
-### 单词详情页
-- 基于 3b 结构扩展：发音胶囊 + 释义 + 例句（含翻译+朗读）
-- 新增：学习状态（录入时间 | 状态 | 复习次数 三列均分）
-- 新增：标签（可添加/删除）
-- 新增：录入来源（图标+来源类型+时间）
-- 顶部编辑按钮可修改内容
-
-### 页面 6 · 档案卡
-- Hero 卡片：已掌握数量（大号绿色数字 42）+ 个单词
-- 辅助信息：首次学习日期 | 学习天数 | 复习总次数
-- 快速统计行：词汇总量 | 复习中（琥珀色）| 单词本数（薰衣草色）
-- 成就模块 10 个里程碑：
-  - 词汇：掌握 10 词 ✓ / 100 词 (42/100) / 1000 词 / 5000 词
-  - 连续：7 天 ✓ / 30 天 (12/30) / 90 天 / 180 天
-  - 单词本：创建 3 个 (1/3) / 10 个 (1/10)
-- 已解锁=绿色 ✓，未解锁=灰色 ○ + 进度
-
-### 页面 7 · 设置
-- 数据管理：导出数据 + 导入数据（▸ 入口）
-- 其他：剪贴板监听开关（toggle）+ 关于见词 v1.0.0
-- 导出成功 Dialog：绿色 ✓ + 文件名 + 词数统计 + [分享文件] [完成]
-- 导入预览 Dialog：三列统计（单词本/新增词/已存在）+ 单词本列表及状态 + 合并规则说明 + [取消] [确认导入]
-- 导入完成 Dialog：绿色 ✓ + 新增 X 词合并 Y 个单词本 + [完成]
-
-### 页面 8a · 手动输入
-- 点底部 pill「记录」→ BottomSheet 弹出
-- 大号输入框（输入英文单词...）
-- 自动查释义结果：发音胶囊 + 词性 + 编号释义
-- 存入单词本选择器 + [取消] [确认添加]
-
-### 页面 8b · 拍照识别
-- 点底部 pill「拍照」→ 全屏相机页面
-- 相机取景框 + 快门按钮 + 闪光灯
-- OCR 识别结果：单词 chips（蓝底=已选，灰底=未选）
-- 存入单词本选择器 + [添加选中词 (N)]
-- 备注：后续结合实际使用再调整 OCR 后查释义的交互
-
-### 页面 8c · 分享收录
-- 其他 App（浏览器/阅读器）选中文字 → 分享 → 选「见词 WordSnap」
-- 收到文本后弹出 BottomSheet：显示来源（如"来自 Chrome"）
-- 自动调用 Free Dictionary API 查释义
-- 显示：单词 + 发音胶囊 + 词性 + 释义
-- 存入单词本选择器 + [忽略] [收录]
-- 若分享的是句子/段落，提取英文单词以 chips 展示（复用 OCR 选词模式）
-
-## 三、关键文件
-
-| 文件 | 说明 |
+| 场景 | 处理 |
 |------|------|
-| `docs/superpowers/specs/2026-05-06-wordsnap-design.md` | 技术设计文档 |
-| `WordSnap 1.0/Document/见词_产品设计文档_v1.md` | 原始产品文档 |
-| `WordSnap 1.0/Document/见词_pencil_reference.md` | 设计系统参考（颜色/字体/间距） |
-| `.superpowers/brainstorm/970-1778067419/content/all-pages.html` | **全部页面 mockup**（浏览器看） |
-| `.superpowers/brainstorm/970-1778067419/rebuild.js` | **重建脚本**（`node rebuild.js` 重新生成） |
+| 字典查词失败/无网络 | 红色提示文字"查不到该单词，请检查拼写或网络" |
+| 导出失败 | SnackBar "导出失败，请稍后重试" |
+| OCR 处理失败 | "文字识别失败，请重试或确认图片清晰" |
+| 回退键退出保护 | PopScope + 2 秒内双击退出 |
+| 数据加载失败 | 各页面统一重试按钮（蓝色 TextButton） |
+| 下拉刷新 | Learn/Wordbook/Archive/NotebookDetail 全部加 RefreshIndicator |
+| 导入按钮 | 占位 SnackBar "导入功能即将上线" |
 
-## 四、Mockup 操作
+### Session 4：底部 Pill Bar 重构（2026-05-08）
 
+| 改动 | 说明 |
+|------|------|
+| 颜色 | 品牌蓝 #2F5CFF 80% 不透明度（0xCC2F5CFF），代替灰底 |
+| 按钮样式 | 去除白色胶囊+文字，改为纯白色图标（24px） |
+| 拍照图标 | camera_alt_outlined / camera_alt（按住切换实体） |
+| 记录图标 | edit_note_outlined / edit_note（按住切换实体，松手弹 CaptureSheet） |
+| 布局 | Row + MainAxisAlignment.spaceEvenly，两端分散无分隔线 |
+| 间距 | 左右 48px，底部 32px + 系统导航栏高度 |
+| 交互 | GestureDetector onTapDown/onTapUp/onTapCancel 切换图标状态 |
+
+**构建工作流改进**：`flutter run` 热重载不稳定 → 改用 `flutter build web` + Python HTTP 服务器，刷新浏览器一定生效。
+
+## 二、关键技术决策
+
+### 架构
+- **状态管理**：flutter_riverpod（StateNotifierProvider + AsyncNotifierProvider + FutureProvider）
+- **路由**：GoRouter StatefulShellRoute.indexedStack（3-tab 导航）
+- **数据库**：sqflite，单例 DatabaseHelper，3 张表带索引
+- **API**：Free Dictionary API（api.dictionaryapi.dev）
+- **OCR**：google_mlkit_text_recognition（on-device，离线可用）
+- **拍照**：image_picker（调用系统相机）
+
+### SRS 算法
+- 10:1 新词/复习交错比例
+- 认识 → reviewCount+1，10 次正确 = 掌握（isMastered=true）
+- 不认识 → reviewCount 归零，重新排入队列
+- 三种模式：normal（≥10 新词）、transition（1-9 新词）、pureReview（0 新词）
+
+### 配色
+- 信号蓝 #2F5CFF（主色）、琥珀闪 #FFA940（强调）、薄荷 #00C896（掌握/成功）、薰衣草 #7068F0（词性/预计天数）
+- 墨黑 #0B0B0F、画布白 #F9F9FB、边框 #E2E2EA
+
+## 三、项目文件结构
+
+```
+lib/
+├── app.dart                          # MaterialApp.router + ThemeData
+├── main.dart                         # 入口，竖屏锁定
+├── core/
+│   ├── database/database_helper.dart # SQLite 单例
+│   ├── router/app_router.dart        # GoRouter 配置
+│   └── theme/
+│       ├── colors.dart               # AppColors
+│       ├── typography.dart           # AppTypography (GoogleFonts)
+│       ├── spacing.dart              # 4px base unit
+│       └── radius.dart               # AppRadius (pill/card/input/sheet)
+├── data/
+│   ├── models/
+│   │   ├── notebook.dart
+│   │   ├── word.dart
+│   │   ├── word_context.dart
+│   │   └── review_session.dart
+│   ├── repositories/
+│   │   ├── notebook_repository.dart
+│   │   ├── word_repository.dart
+│   │   └── review_repository.dart
+│   └── services/
+│       ├── dictionary_service.dart   # Free Dictionary API
+│       ├── dictionary_result.dart
+│       ├── review_service.dart       # SRS 算法
+│       ├── clipboard_service.dart    # Timer 轮询剪贴板
+│       ├── ocr_service.dart          # ML Kit 文字识别
+│       └── export_import_service.dart # JSON 导入导出
+├── features/
+│   ├── learn/
+│   │   ├── learn_page.dart           # 记单词主页
+│   │   ├── learn_provider.dart
+│   │   ├── learn_settings_sheet.dart # 学习设置 BottomSheet
+│   │   ├── study_page.dart           # 学习卡片/释义
+│   │   └── study_provider.dart
+│   ├── wordbook/
+│   │   ├── wordbook_page.dart        # 单词本列表
+│   │   ├── wordbook_provider.dart    # 所有 repository providers
+│   │   ├── create_notebook_sheet.dart
+│   │   ├── notebook_detail_page.dart # 单词本详情
+│   │   └── word_detail_page.dart     # 单词详情
+│   ├── capture/
+│   │   ├── capture_sheet.dart        # 手动输入 BottomSheet
+│   │   ├── capture_provider.dart
+│   │   ├── photo_capture_page.dart   # 拍照识别
+│   │   └── photo_capture_provider.dart
+│   ├── archive/
+│   │   ├── archive_page.dart         # 档案卡
+│   │   └── archive_provider.dart
+│   └── settings/
+│       └── settings_page.dart        # 设置（导出/导入/剪贴板/关于）
+└── widgets/
+    ├── navigation_shell.dart         # Scaffold + AppBar + PopScope
+    ├── capsule_tab_bar.dart          # 记单词/单词本/档案卡
+    └── bottom_pill.dart              # 拍照 + 记录 底部按钮
+```
+
+## 四、Android 构建配置
+
+### 镜像加速（中国网络必需）
+- `android/gradle/wrapper/gradle-wrapper.properties`：Gradle 8.14-bin 使用腾讯云镜像
+- `android/settings.gradle.kts`：Maven 使用阿里云镜像
+- `android/build.gradle.kts`：同上
+- `android/gradle.properties`：`kotlin.incremental=false`（避免增量编译缓存问题）
+
+### 权限（AndroidManifest.xml）
+- INTERNET（词典 API）
+- CAMERA（拍照识别）
+
+### 依赖（pubspec.yaml）
+```
+google_mlkit_text_recognition: ^0.14.0
+image_picker: ^1.1.2
+flutter_riverpod: ^2.6.1
+go_router: ^14.8.1
+sqflite: ^2.4.2
+google_fonts: ^6.2.1
+http: ^1.6.0
+```
+
+### 构建命令
 ```bash
-# 重建
-cd .superpowers/brainstorm/970-1778067419
-node rebuild.js
-
-# 视觉辅助（如果服务器启动）
-# 打开浏览器: http://localhost:57519/all-pages.html
-# 或直接用浏览器打开文件: content/all-pages.html
+flutter clean && flutter pub get && flutter build apk --debug
+# APK: build/app/outputs/flutter-apk/app-debug.apk (174MB)
 ```
 
-## 五、页面清单（16 个）
+## 五、已知待办
 
-```
-1. 记单词主页        /learn           Tab 页
-2. 学习设置          BottomSheet      铅笔图标触发
-3a. 学习卡片         /learn/study     单词卡片 + 认识/不认识
-3b. 学习释义         /learn/study     释义+例句+下一词
-4. 单词本列表        /wordbook        Notebook 卡片 + 新建
-新建. 新建单词本     BottomSheet      输入名称即创建
-5. 单词本详情        /wordbook/:id    日期分组+Tab筛选
-单词. 单词详情       /word/:id        释义+SRS状态+标签+来源
-6. 档案卡            /archive         Tab 页
-7. 设置              /settings        导入导出+剪贴板开关
-导出. 导出成功       Dialog           文件名+词数+分享
-导入. 导入预览       Dialog           解析预览+确认
-导入. 导入完成       Dialog           结果摘要
-8a. 手动输入         BottomSheet      记录按钮触发，输入+查释义+存入
-8b. 拍照识别         FullScreen       拍照按钮触发，OCR提词+选词添加
-8c. 分享收录         BottomSheet      其他App分享→自动查释义+收录
-```
+### 功能缺失
+- [x] JSON 导入 UI（file_picker + 导入预览 Dialog + 导入结果 Dialog，Session 3 完成）
+- [x] 分享收录（8c — MethodChannel + ShareReceiptSheet，Session 3 完成）
+- [x] 标签管理（InputChip 可删除 + 弹窗添加，Session 3 完成）
+- [x] TTS 发音（flutter_tts + TtsService，8 个喇叭按钮全部接线，Session 3 完成）
+- [ ] 图片关联（imagePath 字段已有，但 UI 未接）
+- [ ] 每日一词实际数据（当前为硬编码 ephemeral 示例）
 
-## 六、下一步
+### 测试
+- [ ] 真机测试（需 Android 设备或模拟器）
+- [ ] Widget test
+- [ ] Integration test
 
-全部页面 mockup 审阅完成。下一步可进入 **Flutter 开发实现**。
-- P0 MVP：项目初始化 + 数据库 + 核心页面
-- 参考 `docs/superpowers/specs/2026-05-06-wordsnap-design.md` 技术设计文档
+### 构建
+- [ ] Release APK 签名配置
+- [ ] App 图标替换（当前使用默认 Flutter 图标）
+
+## 六、明天回顾要点
+
+1. Session 1（05-07 下午）：全部 15 页面 mockup 审阅 + 品牌/logo/截图
+2. Session 2（05-07 晚上 ~ 05-08 凌晨）：P0 MVP 12 项全部实现 + 边缘情况处理 + APK 构建通过
+3. Session 3（05-08）：JSON 导入 UI + TTS 发音 + 标签管理 + 分享收录 完成
+   - 新增 file_picker + flutter_tts 依赖
+   - ExportImportService 新增 analyzeJson + ImportPreview/NotebookPreview 数据类
+   - 设置页：选取 JSON 文件 → 导入预览 → 确认导入 → 结果摘要
+   - TtsService：封装 flutter_tts，8 个喇叭按钮全部接线
+   - 标签管理：单词详情页支持添加/删除标签（InputChip + 弹窗输入）
+   - 分享收录：Android ACTION_SEND intent filter + MethodChannel（无额外依赖），ShareReceiptSheet 自动查词 + 收录
+4. P1 全部完成。下一步可选方向：
+   - 导出文件实际写入/分享（当前 exportToJson 生成字符串但未保存到文件）
+   - 真机/模拟器测试验证
+   - P2 功能（每日一词实际数据、图片关联、release 签名+图标）
