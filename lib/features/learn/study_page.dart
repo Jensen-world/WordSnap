@@ -1,0 +1,430 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/theme/colors.dart';
+import '../../data/models/word.dart';
+import 'study_provider.dart';
+import 'learn_provider.dart';
+import '../wordbook/wordbook_provider.dart';
+
+class StudyPage extends ConsumerStatefulWidget {
+  const StudyPage({super.key});
+
+  @override
+  ConsumerState<StudyPage> createState() => _StudyPageState();
+}
+
+class _StudyPageState extends ConsumerState<StudyPage> {
+  bool _isUs = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      final learn = ref.read(learnStateProvider);
+      final notebookId = learn.currentNotebookId ?? 1;
+      final dailyLimit = learn.dailyLimit;
+      ref.read(studyProvider.notifier).startSession(notebookId, dailyLimit);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(studyProvider);
+    final word = state.currentWord;
+
+    if (state.loading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('学习中')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (state.finished) {
+      if (state.queue.isEmpty) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('学习中')),
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.menu_book_rounded, size: 64, color: Color(0xFFE8E8F0)),
+                const SizedBox(height: 16),
+                const Text(
+                  '暂无单词需要学习',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '请先在单词本中添加单词',
+                  style: TextStyle(fontSize: 14, color: Color(0xFF999999)),
+                ),
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: () => context.pop(),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.signalBlue,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  ),
+                  child: const Text('返回'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      return Scaffold(
+        appBar: AppBar(title: const Text('学习完成')),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle_outline, size: 64, color: AppColors.mint),
+              const SizedBox(height: 16),
+              const Text(
+                '本次学习完成',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '答对 ${state.correctCount} 题 · 答错 ${state.incorrectCount} 题',
+                style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: () => context.pop(),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.signalBlue,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                ),
+                child: const Text('返回'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.canvasWhite,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: const Text('拾词集 · 学习中'),
+        leading: IconButton(icon: const Icon(Icons.close), onPressed: () => context.pop()),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Text(
+              '${state.progress}/${state.queue.length}',
+              style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              if (word != null)
+                Expanded(
+                  child: state.showingDefinition
+                      ? _DefinitionView(
+                          word: word,
+                          isUs: _isUs,
+                          onTogglePronunciation: () => setState(() => _isUs = !_isUs),
+                        )
+                      : _CardView(
+                          word: word,
+                          isUs: _isUs,
+                          onTogglePronunciation: () => setState(() => _isUs = !_isUs),
+                        ),
+                ),
+              if (word != null) ...[
+                if (!state.showingDefinition) ...[
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            await ref.read(studyProvider.notifier).markIncorrect();
+                            ref.read(studyProvider.notifier).showDefinition();
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: const BorderSide(color: Color(0xFFE2E2EA)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                          ),
+                          child: const Text('不认识', style: TextStyle(fontSize: 16, color: AppColors.inkBlack)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () async {
+                            await ref.read(studyProvider.notifier).markCorrect();
+                            ref.read(studyProvider.notifier).showDefinition();
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.signalBlue,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                          ),
+                          child: const Text('认识 ✓', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (state.showingDefinition) ...[
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: FilledButton(
+                      onPressed: () => ref.read(studyProvider.notifier).nextWord(),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.signalBlue,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                      ),
+                      child: const Text('下一词 →', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('✓ ${state.correctCount}', style: const TextStyle(fontSize: 13, color: AppColors.mint)),
+                    const SizedBox(width: 16),
+                    Text('✗ ${state.incorrectCount}', style: const TextStyle(fontSize: 13, color: Color(0xFFFF5252))),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CardView extends ConsumerWidget {
+  final Word word;
+  final bool isUs;
+  final VoidCallback onTogglePronunciation;
+
+  const _CardView({
+    required this.word,
+    required this.isUs,
+    required this.onTogglePronunciation,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: word.isNew ? AppColors.signalBlue.withAlpha(25) : const Color(0xFFFFA940).withAlpha(30),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Text(
+              word.isNew ? '新词' : '复习',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: word.isNew ? AppColors.signalBlue : AppColors.amberFlash,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            word.text,
+            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F0F5),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: onTogglePronunciation,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(isUs ? '美' : '英', style: const TextStyle(fontSize: 12, color: AppColors.inkBlack)),
+                      const Icon(Icons.swap_horiz, size: 14, color: Color(0xFF999999)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  word.phonetic ?? '',
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+                ),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () => ref.read(ttsServiceProvider).speak(word.text),
+                  child: const Icon(Icons.volume_up_outlined, size: 18, color: Color(0xFF999999)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DefinitionView extends ConsumerWidget {
+  final Word word;
+  final bool isUs;
+  final VoidCallback onTogglePronunciation;
+
+  const _DefinitionView({
+    required this.word,
+    required this.isUs,
+    required this.onTogglePronunciation,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListView(
+      children: [
+        Center(
+          child: Text(
+            word.text,
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F0F5),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: onTogglePronunciation,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(isUs ? '美' : '英', style: const TextStyle(fontSize: 12, color: AppColors.inkBlack)),
+                      const Icon(Icons.swap_horiz, size: 14, color: Color(0xFF999999)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  word.phonetic ?? '',
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+                ),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () => ref.read(ttsServiceProvider).speak(word.text),
+                  child: const Icon(Icons.volume_up_outlined, size: 18, color: Color(0xFF999999)),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        _DefSection(
+          title: '释义',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                word.partOfSpeech ?? '',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.lavender),
+              ),
+              const SizedBox(height: 6),
+              ...word.definitions.asMap().entries.map((e) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  '${e.key + 1}. ${e.value}',
+                  style: const TextStyle(fontSize: 14, color: AppColors.inkBlack, height: 1.5),
+                ),
+              )),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _DefSection(
+          title: '例句',
+          child: Column(
+            children: word.examples.asMap().entries.map((e) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        e.value,
+                        style: const TextStyle(fontSize: 13, color: AppColors.inkBlack, fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => ref.read(ttsServiceProvider).speak(e.value),
+                      child: const Icon(Icons.volume_up_outlined, size: 18, color: Color(0xFF999999)),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DefSection extends StatelessWidget {
+  final String title;
+  final Widget child;
+
+  const _DefSection({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E2EA)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF999999)),
+          ),
+          const SizedBox(height: 10),
+          child,
+        ],
+      ),
+    );
+  }
+}
