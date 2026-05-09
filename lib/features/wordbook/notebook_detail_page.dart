@@ -19,6 +19,8 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
   WordFilter _filter = WordFilter.all;
   List<Word> _words = [];
   bool _loading = true;
+  bool _selectionMode = false;
+  final Set<int> _selectedWordIds = {};
 
   @override
   void initState() {
@@ -52,25 +54,182 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
   }
 
   void _onManageAction(String action) {
-    if (action == 'delete') {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('删除单词本'),
-          content: const Text('删除后所有单词也将被删除，不可恢复。'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(ctx);
-                await ref.read(notebooksProvider.notifier).delete(widget.id);
-                if (mounted) context.pop();
-              },
-              child: const Text('删除', style: TextStyle(color: Color(0xFFFF5252))),
-            ),
-          ],
+    switch (action) {
+      case 'select':
+        setState(() {
+          _selectionMode = true;
+          _selectedWordIds.clear();
+        });
+      case 'clear':
+        _showConfirmDialog(
+          title: '清空单词本',
+          content: '将删除本单词本中的所有单词，不可恢复。',
+          onConfirm: () async {
+            final repo = ref.read(wordRepoProvider);
+            for (final w in _words) {
+              await repo.delete(w.id!);
+            }
+            _loadWords();
+          },
+        );
+      case 'deleteNb':
+        _showConfirmDialog(
+          title: '删除单词本',
+          content: '删除后所有单词也将被删除，不可恢复。',
+          onConfirm: () async {
+            await ref.read(notebooksProvider.notifier).delete(widget.id);
+            if (mounted) context.pop();
+          },
+          isDanger: true,
+        );
+    }
+  }
+
+  void _showConfirmDialog({
+    required String title,
+    required String content,
+    required VoidCallback onConfirm,
+    bool isDanger = false,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              onConfirm();
+            },
+            child: Text(isDanger ? '删除' : '确认', style: TextStyle(color: isDanger ? const Color(0xFFFF5252) : AppColors.signalBlue)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<int?> _showNotebookPicker() async {
+    final notebooks = ref.read(notebooksProvider).value ?? [];
+    final others = notebooks.where((n) => n.id != widget.id).toList();
+    if (others.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('没有其他单词本')));
+      }
+      return null;
+    }
+    return showModalBottomSheet<int>(
+      context: context,
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: others.map((n) => ListTile(
+            title: Text(n.name),
+            onTap: () => Navigator.pop(ctx, n.id),
+          )).toList(),
         ),
+      ),
+    );
+  }
+
+  Future<void> _moveWord(Word word) async {
+    final targetId = await _showNotebookPicker();
+    if (targetId == null) return;
+    final updated = word.copyWith(
+      notebookId: targetId,
+      isNew: true,
+      reviewCount: 0,
+      isMastered: false,
+      learnedAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    await ref.read(wordRepoProvider).update(updated);
+    _loadWords();
+  }
+
+  Future<void> _batchMove() async {
+    final targetId = await _showNotebookPicker();
+    if (targetId == null) return;
+    final now = DateTime.now();
+    final repo = ref.read(wordRepoProvider);
+    for (final id in _selectedWordIds) {
+      final word = _words.firstWhere((w) => w.id == id);
+      final updated = word.copyWith(
+        notebookId: targetId,
+        isNew: true,
+        reviewCount: 0,
+        isMastered: false,
+        learnedAt: now,
+        updatedAt: now,
       );
+      await repo.update(updated);
+    }
+    setState(() {
+      _selectionMode = false;
+      _selectedWordIds.clear();
+    });
+    _loadWords();
+  }
+
+  Future<void> _deleteWord(Word word) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('删除单词'),
+        content: Text('确定删除「${word.text}」吗？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('删除', style: TextStyle(color: Color(0xFFFF5252))),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await ref.read(wordRepoProvider).delete(word.id!);
+      _loadWords();
+    }
+  }
+
+  void _toggleWordSelection(int id) {
+    setState(() {
+      if (_selectedWordIds.contains(id)) {
+        _selectedWordIds.remove(id);
+      } else {
+        _selectedWordIds.add(id);
+      }
+    });
+  }
+
+  Future<void> _deleteSelected() async {
+    final count = _selectedWordIds.length;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('批量删除'),
+        content: Text('确定删除选中的 $count 个单词吗？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('删除', style: TextStyle(color: Color(0xFFFF5252))),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      final repo = ref.read(wordRepoProvider);
+      for (final id in _selectedWordIds) {
+        await repo.delete(id);
+      }
+      setState(() {
+        _selectionMode = false;
+        _selectedWordIds.clear();
+      });
+      _loadWords();
     }
   }
 
@@ -88,16 +247,31 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
       backgroundColor: AppColors.canvasWhite,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text('拾词集'),
+        title: Text(_selectionMode ? '已选 ${_selectedWordIds.length} 项' : '拾词集'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => GoRouter.of(context).go('/wordbook'),
+          onPressed: () {
+            if (_selectionMode) {
+              setState(() { _selectionMode = false; _selectedWordIds.clear(); });
+            } else {
+              GoRouter.of(context).go('/wordbook');
+            }
+          },
         ),
-        actions: [
+        actions: _selectionMode
+            ? [
+                TextButton(
+                  onPressed: () => setState(() { _selectionMode = false; _selectedWordIds.clear(); }),
+                  child: const Text('取消', style: TextStyle(color: AppColors.inkBlack)),
+                ),
+              ]
+            : [
           PopupMenuButton<String>(
             onSelected: (v) => _onManageAction(v),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'delete', child: Text('删除单词本', style: TextStyle(color: Color(0xFFFF5252)))),
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'select', child: Text('批量管理')),
+              const PopupMenuItem(value: 'clear', child: Text('清空单词本')),
+              const PopupMenuItem(value: 'deleteNb', child: Text('删除单词本', style: TextStyle(color: Color(0xFFFF5252)))),
             ],
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 4),
@@ -114,7 +288,8 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
       ),
       body: Column(
         children: [
-          _FilterTabs(current: _filter, onChanged: _onFilterChanged),
+          if (!_selectionMode)
+            _FilterTabs(current: _filter, onChanged: _onFilterChanged),
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
@@ -123,6 +298,37 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
                     child: _buildWordList(context),
                   ),
           ),
+          if (_selectionMode)
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: Color(0xFFE2E2EA))),
+              ),
+              child: Row(
+                children: [
+                  Text('已选 ${_selectedWordIds.length} 项', style: const TextStyle(fontSize: 14, color: AppColors.inkBlack)),
+                  const Spacer(),
+                  OutlinedButton(
+                    onPressed: _selectedWordIds.isEmpty ? null : _batchMove,
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFE2E2EA)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    ),
+                    child: const Text('移动', style: TextStyle(fontSize: 14, color: AppColors.inkBlack)),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: _selectedWordIds.isEmpty ? null : _deleteSelected,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF5252),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    ),
+                    child: const Text('删除', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -153,7 +359,12 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
         return _DateGroup(
           date: date,
           words: words,
-          onTap: (word) => context.push('/word/${word.id}'),
+          selectionMode: _selectionMode,
+          selectedIds: _selectedWordIds,
+          onTap: (word) => _selectionMode ? _toggleWordSelection(word.id!) : context.push('/word/${word.id}'),
+          onToggleSelection: (id) => _toggleWordSelection(id),
+          onMoveWord: (word) => _moveWord(word),
+          onDeleteWord: (word) => _deleteWord(word),
         );
       },
     );
@@ -221,9 +432,23 @@ class _Tab extends StatelessWidget {
 class _DateGroup extends StatelessWidget {
   final String date;
   final List<Word> words;
+  final bool selectionMode;
+  final Set<int> selectedIds;
   final ValueChanged<Word> onTap;
+  final ValueChanged<int> onToggleSelection;
+  final ValueChanged<Word> onMoveWord;
+  final ValueChanged<Word> onDeleteWord;
 
-  const _DateGroup({required this.date, required this.words, required this.onTap});
+  const _DateGroup({
+    required this.date,
+    required this.words,
+    required this.selectionMode,
+    required this.selectedIds,
+    required this.onTap,
+    required this.onToggleSelection,
+    required this.onMoveWord,
+    required this.onDeleteWord,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -245,6 +470,7 @@ class _DateGroup extends StatelessWidget {
           ),
           child: Column(
             children: words.map((word) {
+              final isSelected = selectedIds.contains(word.id);
               return GestureDetector(
                 onTap: () => onTap(word),
                 child: Container(
@@ -256,6 +482,22 @@ class _DateGroup extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
+                      if (selectionMode) ...[
+                        GestureDetector(
+                          onTap: () => onToggleSelection(word.id!),
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            margin: const EdgeInsets.only(right: 10),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isSelected ? AppColors.signalBlue : Colors.white,
+                              border: Border.all(color: isSelected ? AppColors.signalBlue : const Color(0xFFDDDDDD), width: 2),
+                            ),
+                            child: isSelected ? const Icon(Icons.check, size: 12, color: Colors.white) : null,
+                          ),
+                        ),
+                      ],
                       Expanded(
                         child: RichText(
                           text: TextSpan(
@@ -277,13 +519,21 @@ class _DateGroup extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.more_horiz, size: 16, color: Color(0xFF999999)),
-                        onPressed: () {},
-                        visualDensity: VisualDensity.compact,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
+                      if (selectionMode)
+                        const SizedBox.shrink()
+                      else
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_horiz, size: 16, color: Color(0xFF999999)),
+                          padding: EdgeInsets.zero,
+                          onSelected: (action) {
+                            if (action == 'move') onMoveWord(word);
+                            if (action == 'delete') onDeleteWord(word);
+                          },
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(value: 'move', child: Text('移动')),
+                            PopupMenuItem(value: 'delete', child: Text('删除', style: TextStyle(color: Color(0xFFFF5252)))),
+                          ],
+                        ),
                     ],
                   ),
                 ),

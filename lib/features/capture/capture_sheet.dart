@@ -1,144 +1,141 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/colors.dart';
-import '../../data/models/notebook.dart';
-import '../../data/models/word.dart';
-import '../../data/services/dictionary_result.dart';
 import '../wordbook/wordbook_provider.dart';
 import 'capture_provider.dart';
 
-class ShareReceiptSheet extends ConsumerStatefulWidget {
-  final String sharedText;
-
-  const ShareReceiptSheet({super.key, required this.sharedText});
+class CaptureSheet extends ConsumerStatefulWidget {
+  const CaptureSheet({super.key});
 
   @override
-  ConsumerState<ShareReceiptSheet> createState() => _ShareReceiptSheetState();
+  ConsumerState<CaptureSheet> createState() => _CaptureSheetState();
 }
 
-class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
-  DictionaryResult? _result;
-  bool _searching = true;
-  String? _error;
-  List<Notebook> _notebooks = [];
-  int? _selectedNotebookId;
+class _CaptureSheetState extends ConsumerState<CaptureSheet> {
+  final _controller = TextEditingController();
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    _loadNotebooks();
-    _lookup();
+    Future.microtask(() => ref.read(captureStateProvider.notifier).loadNotebooks());
   }
 
-  Future<void> _loadNotebooks() async {
-    final repo = ref.read(notebookRepoProvider);
-    final notebooks = await repo.getAll();
-    if (mounted) {
-      setState(() {
-        _notebooks = notebooks;
-        _selectedNotebookId = notebooks.isNotEmpty ? notebooks.first.id : null;
-      });
-    }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
-  Future<void> _lookup() async {
-    final service = ref.read(dictionaryServiceProvider);
-    final result = await service.lookup(widget.sharedText.trim());
-    if (mounted) {
-      setState(() {
-        _searching = false;
-        _result = result;
-        _error = result == null ? '查不到该单词' : null;
-      });
+  void _onInputChanged(String value) {
+    ref.read(captureStateProvider.notifier).setInput(value);
+    if (value.length >= 2) {
+      ref.read(captureStateProvider.notifier).lookup();
     }
   }
 
   Future<void> _save() async {
-    if (_result == null || _selectedNotebookId == null) return;
     setState(() => _saving = true);
     try {
-      final now = DateTime.now();
-      final allDefs = <String>[];
-      if (_result!.translation != null) allDefs.add(_result!.translation!);
-      allDefs.addAll(_result!.meanings.expand((m) => m.definitions.map((d) => d.definition)));
-      final word = Word(
-        notebookId: _selectedNotebookId!,
-        text: _result!.word,
-        phonetic: _result!.phonetic,
-        partOfSpeech: _result!.meanings.isNotEmpty ? _result!.meanings.first.partOfSpeech : null,
-        definitions: allDefs,
-        examples: _result!.meanings.expand((m) => m.definitions.map((d) => d.example).whereType<String>()).toList(),
-        tags: _result!.tag != null ? _result!.tag!.split(' ') : [],
-        learnedAt: now,
-        createdAt: now,
-        updatedAt: now,
-      );
-      await ref.read(wordRepoProvider).insert(word);
-      if (mounted) Navigator.of(context).pop(true);
+      await ref.read(captureStateProvider.notifier).save();
+      if (mounted) Navigator.of(context).pop();
     } catch (_) {
       if (mounted) {
-        setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('保存失败')),
         );
       }
     }
+    if (mounted) setState(() => _saving = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final word = widget.sharedText.trim();
+    final state = ref.watch(captureStateProvider);
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 24,
+        bottom: bottomInset + 24,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
             child: Container(
-              width: 36, height: 4,
-              decoration: const BoxDecoration(color: Color(0xFFDDDDDD), borderRadius: BorderRadius.all(Radius.circular(2))),
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFDDDDDD),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           const SizedBox(height: 20),
-          const Text('已收到单词', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.inkBlack), textAlign: TextAlign.center),
-          const SizedBox(height: 4),
-          const Text('来自其他应用', style: TextStyle(fontSize: 12, color: Color(0xFF999999)), textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          Text(word, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.inkBlack), textAlign: TextAlign.center),
-          if (_searching)
-            const Padding(padding: EdgeInsets.only(top: 24), child: Center(child: CircularProgressIndicator())),
-          if (_error != null)
+          const Text(
+            '输入单词',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 18),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            onChanged: _onInputChanged,
+            decoration: const InputDecoration(
+              hintText: '输入英文单词...',
+            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
+          ),
+          if (state.searching)
+            const Padding(
+              padding: EdgeInsets.only(top: 24),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          if (state.errorMessage != null)
             Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: Text(_error!, style: const TextStyle(fontSize: 13, color: Color(0xFFFF5252)), textAlign: TextAlign.center),
+              child: Text(
+                state.errorMessage!,
+                style: const TextStyle(fontSize: 13, color: Color(0xFFFF5252)),
+                textAlign: TextAlign.center,
+              ),
             ),
-          if (_result != null) ...[
-            const SizedBox(height: 16),
-            _ResultCard(result: _result!),
-            const SizedBox(height: 16),
-            const Text('存入', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF999999))),
+          if (state.result != null) ...[
+            const SizedBox(height: 18),
+            const Text(
+              '查询结果',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF999999)),
+            ),
+            const SizedBox(height: 10),
+            _ResultCard(result: state.result!),
+          ],
+          if (state.result != null) ...[
+            const SizedBox(height: 18),
+            const Text(
+              '存入',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF999999)),
+            ),
             const SizedBox(height: 8),
             _NotebookSelector(
-              notebooks: _notebooks,
-              selectedId: _selectedNotebookId,
-              onSelected: (id) => setState(() => _selectedNotebookId = id),
+              notebooks: state.notebooks,
+              selectedId: state.selectedNotebookId,
+              onSelected: (id) => ref.read(captureStateProvider.notifier).setNotebook(id),
             ),
           ],
-          if (_result != null) ...[
+          if (state.result != null) ...[
             const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFE2E2EA)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text('忽略', style: TextStyle(color: Color(0xFF999999))),
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('取消', style: TextStyle(color: Color(0xFF999999))),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -152,7 +149,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     ),
                     child: _saving
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('收录', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                        : const Text('确认添加', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
@@ -165,7 +162,8 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
 }
 
 class _ResultCard extends StatelessWidget {
-  final DictionaryResult result;
+  final dynamic result;
+
   const _ResultCard({required this.result});
 
   @override
@@ -180,18 +178,24 @@ class _ResultCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(result.word, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+          Text(
+            result.word,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+          ),
           const SizedBox(height: 6),
           if (result.phonetic != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(color: const Color(0xFFF0F0F5), borderRadius: BorderRadius.circular(100)),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F0F5),
+                borderRadius: BorderRadius.circular(100),
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text('美', style: TextStyle(fontSize: 11, color: AppColors.inkBlack)),
                   const SizedBox(width: 6),
-                  Text(result.phonetic!, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                  Text(result.phonetic, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
                   const SizedBox(width: 4),
                   GestureDetector(
                     onTap: () => ProviderScope.containerOf(context).read(ttsServiceProvider).speak(result.word),
@@ -207,11 +211,18 @@ class _ResultCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           ...(result.meanings.isNotEmpty
-              ? result.meanings.first.definitions.take(3).map((d) => Padding(
+              ? result.meanings.first.definitions.take(3).map<Widget>((d) {
+                  return Padding(
                     padding: const EdgeInsets.only(bottom: 2),
-                    child: Text(d.definition, style: const TextStyle(fontSize: 13, color: AppColors.inkBlack), textAlign: TextAlign.center),
-                  ))
+                    child: Text(
+                      d.definition,
+                      style: const TextStyle(fontSize: 13, color: AppColors.inkBlack),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }).toList()
               : []),
+          const SizedBox(height: 4),
         ],
       ),
     );
@@ -219,11 +230,15 @@ class _ResultCard extends StatelessWidget {
 }
 
 class _NotebookSelector extends StatelessWidget {
-  final List<Notebook> notebooks;
+  final List notebooks;
   final int? selectedId;
   final ValueChanged<int> onSelected;
 
-  const _NotebookSelector({required this.notebooks, required this.selectedId, required this.onSelected});
+  const _NotebookSelector({
+    required this.notebooks,
+    required this.selectedId,
+    required this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +254,10 @@ class _NotebookSelector extends StatelessWidget {
           children: [
             const Icon(Icons.menu_book_rounded, size: 16, color: AppColors.signalBlue),
             const SizedBox(width: 8),
-            Text(_selectedName(), style: const TextStyle(fontSize: 14, color: AppColors.inkBlack)),
+            Text(
+              _selectedName(),
+              style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
+            ),
             const Spacer(),
             const Icon(Icons.arrow_drop_down, size: 18, color: Color(0xFF999999)),
           ],
@@ -250,7 +268,7 @@ class _NotebookSelector extends StatelessWidget {
 
   String _selectedName() {
     if (selectedId == null) return '选择单词本';
-    return notebooks.where((n) => n.id == selectedId).firstOrNull?.name ?? '选择单词本';
+    return notebooks.firstWhere((n) => n.id == selectedId, orElse: () => null)?.name ?? '选择单词本';
   }
 
   void _showPicker(BuildContext context) {
@@ -270,7 +288,7 @@ class _NotebookSelector extends StatelessWidget {
               )),
               leading: isSelected ? const Icon(Icons.check, size: 18, color: AppColors.signalBlue) : null,
               onTap: () {
-                onSelected(n.id!);
+                onSelected(n.id);
                 Navigator.pop(context);
               },
             );

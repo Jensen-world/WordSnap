@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,38 +9,45 @@ class BottomPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: 48, right: 48, bottom: 32 + MediaQuery.of(context).padding.bottom),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xCC2F5CFF),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _IconPillButton(
-              outlinedIcon: Icons.camera_alt_outlined,
-              filledIcon: Icons.camera_alt,
-              onTap: () => context.push('/capture/photo'),
+    final bottom = MediaQuery.of(context).padding.bottom;
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Padding(
+          padding: EdgeInsets.only(left: 48, right: 48, top: 24, bottom: 24 + bottom),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xCC2F5CFF),
+              borderRadius: BorderRadius.circular(100),
             ),
-            _IconPillButton(
-              outlinedIcon: Icons.edit_note_outlined,
-              filledIcon: Icons.edit_note,
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.white,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  builder: (_) => const ProviderScope(child: CaptureSheet()),
-                );
-              },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _IconPillButton(
+                  outlinedIcon: Icons.camera_alt_outlined,
+                  filledIcon: Icons.camera_alt,
+                  onTap: () => context.push('/capture/photo'),
+                ),
+                _IconPillButton(
+                  outlinedIcon: Icons.edit_note_outlined,
+                  filledIcon: Icons.edit_note,
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      builder: (_) => const ProviderScope(child: CaptureSheet()),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 7：真机网络问题修复 — OCR 离线化 + 词典本地化）
+> 最后更新：2026-05-09（Session 8：数据联动刷新 + 自动播放 + 单词管理 + 毛玻璃 Pill）
 
 ## 一、现在到哪了
 
@@ -147,6 +147,60 @@ assets 新增: tessdata_config.json, tessdata/, ecdict_slim.db
 - 浏览器 service worker 会缓存旧版本，换端口（8080→9090）可绕过
 - 端口 8080 被多个 Python 进程监听时，`build/web` 目录无法删除
 
+### Session 8：数据联动 + 自动播放 + 单词管理 + UI 打磨（2026-05-09）
+
+#### LearnPage 数据刷新修复
+
+**问题：** 学习完返回主页，新学词/待复习等数据不变。
+
+**根因：** `LearnNotifier.load()` 只在 `initState` 调用一次；`review_sessions` 表学习过程中从未写入。
+
+**修复：**
+| 文件 | 改动 |
+|------|------|
+| `study_provider.dart` | `startSession` 创建/获取今日 session；`markCorrect`/`markIncorrect` 按新词/复习分类递增 session 字段并写入 DB |
+| `study_page.dart` | 三个退出路径 pop 前调用 `learnStateProvider.notifier.load()` 刷新 |
+
+#### LearnPage 文案修正
+- 拾词集卡片：`新学` → `新词`
+- 学习计划底部：`每日新词` → `每日新学`
+
+#### 英美发音切换移除
+
+**问题：** 美/英切换只改标签文字，音标数据不变——ECDICT 仅有单条音标。
+
+**修复：** 6 个文件中所有 `swap_horiz` 图标 + 切换交互移除，"美"改为静态标签。`word_detail_page` 还修复了切到"英"时音标变空字符串的 bug。
+
+#### 底部 Pill 毛玻璃效果
+- `bottom_pill.dart`：`ClipRRect` + `BackdropFilter(ImageFilter.blur(10px))` 包裹
+- `navigation_shell.dart`：Scaffold 加 `extendBody: true`，让页面内容延伸到 Pill 后方供模糊
+
+#### 学习自动播放 TTS
+- `_CardView` → `ConsumerStatefulWidget`：`initState` + `didUpdateWidget` 自动朗读单词
+- `_DefinitionView` → `ConsumerStatefulWidget`：`initState` 串联朗读 单词→例句，`dispose` 取消
+- "不认识"/"认识"/"下一词" 先 `tts.stop()` 再切换
+
+#### 单词本卡片数据展示
+- `wordbook_provider.dart`：新增 `NotebookStats`（newCount/reviewCount/masteredCount/totalCount）
+- `notebookStatsProvider` 替代旧的 `notebookWordCountProvider`，按三种状态分别查询
+- `wordbook_page.dart`：卡片从单纯的 `N 个词` 改为彩色标签行 `3新词 6待复习 3掌握`
+
+#### 单词管理功能完善
+
+**NotebookDetail 页面：**
+| 功能 | 实现 |
+|------|------|
+| 管理→批量管理 | 选择模式：复选框 + 底部"移动"/"删除"按钮 |
+| 管理→清空单词本 | 确认弹窗 → 删除全部单词 |
+| 单词 more_horiz | PopupMenu：移动 / 删除 |
+| 移动逻辑 | 弹单词本选择器 → `isNew=true, reviewCount=0, isMastered=false` 从头开始 |
+
+**WordDetail 页面：**
+| 改动 | 说明 |
+|------|------|
+| 右上角铅笔（废弃编辑模式） | → `more_vert` 弹出菜单：移动到其他单词本 / 删除单词 |
+| 移除编辑状态 | `_editing`、`_textCtrl`、TextField 全部移除，`_WordHeader` 简化为纯展示 |
+
 ## 二、关键技术决策
 
 ### 架构
@@ -263,6 +317,9 @@ flutter clean && flutter pub get && flutter build apk --debug
 - [x] 分享收录（8c — MethodChannel + ShareReceiptSheet，Session 3 完成）
 - [x] 标签管理（InputChip 可删除 + 弹窗添加，Session 3 完成）
 - [x] TTS 发音（flutter_tts + TtsService，8 个喇叭按钮全部接线，Session 3 完成）
+- [x] 单词移动/删除/批量管理（Session 8）
+- [x] 学习自动播放 TTS（Session 8）
+- [x] 数据联动刷新（review_session 写入 + 返回刷新，Session 8）
 - [ ] 图片关联（imagePath 字段已有，但 UI 未接）
 - [ ] 每日一词实际数据（当前为硬编码 ephemeral 示例）
 
@@ -287,7 +344,9 @@ flutter clean && flutter pub get && flutter build apk --debug
    - TtsService：封装 flutter_tts，8 个喇叭按钮全部接线
    - 标签管理：单词详情页支持添加/删除标签（InputChip + 弹窗输入）
    - 分享收录：Android ACTION_SEND intent filter + MethodChannel（无额外依赖），ShareReceiptSheet 自动查词 + 收录
-4. P1 全部完成。下一步可选方向：
+4. Session 4-7：底部 Pill 重构 + 空状态 UI + 配额逻辑 + 卡片 bug 修复 + OCR/词典离线化
+5. Session 8（05-09）：数据联动刷新（review_session 写入 + 返回时 load）+ 自动播放 TTS + 单词管理（移动/删除/批量管理）+ 底部 Pill 毛玻璃 + 英美切换移除 + 单词本卡片数据展示 + 文案修正
+6. P1 全部完成。下一步可选方向：
    - 导出文件实际写入/分享（当前 exportToJson 生成字符串但未保存到文件）
    - 真机/模拟器测试验证
    - P2 功能（每日一词实际数据、图片关联、release 签名+图标）

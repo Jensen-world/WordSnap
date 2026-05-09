@@ -15,8 +15,6 @@ class StudyPage extends ConsumerStatefulWidget {
 }
 
 class _StudyPageState extends ConsumerState<StudyPage> {
-  bool _isUs = true;
-
   @override
   void initState() {
     super.initState();
@@ -61,7 +59,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
-                  onPressed: () => context.pop(),
+                  onPressed: () { ref.read(learnStateProvider.notifier).load(); context.pop(); },
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.signalBlue,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -93,7 +91,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
               ),
               const SizedBox(height: 24),
               FilledButton(
-                onPressed: () => context.pop(),
+                onPressed: () { ref.read(learnStateProvider.notifier).load(); context.pop(); },
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.signalBlue,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -111,7 +109,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: const Text('拾词集 · 学习中'),
-        leading: IconButton(icon: const Icon(Icons.close), onPressed: () => context.pop()),
+        leading: IconButton(icon: const Icon(Icons.close), onPressed: () { ref.read(learnStateProvider.notifier).load(); context.pop(); }),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -130,16 +128,8 @@ class _StudyPageState extends ConsumerState<StudyPage> {
               if (word != null)
                 Expanded(
                   child: state.showingDefinition
-                      ? _DefinitionView(
-                          word: word,
-                          isUs: _isUs,
-                          onTogglePronunciation: () => setState(() => _isUs = !_isUs),
-                        )
-                      : _CardView(
-                          word: word,
-                          isUs: _isUs,
-                          onTogglePronunciation: () => setState(() => _isUs = !_isUs),
-                        ),
+                      ? _DefinitionView(word: word)
+                      : _CardView(word: word),
                 ),
               if (word != null) ...[
                 if (!state.showingDefinition) ...[
@@ -149,6 +139,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () async {
+                            ref.read(ttsServiceProvider).stop();
                             await ref.read(studyProvider.notifier).markIncorrect();
                             ref.read(studyProvider.notifier).showDefinition();
                           },
@@ -164,6 +155,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
                       Expanded(
                         child: FilledButton(
                           onPressed: () async {
+                            ref.read(ttsServiceProvider).stop();
                             await ref.read(studyProvider.notifier).markCorrect();
                             ref.read(studyProvider.notifier).showDefinition();
                           },
@@ -184,7 +176,10 @@ class _StudyPageState extends ConsumerState<StudyPage> {
                     width: double.infinity,
                     height: 50,
                     child: FilledButton(
-                      onPressed: () => ref.read(studyProvider.notifier).nextWord(),
+                      onPressed: () {
+                      ref.read(ttsServiceProvider).stop();
+                      ref.read(studyProvider.notifier).nextWord();
+                    },
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.signalBlue,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -212,19 +207,37 @@ class _StudyPageState extends ConsumerState<StudyPage> {
   }
 }
 
-class _CardView extends ConsumerWidget {
+class _CardView extends ConsumerStatefulWidget {
   final Word word;
-  final bool isUs;
-  final VoidCallback onTogglePronunciation;
 
-  const _CardView({
-    required this.word,
-    required this.isUs,
-    required this.onTogglePronunciation,
-  });
+  const _CardView({required this.word});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_CardView> createState() => _CardViewState();
+}
+
+class _CardViewState extends ConsumerState<_CardView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(ttsServiceProvider).speak(widget.word.text);
+    });
+  }
+
+  @override
+  void didUpdateWidget(_CardView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.word.id != widget.word.id) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(ttsServiceProvider).speak(widget.word.text);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final word = widget.word;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -260,16 +273,7 @@ class _CardView extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                GestureDetector(
-                  onTap: onTogglePronunciation,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(isUs ? '美' : '英', style: const TextStyle(fontSize: 12, color: AppColors.inkBlack)),
-                      const Icon(Icons.swap_horiz, size: 14, color: Color(0xFF999999)),
-                    ],
-                  ),
-                ),
+                const Text('美', style: TextStyle(fontSize: 12, color: AppColors.inkBlack)),
                 const SizedBox(width: 8),
                 Text(
                   word.phonetic ?? '',
@@ -289,19 +293,51 @@ class _CardView extends ConsumerWidget {
   }
 }
 
-class _DefinitionView extends ConsumerWidget {
+class _DefinitionView extends ConsumerStatefulWidget {
   final Word word;
-  final bool isUs;
-  final VoidCallback onTogglePronunciation;
 
-  const _DefinitionView({
-    required this.word,
-    required this.isUs,
-    required this.onTogglePronunciation,
-  });
+  const _DefinitionView({required this.word});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DefinitionView> createState() => _DefinitionViewState();
+}
+
+class _DefinitionViewState extends ConsumerState<_DefinitionView> {
+  bool _speaking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _speakAll();
+  }
+
+  Future<void> _speakAll() async {
+    _speaking = true;
+    final tts = ref.read(ttsServiceProvider);
+    tts.stop();
+    await Future.delayed(const Duration(milliseconds: 120));
+    if (!_speaking || !mounted) return;
+
+    await tts.speak(widget.word.text);
+    if (!_speaking || !mounted) return;
+
+    for (final ex in widget.word.examples) {
+      await tts.speak(ex);
+      if (!_speaking || !mounted) return;
+    }
+    _speaking = false;
+  }
+
+  @override
+  void dispose() {
+    _speaking = false;
+    ref.read(ttsServiceProvider).stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final word = widget.word;
     return ListView(
       children: [
         Center(
@@ -321,16 +357,7 @@ class _DefinitionView extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                GestureDetector(
-                  onTap: onTogglePronunciation,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(isUs ? '美' : '英', style: const TextStyle(fontSize: 12, color: AppColors.inkBlack)),
-                      const Icon(Icons.swap_horiz, size: 14, color: Color(0xFF999999)),
-                    ],
-                  ),
-                ),
+                const Text('美', style: TextStyle(fontSize: 12, color: AppColors.inkBlack)),
                 const SizedBox(width: 8),
                 Text(
                   word.phonetic ?? '',

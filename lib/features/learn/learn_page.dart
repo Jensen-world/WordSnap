@@ -161,7 +161,7 @@ class _NotebookCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text('$newCount 新学', style: const TextStyle(fontFamily: 'JetBrains Mono', fontSize: 11, color: AppColors.lavender)),
+                        Text('$newCount 新词', style: const TextStyle(fontFamily: 'JetBrains Mono', fontSize: 11, color: AppColors.lavender)),
                         const SizedBox(width: 12),
                         Text('$reviewCount 待复习', style: const TextStyle(fontFamily: 'JetBrains Mono', fontSize: 11, color: AppColors.signalBlue)),
                         const SizedBox(width: 12),
@@ -255,7 +255,7 @@ class _StudyPlanCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _PlanIndicator(value: '$dailyLimit', label: '每日新词'),
+              _PlanIndicator(value: '$dailyLimit', label: '每日新学'),
               Container(width: 1, height: 24, color: const Color(0xFFE2E2EA)),
               _PlanIndicator(value: '$estimatedDays', label: '预计天数', valueColor: AppColors.lavender),
               Container(width: 1, height: 24, color: const Color(0xFFE2E2EA)),
@@ -423,23 +423,7 @@ class _DailyWordCard extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                GestureDetector(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('美', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
-                        SizedBox(width: 5),
-                        Icon(Icons.swap_horiz, size: 12, color: Color(0xFF999999)),
-                      ],
-                    ),
-                  ),
-                ),
+                const Text('美', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Text(phonetic, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
