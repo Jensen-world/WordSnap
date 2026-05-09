@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 20：splash 使用最终设计截图，彻底去掉分层）
+> 最后更新：2026-05-09（Session 21：splash 最终修复 — 原生 launch_background 替换为完整图）
 
 ## 一、现在到哪了
 
@@ -397,6 +397,29 @@ assets/logo/splash_combined.png                  — Python Pillow 生成：1080
 lib/app.dart                                     — 使用 splash_combined.png 单图，1.5s 固定显示
 lib/features/learn/learn_page.dart               — '美' 字号 11→12
 lib/features/wordbook/wordbook_page.dart          — 底部 80→20
+```
+
+### Session 21：splash 最终修复（2026-05-09）
+
+**问题链条：**
+1. 启动时先显示品牌蓝屏，再出现启动图 → 过渡不流畅
+2. 蓝屏来自 Android 原生 `LaunchTheme.windowBackground` = `@drawable/launch_background`（layer-list：纯蓝底色 + 居中 logo bitmap，vivo 上 bitmap 不渲染）
+3. 尝试新增 `splash_background.xml`（独立 `<bitmap>` 根元素）→ 导致"软件包无法解析"
+
+**最终方案：**
+- `launch_background.xml` 内容改为单层完整启动图：`<bitmap android:gravity="fill" android:src="@drawable/splash_full" />`
+- 不新增 XML 文件，styles 保持引用 `@drawable/launch_background`
+- `splash_full.png`：基于设计图 `00-启动页.png`，Pillow 放大到 1080×2322 放入 drawable 目录
+- Flutter 端：`_SplashImage` = 纯 `Image.asset('splash.png', fit: BoxFit.cover)`，2 秒后切换到主应用
+
+**架构：** Android 原生 windowBackground = 完整启动图 → Flutter 首帧 = 同一张图 → 无缝衔接
+
+#### 修改文件（Session 21）
+```
+android/app/src/main/res/drawable/launch_background.xml    — 图层改为单张完整图
+android/app/src/main/res/drawable/splash_full.png          — 完整启动图素材
+assets/logo/splash.png                                     — Flutter 端启动图
+lib/app.dart                                               — _SplashImage 纯单图
 ```
 
 ### Session 8：数据联动 + 自动播放 + 单词管理 + UI 打磨（2026-05-09）
