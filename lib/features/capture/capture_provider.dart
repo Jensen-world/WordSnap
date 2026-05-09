@@ -35,11 +35,13 @@ class CaptureState {
     String? errorMessage,
     List<Notebook>? notebooks,
     int? selectedNotebookId,
+    bool clearResult = false,
+    bool clearError = false,
   }) => CaptureState(
     input: input ?? this.input,
     searching: searching ?? this.searching,
-    result: result ?? this.result,
-    errorMessage: errorMessage ?? this.errorMessage,
+    result: clearResult ? null : (result ?? this.result),
+    errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     notebooks: notebooks ?? this.notebooks,
     selectedNotebookId: selectedNotebookId ?? this.selectedNotebookId,
   );
@@ -60,19 +62,20 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
   }
 
   void setInput(String input) {
-    state = state.copyWith(input: input, result: null, errorMessage: null);
+    state = state.copyWith(input: input, clearResult: true, clearError: true);
   }
 
   Future<void> lookup() async {
     final word = state.input.trim();
     if (word.isEmpty) return;
-    state = state.copyWith(searching: true, errorMessage: null);
+    state = state.copyWith(searching: true, clearError: true);
     final service = _ref.read(dictionaryServiceProvider);
     final result = await service.lookup(word);
     state = state.copyWith(
       searching: false,
       result: result,
       errorMessage: result == null ? '查不到该单词，请检查拼写' : null,
+      clearError: result != null,
     );
   }
 

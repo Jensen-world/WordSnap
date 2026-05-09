@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 10：第二轮真机测试修复）
+> 最后更新：2026-05-09（Session 11：第三轮真机测试修复）
 
 ## 一、现在到哪了
 
@@ -206,6 +206,48 @@ assets/logo/splash-logo.png                     — 启动页 logo
 ```
 lib/features/capture/photo_capture_page.dart  — _resultView 底部 padding + _ResultCard 中文翻译
 lib/features/capture/capture_sheet.dart        — SingleChildScrollView + 底部 padding + _ResultCard 中文翻译
+```
+
+### Session 11：第三轮真机测试修复（2026-05-09）
+
+#### 4 个 Bug 修复
+
+| # | 问题 | 根因 | 修复 |
+|---|------|------|------|
+| 1 | 启动页无 logo | Android 12+ splash API 缺少 `windowSplashScreenAnimatedIcon` | values-v31/styles.xml 添加 `android:windowSplashScreenAnimatedIcon`→`@drawable/splash_logo` |
+| 2 | 主页仍然滑过头 | 底部 padding 80px 仍过大 | 80 → 60（learn_page.dart） |
+| 3 | Pill 白色背景不透明 | 背景高度 24px 过高，透明度 0x10 太低 | top padding 24→8，透明度 0x10→0x05（6%→2%） |
+| 4 | 输入单词同时显示结果和错误提示 | `copyWith` 传 `null` 无法清除 nullable 字段（`null ?? oldValue` 返回旧值） | capture_provider.dart + photo_capture_provider.dart 的 `copyWith` 增加 `clearResult`/`clearError`/`clearSelectedWord`/`clearLookupResult` 布尔标志 |
+
+#### copyWith nullable 字段清除方案
+
+**问题：** 标准 `field: value ?? this.field` 模式无法将字段显式设为 `null`。
+
+**修复：** `CaptureState.copyWith` 和 `PhotoCaptureState.copyWith` 增加显式清除标志：
+```dart
+CaptureState copyWith({
+    ...
+    bool clearResult = false,
+    bool clearError = false,
+}) => CaptureState(
+    result: clearResult ? null : (result ?? this.result),
+    errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    ...
+);
+```
+
+调用处：
+- `setInput`: `copyWith(input: input, clearResult: true, clearError: true)`
+- `lookup` 前: `copyWith(searching: true, clearError: true)`
+- `lookup` 成功: `copyWith(searching: false, result: result, clearError: true)`
+
+#### 修复文件（Session 11）
+```
+android/app/src/main/res/values-v31/styles.xml    — 添加 splash icon
+lib/widgets/bottom_pill.dart                      — 背景高度+透明度
+lib/features/learn/learn_page.dart                — 底部 padding 60
+lib/features/capture/capture_provider.dart         — copyWith 清除标志
+lib/features/capture/photo_capture_provider.dart   — copyWith 清除标志
 ```
 
 ### Session 8：数据联动 + 自动播放 + 单词管理 + UI 打磨（2026-05-09）

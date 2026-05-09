@@ -45,15 +45,18 @@ class PhotoCaptureState {
     String? errorMessage,
     List<Notebook>? notebooks,
     int? selectedNotebookId,
+    bool clearSelectedWord = false,
+    bool clearLookupResult = false,
+    bool clearError = false,
   }) =>
       PhotoCaptureState(
         step: step ?? this.step,
         imagePath: imagePath ?? this.imagePath,
         fullText: fullText ?? this.fullText,
         words: words ?? this.words,
-        selectedWord: selectedWord ?? this.selectedWord,
-        lookupResult: lookupResult ?? this.lookupResult,
-        errorMessage: errorMessage ?? this.errorMessage,
+        selectedWord: clearSelectedWord ? null : (selectedWord ?? this.selectedWord),
+        lookupResult: clearLookupResult ? null : (lookupResult ?? this.lookupResult),
+        errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
         notebooks: notebooks ?? this.notebooks,
         selectedNotebookId: selectedNotebookId ?? this.selectedNotebookId,
       );
@@ -95,15 +98,15 @@ class PhotoCaptureNotifier extends StateNotifier<PhotoCaptureState> {
   }
 
   Future<void> lookup(String word) async {
-    state = state.copyWith(step: PhotoStep.lookingUp, selectedWord: word, errorMessage: null);
+    state = state.copyWith(step: PhotoStep.lookingUp, selectedWord: word, clearError: true);
     final result = await _dict.lookup(word);
     if (result != null) {
       state = state.copyWith(step: PhotoStep.result, lookupResult: result);
     } else {
       state = state.copyWith(
         step: PhotoStep.ready,
-        selectedWord: null,
         errorMessage: '查不到 $word，请检查拼写',
+        clearSelectedWord: true,
       );
     }
   }
@@ -113,7 +116,7 @@ class PhotoCaptureNotifier extends StateNotifier<PhotoCaptureState> {
   }
 
   void backToWords() {
-    state = state.copyWith(step: PhotoStep.ready, selectedWord: null, lookupResult: null);
+    state = state.copyWith(step: PhotoStep.ready, clearSelectedWord: true, clearLookupResult: true);
   }
 
   Future<Word> save() async {
