@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 19：splash 合并图片 + 胶囊对齐 + padding 微调）
+> 最后更新：2026-05-09（Session 20：splash 使用最终设计截图，彻底去掉分层）
 
 ## 一、现在到哪了
 
@@ -361,6 +361,22 @@ lib/app.dart                                     — splash 改用 builder 叠�
 lib/features/learn/learn_page.dart               — 发音胶囊 padding + spacing
 lib/features/wordbook/wordbook_page.dart          — ListView 底部 padding
 lib/features/wordbook/notebook_detail_page.dart   — 底部 padding + isDefault 隐藏删除
+```
+
+### Session 20：splash 最终方案 — 使用设计截图（2026-05-09）
+
+**问题：** 之前所有方案（原生 XML / 第二个 MaterialApp / precacheImage + builder 叠加 / Python 合成图）都无法在 vivo 上正常显示 splash logo，始终显示白色方块。
+
+**最终方案：** 直接用原始设计截图 `00-启动页.png` 作为 splash 图片。
+- 复制到 `assets/logo/splash.png`，用 Pillow 从 400×860 放大到 1080×2322
+- `app.dart`：`_showSplash ? _SplashImage() : ProviderScope(...)` — 最简洁的 if/else
+- `_SplashImage` = `Image.asset('assets/logo/splash.png', fit: BoxFit.cover)` — 纯一张图，无 builder/无 Stack/无任何分层
+- 2 秒固定显示时长
+
+#### 修改文件（Session 20）
+```
+assets/logo/splash.png                            — 最终启动页图片（基于设计截图）
+lib/app.dart                                      — 最简 splash：条件渲染，单张图
 ```
 
 ### Session 19：splash 合并图片 + 胶囊对齐 + padding 微调（2026-05-09）

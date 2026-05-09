@@ -18,16 +18,16 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    // Show a single combined splash image (blue bg + logo merged)
-    // for a fixed duration. No separate asset loading means both
-    // appear together on the very first frame.
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _showSplash = false);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_showSplash) {
+      return const _SplashImage();
+    }
     return ProviderScope(
       child: MaterialApp.router(
         title: '见词 WordSnap',
@@ -70,24 +70,21 @@ class _AppState extends State<App> {
           ),
         ),
         routerConfig: appRouter,
-        builder: (context, child) {
-          if (_showSplash) {
-            return Stack(
-              children: [
-                if (child != null) child,
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/logo/splash_combined.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(color: AppColors.signalBlue),
-                  ),
-                ),
-              ],
-            );
-          }
-          return child!;
-        },
       ),
+    );
+  }
+}
+
+class _SplashImage extends StatelessWidget {
+  const _SplashImage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      'assets/logo/splash.png',
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
     );
   }
 }
