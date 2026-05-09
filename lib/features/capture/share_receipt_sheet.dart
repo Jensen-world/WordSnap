@@ -75,6 +75,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
         updatedAt: now,
       );
       await ref.read(wordRepoProvider).insert(word);
+      ref.read(dataRefreshTrigger.notifier).state++;
       if (mounted) Navigator.of(context).pop(true);
     } catch (_) {
       if (mounted) {

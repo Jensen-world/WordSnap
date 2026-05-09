@@ -36,6 +36,9 @@ class _LearnPageState extends ConsumerState<LearnPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(dataRefreshTrigger, (prev, next) {
+      if (prev != null) ref.read(learnStateProvider.notifier).load();
+    });
     final state = ref.watch(learnStateProvider);
 
     if (state.loading) {

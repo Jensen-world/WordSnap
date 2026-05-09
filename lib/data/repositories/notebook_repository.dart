@@ -31,6 +31,7 @@ class NotebookRepository {
 
   Future<void> delete(int id) async {
     final db = await _db;
+    await db.delete('words', where: 'notebookId = ?', whereArgs: [id]);
     await db.delete('notebooks', where: 'id = ?', whereArgs: [id]);
   }
 

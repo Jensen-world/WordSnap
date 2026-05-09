@@ -107,6 +107,7 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
       updatedAt: DateTime.now(),
     );
     await ref.read(wordRepoProvider).update(updated);
+    ref.read(dataRefreshTrigger.notifier).state++;
     if (mounted) context.pop();
   }
 
@@ -128,6 +129,7 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
     );
     if (confirmed == true) {
       await ref.read(wordRepoProvider).delete(_word!.id!);
+      ref.read(dataRefreshTrigger.notifier).state++;
       if (mounted) context.pop();
     }
   }

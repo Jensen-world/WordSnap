@@ -57,6 +57,7 @@ class NotebooksNotifier extends AsyncNotifier<List<Notebook>> {
 }
 
 final notebookStatsProvider = FutureProvider.family<NotebookStats, int>((ref, notebookId) async {
+  ref.watch(dataRefreshTrigger); // re-fetch when any data changes
   final wordRepo = ref.read(wordRepoProvider);
   final newCount = await wordRepo.getCount(notebookId: notebookId, isNew: true);
   final masteredCount = await wordRepo.getCount(notebookId: notebookId, isMastered: true);
@@ -68,5 +69,8 @@ final notebookStatsProvider = FutureProvider.family<NotebookStats, int>((ref, no
     totalCount: totalCount,
   );
 });
+
+/// Bump this after any word/notebook mutation to refresh dependent UIs.
+final dataRefreshTrigger = StateProvider<int>((ref) => 0);
 
 final ttsServiceProvider = Provider<TtsService>((ref) => TtsService());

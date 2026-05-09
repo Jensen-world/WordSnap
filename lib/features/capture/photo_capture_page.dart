@@ -225,6 +225,7 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
               const SizedBox(width: 12),
               FilledButton(
                 onPressed: () {
+                  ref.read(dataRefreshTrigger.notifier).state++;
                   ref.read(learnStateProvider.notifier).load();
                   Navigator.of(context).pop();
                 },
@@ -244,6 +245,7 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
   Future<void> _save() async {
     try {
       await ref.read(photoCaptureProvider.notifier).save();
+      ref.read(dataRefreshTrigger.notifier).state++;
       ref.read(learnStateProvider.notifier).load();
     } catch (_) {
       if (mounted) {

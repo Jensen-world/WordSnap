@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/colors.dart';
+import '../wordbook/wordbook_provider.dart';
 import '../../data/models/word.dart';
 import 'study_provider.dart';
 import 'learn_provider.dart';
@@ -59,7 +60,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
-                  onPressed: () { ref.read(learnStateProvider.notifier).load(); context.pop(); },
+                  onPressed: () { ref.read(dataRefreshTrigger.notifier).state++; ref.read(learnStateProvider.notifier).load(); context.pop(); },
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.signalBlue,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -91,7 +92,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
               ),
               const SizedBox(height: 24),
               FilledButton(
-                onPressed: () { ref.read(learnStateProvider.notifier).load(); context.pop(); },
+                onPressed: () { ref.read(dataRefreshTrigger.notifier).state++; ref.read(learnStateProvider.notifier).load(); context.pop(); },
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.signalBlue,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -109,7 +110,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: const Text('拾词集 · 学习中'),
-        leading: IconButton(icon: const Icon(Icons.close), onPressed: () { ref.read(learnStateProvider.notifier).load(); context.pop(); }),
+        leading: IconButton(icon: const Icon(Icons.close), onPressed: () { ref.read(dataRefreshTrigger.notifier).state++; ref.read(learnStateProvider.notifier).load(); context.pop(); }),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),

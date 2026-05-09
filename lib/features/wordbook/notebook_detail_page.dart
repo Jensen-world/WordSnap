@@ -69,6 +69,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
             for (final w in _words) {
               await repo.delete(w.id!);
             }
+            ref.read(dataRefreshTrigger.notifier).state++;
             _loadWords();
           },
         );
@@ -77,6 +78,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
           title: '删除单词本',
           content: '删除后所有单词也将被删除，不可恢复。',
           onConfirm: () async {
+            ref.read(dataRefreshTrigger.notifier).state++;
             await ref.read(notebooksProvider.notifier).delete(widget.id);
             if (mounted) context.pop();
           },
@@ -146,6 +148,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
       updatedAt: DateTime.now(),
     );
     await ref.read(wordRepoProvider).update(updated);
+    ref.read(dataRefreshTrigger.notifier).state++;
     _loadWords();
   }
 
@@ -166,6 +169,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
       );
       await repo.update(updated);
     }
+    ref.read(dataRefreshTrigger.notifier).state++;
     setState(() {
       _selectionMode = false;
       _selectedWordIds.clear();
@@ -190,6 +194,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
     );
     if (confirmed == true) {
       await ref.read(wordRepoProvider).delete(word.id!);
+      ref.read(dataRefreshTrigger.notifier).state++;
       _loadWords();
     }
   }
@@ -225,6 +230,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
       for (final id in _selectedWordIds) {
         await repo.delete(id);
       }
+      ref.read(dataRefreshTrigger.notifier).state++;
       setState(() {
         _selectionMode = false;
         _selectedWordIds.clear();

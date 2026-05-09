@@ -40,6 +40,7 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
     setState(() => _saving = true);
     try {
       await ref.read(captureStateProvider.notifier).save();
+      ref.read(dataRefreshTrigger.notifier).state++;
       ref.read(learnStateProvider.notifier).load();
       if (mounted) Navigator.of(context).pop();
     } catch (_) {
