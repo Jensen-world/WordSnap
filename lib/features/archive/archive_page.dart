@@ -33,7 +33,7 @@ class ArchivePage extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context, dynamic state) {
-    final bottomPad = 16 + 60 + MediaQuery.of(context).padding.bottom;
+    final bottomPad = 16 + 30 + MediaQuery.of(context).padding.bottom;
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 16, 16, bottomPad),
       children: [
