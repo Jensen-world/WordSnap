@@ -24,14 +24,18 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
   }
 
   Future<void> _loadWord() async {
-    final container = ProviderScope.containerOf(context);
-    final repo = container.read(wordRepoProvider);
-    final word = await repo.getById(widget.id);
-    if (mounted) {
-      setState(() {
-        _word = word;
-        _loading = false;
-      });
+    try {
+      final word = await ref.read(wordRepoProvider).getById(widget.id);
+      if (mounted) {
+        setState(() {
+          _word = word;
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 

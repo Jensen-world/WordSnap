@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/notebook.dart';
 import '../wordbook/wordbook_provider.dart';
+import '../learn/learn_provider.dart';
 import 'photo_capture_provider.dart';
 
 class PhotoCapturePage extends ConsumerStatefulWidget {
@@ -223,7 +224,10 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
               ),
               const SizedBox(width: 12),
               FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  ref.read(learnStateProvider.notifier).load();
+                  Navigator.of(context).pop();
+                },
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.signalBlue,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -240,6 +244,7 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
   Future<void> _save() async {
     try {
       await ref.read(photoCaptureProvider.notifier).save();
+      ref.read(learnStateProvider.notifier).load();
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

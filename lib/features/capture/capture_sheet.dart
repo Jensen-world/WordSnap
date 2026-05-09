@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/notebook.dart';
 import '../wordbook/wordbook_provider.dart';
+import '../learn/learn_provider.dart';
 import 'capture_provider.dart';
 
 class CaptureSheet extends ConsumerStatefulWidget {
@@ -39,6 +40,7 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
     setState(() => _saving = true);
     try {
       await ref.read(captureStateProvider.notifier).save();
+      ref.read(learnStateProvider.notifier).load();
       if (mounted) Navigator.of(context).pop();
     } catch (_) {
       if (mounted) {

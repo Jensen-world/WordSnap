@@ -56,6 +56,7 @@ class WordbookPage extends ConsumerWidget {
     showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       builder: (_) => const CreateNotebookSheet(),
     ).then((name) {
       if (name != null && name.isNotEmpty) {
@@ -68,6 +69,7 @@ class WordbookPage extends ConsumerWidget {
     showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       builder: (_) => CreateNotebookSheet(initialName: notebook.name),
     ).then((name) {
       if (name != null && name.isNotEmpty && name != notebook.name) {

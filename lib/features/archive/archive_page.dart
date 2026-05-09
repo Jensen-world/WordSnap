@@ -33,8 +33,9 @@ class ArchivePage extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context, dynamic state) {
+    final bottomPad = 16 + 60 + MediaQuery.of(context).padding.bottom;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, bottomPad),
       children: [
         _HeroCard(masteredCount: state.masteredCount, firstStudyDate: state.firstStudyDate, studyDays: state.studyDays, totalReviews: state.totalReviews),
         const SizedBox(height: 14),
