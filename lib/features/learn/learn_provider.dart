@@ -115,6 +115,17 @@ class LearnNotifier extends StateNotifier<LearnState> {
       final remaining = totalWords - masteredWords;
       final estimatedDays = dailyLimit > 0 ? (remaining / dailyLimit).ceil() : 0;
 
+      // Daily word: pick deterministically from today's date
+      Word? dailyWord;
+      if (totalWords > 0) {
+        final words = await wordRepo.getByNotebook(currentNb.id!);
+        if (words.isNotEmpty) {
+          final now = DateTime.now();
+          final seed = now.year * 400 + now.month * 40 + now.day;
+          dailyWord = words[seed % words.length];
+        }
+      }
+
       state = state.copyWith(
         notebooks: notebooks,
         currentNotebookId: currentId,
@@ -127,6 +138,7 @@ class LearnNotifier extends StateNotifier<LearnState> {
         totalWords: totalWords,
         dailyLimit: dailyLimit,
         estimatedDays: estimatedDays,
+        dailyWord: dailyWord,
         loading: false,
       );
     } catch (_) {
