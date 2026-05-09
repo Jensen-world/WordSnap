@@ -168,14 +168,14 @@ class _LearnSettingsSheetState extends ConsumerState<LearnSettingsSheet> {
                 _CounterButton(
                   icon: '−',
                   onTap: () {
-                    if (state.dailyLimit > 1) {
-                      ref.read(learnStateProvider.notifier).setDailyLimit(state.dailyLimit - 1);
+                    if (state.dailyLimit >= 10) {
+                      ref.read(learnStateProvider.notifier).setDailyLimit(state.dailyLimit - 10);
                     }
                   },
                 ),
                 const SizedBox(width: 10),
                 SizedBox(
-                  width: 28,
+                  width: 36,
                   child: Text(
                     '${state.dailyLimit}',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
@@ -185,7 +185,7 @@ class _LearnSettingsSheetState extends ConsumerState<LearnSettingsSheet> {
                 const SizedBox(width: 10),
                 _CounterButton(
                   icon: '+',
-                  onTap: () => ref.read(learnStateProvider.notifier).setDailyLimit(state.dailyLimit + 1),
+                  onTap: () => ref.read(learnStateProvider.notifier).setDailyLimit(state.dailyLimit + 10),
                 ),
               ],
             ),
@@ -220,6 +220,16 @@ class _LearnSettingsSheetState extends ConsumerState<LearnSettingsSheet> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
             ),
             child: const Text('保存', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: () => ref.read(learnStateProvider.notifier).setDailyLimit(0),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFE2E2EA)),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+            ),
+            child: const Text('重置', style: TextStyle(fontSize: 14, color: Color(0xFF999999))),
           ),
         ],
       ),
