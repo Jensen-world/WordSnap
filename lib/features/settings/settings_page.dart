@@ -8,9 +8,6 @@ import '../../data/services/export_import_service.dart';
 import '../../data/services/file_io.dart'
   if (dart.library.js_interop) '../../data/services/file_web.dart';
 import '../wordbook/wordbook_provider.dart';
-import '../../core/theme/colors.dart';
-import '../../data/services/export_import_service.dart';
-import '../wordbook/wordbook_provider.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -54,6 +51,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   void _showExportDialog(String filename, int wordCount, int notebookCount, String filePath) {
+    final dir = filePath.substring(0, filePath.lastIndexOf('/'));
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -71,9 +69,25 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             const SizedBox(height: 16),
             const Text('导出成功', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
             const SizedBox(height: 8),
-            Text(filename, style: const TextStyle(fontSize: 13, color: Color(0xFF999999))),
-            const SizedBox(height: 4),
             Text('$wordCount 词 · $notebookCount 个单词本', style: const TextStyle(fontSize: 13, color: Color(0xFF999999))),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F0F5),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('保存位置', style: TextStyle(fontSize: 11, color: Color(0xFF999999))),
+                  const SizedBox(height: 6),
+                  Text(dir, style: const TextStyle(fontSize: 12, color: AppColors.inkBlack, fontFamily: 'JetBrains Mono'), maxLines: 3, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 4),
+                  Text(filename, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.signalBlue)),
+                ],
+              ),
+            ),
             const SizedBox(height: 20),
             Row(
               children: [
