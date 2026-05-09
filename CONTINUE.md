@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 12：第四轮真机测试修复）
+> 最后更新：2026-05-09（Session 13：底部 padding 微调）
 
 ## 一、现在到哪了
 
@@ -278,6 +278,23 @@ lib/widgets/bottom_pill.dart                       — useRootNavigator
 lib/features/archive/archive_page.dart             — 底部 padding
 lib/features/capture/capture_sheet.dart            — learnStateProvider.load() + import
 lib/features/capture/photo_capture_page.dart       — learnStateProvider.load() + import
+```
+
+### Session 13：底部 padding 微调（2026-05-09）
+
+| 页面 | 改动 | 原因 |
+|------|------|------|
+| LearnPage | 底部 60 → 30 | 仍有空白 |
+| ArchivePage | 底部 60 → 30 | 仍有空白 |
+| LearnSettingsSheet | 底部 80 → 40 | 保存按钮只需不被导航键遮挡 |
+| CreateNotebookSheet | 增加 `MediaQuery.padding.bottom` | 取消按钮被导航键遮挡 |
+
+#### 修复文件（Session 13）
+```
+lib/features/learn/learn_page.dart                 — 底部 60→30
+lib/features/archive/archive_page.dart             — 底部 60→30
+lib/features/learn/learn_settings_sheet.dart       — 底部 80→40
+lib/features/wordbook/create_notebook_sheet.dart   — 加导航栏 padding
 ```
 
 ### Session 8：数据联动 + 自动播放 + 单词管理 + UI 打磨（2026-05-09）
