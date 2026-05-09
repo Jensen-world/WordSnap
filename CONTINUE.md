@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（LearnPage 今日配额逻辑修复 + 种子数据 + 存储分离）
+> 最后更新：2026-05-09（Session 6：有数据状态测试 + 卡片统计数据 bug 修复）
 
 ## 一、现在到哪了
 
@@ -76,6 +76,29 @@
 | WebStorage 默认 dailyLimit | 从 0 改为 10，与 SQLite 版一致 |
 | 种子数据双存储 | seed_data.dart 条件导出：web 用 seed_data_web.dart（WebStorage），native 用 seed_data_native.dart（DatabaseHelper） |
 | ReviewRepository web stub | `getToday()` 返回 null → 初始配额 = dailyLimit；`getOrCreateToday()` 不持久化 |
+
+### Session 6：有数据状态测试 + 卡片 bug 修复（2026-05-09）
+
+| 测试项 | 结果 |
+|--------|------|
+| LearnPage 配额 | ✓ 新学词=10、待复习=1，配额公式正确 |
+| 拾词集卡片（修复后） | ✓ 3新学 / 6待复习 / 3掌握 / 12总计（数据库真实值） |
+| ArchivePage | ✓ 已掌握6 / 词汇总量23 / 复习中10 / 3单词本，里程碑数据正确 |
+| WordbookPage | ✓ 3个单词本卡片：拾词集12词 / 日常英语6词 / 商务词汇5词 |
+| NotebookDetail | ✓ 12个单词全部显示，返回按钮+筛选标签+管理按钮正常 |
+| WordDetail | ✓ ephemeral 详情：新词 0/10、剪贴板来源 |
+| StudyPage 队列 | ✓ 3新+6复习=9词，10:1 交错，ephemeral 第一条 |
+
+#### 卡片统计数据 bug（已修复，commit 9aeff15）
+
+**问题：** Session 5 配额重构把 `state.newWords`/`state.reviewWords` 从数据库计数改为会话配额，但拾词集卡片仍用这些字段，导致卡片显示"10 待复习"（=新学配额）而非数据库真实的"3 新学 + 6 待复习"。
+
+**修复：** LearnState 新增 `dbNewWords` / `dbReviewWords` 分别存储数据库计数，卡片用数据库值，学习计划区用会话配额。
+
+#### Flutter Web 自动化测试限制
+- Flutter canvas 渲染不响应 Playwright `page.mouse.click()` / `PointerEvent`
+- 可通过直接 URL 导航 + 截图验证页面内容
+- 坐标点击不可靠，交互测试需真机或模拟器
 
 ### 构建注意事项
 - `flutter build web` 后可能有旧 Python 进程残留，需 `pkill` 后重启
