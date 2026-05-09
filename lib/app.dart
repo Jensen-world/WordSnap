@@ -1,33 +1,14 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/colors.dart';
 import 'core/theme/radius.dart';
 import 'core/router/app_router.dart';
 
-class App extends StatefulWidget {
+class App extends StatelessWidget {
   const App({super.key});
 
   @override
-  State<App> createState() => _AppState();
-}
-
-class _AppState extends State<App> {
-  bool _showSplash = true;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _showSplash = false);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_showSplash) {
-      return const _SplashImage();
-    }
     return ProviderScope(
       child: MaterialApp.router(
         title: '见词 WordSnap',
@@ -71,20 +52,6 @@ class _AppState extends State<App> {
         ),
         routerConfig: appRouter,
       ),
-    );
-  }
-}
-
-class _SplashImage extends StatelessWidget {
-  const _SplashImage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/logo/splash.png',
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
     );
   }
 }
