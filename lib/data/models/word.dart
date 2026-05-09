@@ -11,7 +11,6 @@ class Word {
   final List<String> examples;
   final List<WordContext> contexts;
   final List<String> tags;
-  final String? imagePath;
   final String? sourceUrl;
   final bool isPhrase;
   final bool isNew;
@@ -31,7 +30,6 @@ class Word {
     this.examples = const [],
     this.contexts = const [],
     this.tags = const [],
-    this.imagePath,
     this.sourceUrl,
     this.isPhrase = false,
     this.isNew = true,
@@ -52,7 +50,6 @@ class Word {
     List<String>? examples,
     List<WordContext>? contexts,
     List<String>? tags,
-    String? imagePath,
     String? sourceUrl,
     bool? isPhrase,
     bool? isNew,
@@ -71,7 +68,6 @@ class Word {
     examples: examples ?? this.examples,
     contexts: contexts ?? this.contexts,
     tags: tags ?? this.tags,
-    imagePath: imagePath ?? this.imagePath,
     sourceUrl: sourceUrl ?? this.sourceUrl,
     isPhrase: isPhrase ?? this.isPhrase,
     isNew: isNew ?? this.isNew,
@@ -92,7 +88,6 @@ class Word {
     'examples': jsonEncode(examples),
     'contexts': jsonEncode(contexts.map((c) => c.toJson()).toList()),
     'tags': jsonEncode(tags),
-    'imagePath': imagePath,
     'sourceUrl': sourceUrl,
     'isPhrase': isPhrase ? 1 : 0,
     'isNew': isNew ? 1 : 0,
@@ -118,7 +113,6 @@ class Word {
       examples: examplesJson.cast<String>(),
       contexts: contextsJson.map((c) => WordContext.fromJson(c as Map<String, dynamic>)).toList(),
       tags: tagsJson.cast<String>(),
-      imagePath: map['imagePath'] as String?,
       sourceUrl: map['sourceUrl'] as String?,
       isPhrase: (map['isPhrase'] as int) == 1,
       isNew: (map['isNew'] as int) == 1,

@@ -3,7 +3,7 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   static const _dbName = 'wordsnap.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
 
   static final DatabaseHelper instance = DatabaseHelper._();
   DatabaseHelper._();
@@ -21,6 +21,7 @@ class DatabaseHelper {
       join(dbPath, _dbName),
       version: _dbVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -46,7 +47,6 @@ class DatabaseHelper {
         examples TEXT NOT NULL DEFAULT '[]',
         contexts TEXT NOT NULL DEFAULT '[]',
         tags TEXT NOT NULL DEFAULT '[]',
-        imagePath TEXT,
         sourceUrl TEXT,
         isPhrase INTEGER NOT NULL DEFAULT 0,
         isNew INTEGER NOT NULL DEFAULT 1,
@@ -83,5 +83,12 @@ class DatabaseHelper {
       'dailyNewWordLimit': 10,
       'createdAt': now,
     });
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    await db.execute('DROP TABLE IF EXISTS words');
+    await db.execute('DROP TABLE IF EXISTS notebooks');
+    await db.execute('DROP TABLE IF EXISTS review_sessions');
+    await _onCreate(db, newVersion);
   }
 }
