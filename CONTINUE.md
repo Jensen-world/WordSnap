@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 17：启动页 logo 修复 — Flutter 层 splash 方案）
+> 最后更新：2026-05-09（Session 18：5 个真机问题修复）
 
 ## 一、现在到哪了
 
@@ -341,6 +341,26 @@ android/app/src/main/res/values-night-v31/styles.xml — 新增：深色模式 s
 lib/features/learn/learn_page.dart                 — 底部 padding 30→10→5
 lib/features/archive/archive_page.dart             — 底部 padding 30→10→0
 lib/features/learn/learn_settings_sheet.dart       — 底部 padding 40→10→5
+```
+
+### Session 18：第五轮真机测试修复（2026-05-09）
+
+#### 5 个 Bug 修复
+
+| # | 问题 | 根因 | 修复 |
+|---|------|------|------|
+| 1 | 启动页白色方块 | 单独 MaterialApp 中 AssetImage 加载失败 | app.dart 重写：precacheImage 预加载 + MaterialApp.router builder 叠加 splash，不再创建第二个 MaterialApp |
+| 2 | 每日一词发音胶囊不对称 | 胶囊 padding:3 左右太窄，"美"和喇叭紧贴边缘 | 改为 symmetric(horizontal:12, vertical:4)，SizedBox(width:6) 均匀分隔 |
+| 3 | 单词本满屏时新建按钮被遮 | ListView 底部 padding 仅 8px，extendBody 下被 Pill 遮挡 | 加至 `80 + padding.bottom`，给 Pill 留足空间 |
+| 4 | 单词列表底部被导航键遮 | 对称 padding 底部仅 12px，没有导航栏高度 | 改为 `fromLTRB(16, 12, 16, 12 + padding.bottom)` |
+| 5 | 拾词集默认单词本显示删除按钮 | PopupMenu 无条件显示"删除单词本" | 检查 `isDefault`，默认单词本不显示删除选项；标题改为动态取 notebook.name |
+
+#### 修复文件（Session 18）
+```
+lib/app.dart                                     — splash 改用 builder 叠加 + precacheImage
+lib/features/learn/learn_page.dart               — 发音胶囊 padding + spacing
+lib/features/wordbook/wordbook_page.dart          — ListView 底部 padding
+lib/features/wordbook/notebook_detail_page.dart   — 底部 padding + isDefault 隐藏删除
 ```
 
 ### Session 8：数据联动 + 自动播放 + 单词管理 + UI 打磨（2026-05-09）

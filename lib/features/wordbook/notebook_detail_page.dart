@@ -233,6 +233,16 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
     }
   }
 
+  String _notebookName() {
+    final notebooks = ref.read(notebooksProvider).value ?? [];
+    return notebooks.where((n) => n.id == widget.id).map((n) => n.name).firstOrNull ?? '';
+  }
+
+  bool get _isDefault {
+    final notebooks = ref.read(notebooksProvider).value ?? [];
+    return notebooks.any((n) => n.id == widget.id && n.isDefault);
+  }
+
   String _formatDateGroup(DateTime date) {
     final now = DateTime.now();
     if (date.year == now.year) {
@@ -247,7 +257,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
       backgroundColor: AppColors.canvasWhite,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(_selectionMode ? '已选 ${_selectedWordIds.length} 项' : '拾词集'),
+        title: Text(_selectionMode ? '已选 ${_selectedWordIds.length} 项' : _notebookName()),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -268,11 +278,16 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
             : [
           PopupMenuButton<String>(
             onSelected: (v) => _onManageAction(v),
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: 'select', child: Text('批量管理')),
-              const PopupMenuItem(value: 'clear', child: Text('清空单词本')),
-              const PopupMenuItem(value: 'deleteNb', child: Text('删除单词本', style: TextStyle(color: Color(0xFFFF5252)))),
-            ],
+            itemBuilder: (_) {
+              final items = <PopupMenuEntry<String>>[
+                const PopupMenuItem(value: 'select', child: Text('批量管理')),
+                const PopupMenuItem(value: 'clear', child: Text('清空单词本')),
+              ];
+              if (!_isDefault) {
+                items.add(const PopupMenuItem(value: 'deleteNb', child: Text('删除单词本', style: TextStyle(color: Color(0xFFFF5252)))));
+              }
+              return items;
+            },
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 4),
               child: Row(
@@ -351,7 +366,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
       itemCount: grouped.length,
       itemBuilder: (context, index) {
         final date = grouped.keys.elementAt(index);

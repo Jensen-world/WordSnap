@@ -18,20 +18,20 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    // Show the native splash screen logo in Flutter for consistent cross-device behavior.
-    // The native side only renders the blue background color — the logo is drawn here.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 100), () {
+    // Preload the logo image, then dismiss splash after a brief delay.
+    // Using the same MaterialApp (via builder overlay) avoids the
+    // separate-MaterialApp asset loading issue on some Android OEMs.
+    Future.microtask(() async {
+      await precacheImage(const AssetImage('assets/logo/splash-logo.png'), context);
+      if (mounted) {
+        await Future.delayed(const Duration(milliseconds: 100));
         if (mounted) setState(() => _showSplash = false);
-      });
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_showSplash) {
-      return const _SplashScreen();
-    }
     return ProviderScope(
       child: MaterialApp.router(
         title: '见词 WordSnap',
@@ -74,26 +74,29 @@ class _AppState extends State<App> {
           ),
         ),
         routerConfig: appRouter,
-      ),
-    );
-  }
-}
-
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        backgroundColor: AppColors.signalBlue,
-        body: Center(
-          child: Image(
-            image: AssetImage('assets/logo/splash-logo.png'),
-            width: 120,
-            height: 120,
-          ),
-        ),
+        builder: (context, child) {
+          if (_showSplash) {
+            return Stack(
+              children: [
+                if (child != null) child,
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: AppColors.signalBlue,
+                    child: Center(
+                      child: Image(
+                        image: const AssetImage('assets/logo/splash-logo.png'),
+                        width: 120,
+                        height: 120,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+          return child!;
+        },
       ),
     );
   }

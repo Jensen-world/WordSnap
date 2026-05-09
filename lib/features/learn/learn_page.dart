@@ -418,7 +418,7 @@ class _DailyWordCard extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.all(3),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: const Color(0xFFF0F0F5),
               borderRadius: BorderRadius.circular(100),
@@ -427,10 +427,9 @@ class _DailyWordCard extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text('美', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(phonetic, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
-                ),
+                const SizedBox(width: 6),
+                Text(phonetic, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                const SizedBox(width: 6),
                 GestureDetector(
                   onTap: () => ref.read(ttsServiceProvider).speak(wordText),
                   child: Container(
