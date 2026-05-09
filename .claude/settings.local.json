@@ -178,7 +178,9 @@
       "Bash(sqlite3 stardict.db \".schema\")",
       "Bash(unzip -l build/app/outputs/flutter-apk/app-debug.apk)",
       "Bash(ls android/app/src/main/res/drawable/)",
-      "Bash(ls android/app/src/main/res/values/styles.xml)"
+      "Bash(ls android/app/src/main/res/values/styles.xml)",
+      "Bash(git diff *)",
+      "Bash(git status *)"
     ]
   }
 }
