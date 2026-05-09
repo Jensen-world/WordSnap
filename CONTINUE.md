@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 6：有数据状态测试 + 卡片统计数据 bug 修复）
+> 最后更新：2026-05-09（Session 7：真机网络问题修复 — OCR 离线化 + 词典本地化）
 
 ## 一、现在到哪了
 
@@ -100,6 +100,48 @@
 - 可通过直接 URL 导航 + 截图验证页面内容
 - 坐标点击不可靠，交互测试需真机或模拟器
 
+### Session 7：真机网络问题修复 — OCR 离线化 + 词典本地化（2026-05-09）
+
+**问题：** 真机测试拍照 OCR 和词典查词均报错。根因——ML Kit standalone 需从 Google 服务器下载模型，Free Dictionary API 托管海外，国内网络均不可达。
+
+**修复：两大核心依赖全部离线化**
+
+#### OCR：ML Kit → Tesseract
+
+| 改动 | 说明 |
+|------|------|
+| 移除 `google_mlkit_text_recognition` | 模型运行时下载，国内不可用 |
+| 添加 `tesseract_ocr: ^0.5.0` | Tesseract4Android 离线引擎 |
+| 内置 `eng.traineddata`（4MB） | 英文识别模型，随 APK 安装 |
+
+#### 词典：Free Dictionary API → ECDICT 本地 SQLite
+
+| 改动 | 说明 |
+|------|------|
+| 下载 ECDICT 全量库（207MB zip） | 340 万词条，通过代理下载 |
+| 筛选创建 `ecdict_slim.db`（15MB） | CET4/6+托福+雅思+考研+GRE+高频词，58K 词条 |
+| `DictionaryService` 重写 | HTTP API → 本地 SQLite 只读查询 |
+| `DictionaryResult` 新增字段 | `translation`（中文释义）、`exchange`（词形变化）、`tag`（考级标签） |
+| 三个 save() 方法更新 | photo_capture / capture / share_receipt 均存储中文翻译和标签 |
+| 错误提示更新 | 去除"请检查网络"，改为"请检查拼写" |
+
+#### 构建产物
+
+| 文件 | 大小 |
+|------|------|
+| `assets/ecdict_slim.db` | 15MB（58K 词条） |
+| `assets/tessdata/eng.traineddata` | 4MB（英文模型） |
+| APK 增量 | 约 +19MB |
+| Debug APK | 203MB |
+
+#### pubspec.yaml 依赖变更
+
+```
+- google_mlkit_text_recognition: ^0.14.0
++ tesseract_ocr: ^0.5.0
+assets 新增: tessdata_config.json, tessdata/, ecdict_slim.db
+```
+
 ### 构建注意事项
 - `flutter build web` 后可能有旧 Python 进程残留，需 `pkill` 后重启
 - 浏览器 service worker 会缓存旧版本，换端口（8080→9090）可绕过
@@ -111,8 +153,8 @@
 - **状态管理**：flutter_riverpod（StateNotifierProvider + AsyncNotifierProvider + FutureProvider）
 - **路由**：GoRouter StatefulShellRoute.indexedStack（3-tab 导航）
 - **数据库**：sqflite，单例 DatabaseHelper，3 张表带索引
-- **API**：Free Dictionary API（api.dictionaryapi.dev）
-- **OCR**：google_mlkit_text_recognition（on-device，离线可用）
+- **API**：ECDICT 本地 SQLite 数据库（15MB 精简版，58K 词条，完全离线）
+- **OCR**：Tesseract（tesseract_ocr 包，eng.traineddata 4MB 模型随 APK 安装）
 - **拍照**：image_picker（调用系统相机）
 
 ### SRS 算法
@@ -150,11 +192,11 @@ lib/
 │   │   ├── word_repository.dart
 │   │   └── review_repository.dart
 │   └── services/
-│       ├── dictionary_service.dart   # Free Dictionary API
+│       ├── dictionary_service.dart   # ECDICT 本地 SQLite
 │       ├── dictionary_result.dart
 │       ├── review_service.dart       # SRS 算法
 │       ├── clipboard_service.dart    # Timer 轮询剪贴板
-│       ├── ocr_service.dart          # ML Kit 文字识别
+│       ├── ocr_service.dart          # Tesseract 离线识别
 │       └── export_import_service.dart # JSON 导入导出
 ├── features/
 │   ├── learn/
@@ -199,7 +241,7 @@ lib/
 
 ### 依赖（pubspec.yaml）
 ```
-google_mlkit_text_recognition: ^0.14.0
+tesseract_ocr: ^0.5.0
 image_picker: ^1.1.2
 flutter_riverpod: ^2.6.1
 go_router: ^14.8.1
@@ -211,7 +253,7 @@ http: ^1.6.0
 ### 构建命令
 ```bash
 flutter clean && flutter pub get && flutter build apk --debug
-# APK: build/app/outputs/flutter-apk/app-debug.apk (174MB)
+# APK: build/app/outputs/flutter-apk/app-debug.apk (203MB)
 ```
 
 ## 五、已知待办
@@ -225,7 +267,8 @@ flutter clean && flutter pub get && flutter build apk --debug
 - [ ] 每日一词实际数据（当前为硬编码 ephemeral 示例）
 
 ### 测试
-- [ ] 真机测试（需 Android 设备或模拟器）
+- [x] 真机基础测试（OCR + 词典离线化已修复，2026-05-09）
+- [ ] 真机完整流程测试（拍照→OCR→查词→保存→学习）
 - [ ] Widget test
 - [ ] Integration test
 

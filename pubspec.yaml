@@ -42,7 +42,7 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   json_annotation: ^4.9.0
-  google_mlkit_text_recognition: ^0.14.0
+  tesseract_ocr: ^0.5.0
   image_picker: ^1.1.2
   file_picker: ^8.3.7
   flutter_tts: ^4.2.2
@@ -72,6 +72,9 @@ flutter:
 
   assets:
     - assets/logo/
+    - assets/tessdata_config.json
+    - assets/tessdata/
+    - assets/ecdict_slim.db
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

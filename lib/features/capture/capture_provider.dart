@@ -1,0 +1,107 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/models/notebook.dart';
+import '../../data/models/word.dart';
+import '../wordbook/wordbook_provider.dart';
+import '../../data/services/dictionary_result.dart';
+import '../../data/services/dictionary_service.dart';
+
+final dictionaryServiceProvider = Provider((ref) => DictionaryService());
+
+final captureStateProvider = StateNotifierProvider<CaptureNotifier, CaptureState>((ref) {
+  return CaptureNotifier(ref);
+});
+
+class CaptureState {
+  final String input;
+  final bool searching;
+  final DictionaryResult? result;
+  final String? errorMessage;
+  final List<Notebook> notebooks;
+  final int? selectedNotebookId;
+
+  const CaptureState({
+    this.input = '',
+    this.searching = false,
+    this.result,
+    this.errorMessage,
+    this.notebooks = const [],
+    this.selectedNotebookId,
+  });
+
+  CaptureState copyWith({
+    String? input,
+    bool? searching,
+    DictionaryResult? result,
+    String? errorMessage,
+    List<Notebook>? notebooks,
+    int? selectedNotebookId,
+  }) => CaptureState(
+    input: input ?? this.input,
+    searching: searching ?? this.searching,
+    result: result ?? this.result,
+    errorMessage: errorMessage ?? this.errorMessage,
+    notebooks: notebooks ?? this.notebooks,
+    selectedNotebookId: selectedNotebookId ?? this.selectedNotebookId,
+  );
+}
+
+class CaptureNotifier extends StateNotifier<CaptureState> {
+  final Ref _ref;
+
+  CaptureNotifier(this._ref) : super(const CaptureState());
+
+  Future<void> loadNotebooks() async {
+    final repo = _ref.read(notebookRepoProvider);
+    final notebooks = await repo.getAll();
+    state = state.copyWith(
+      notebooks: notebooks,
+      selectedNotebookId: notebooks.isNotEmpty ? notebooks.first.id : null,
+    );
+  }
+
+  void setInput(String input) {
+    state = state.copyWith(input: input, result: null, errorMessage: null);
+  }
+
+  Future<void> lookup() async {
+    final word = state.input.trim();
+    if (word.isEmpty) return;
+    state = state.copyWith(searching: true, errorMessage: null);
+    final service = _ref.read(dictionaryServiceProvider);
+    final result = await service.lookup(word);
+    state = state.copyWith(
+      searching: false,
+      result: result,
+      errorMessage: result == null ? '查不到该单词，请检查拼写' : null,
+    );
+  }
+
+  void setNotebook(int id) {
+    state = state.copyWith(selectedNotebookId: id);
+  }
+
+  Future<Word> save() async {
+    final result = state.result;
+    if (result == null || state.selectedNotebookId == null) {
+      throw StateError('Missing result or notebook');
+    }
+    final now = DateTime.now();
+    final allDefs = <String>[];
+    if (result.translation != null) allDefs.add(result.translation!);
+    allDefs.addAll(result.meanings.expand((m) => m.definitions.map((d) => d.definition)));
+    final word = Word(
+      notebookId: state.selectedNotebookId!,
+      text: result.word,
+      phonetic: result.phonetic,
+      partOfSpeech: result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : null,
+      definitions: allDefs,
+      examples: result.meanings.expand((m) => m.definitions.map((d) => d.example).whereType<String>()).toList(),
+      tags: result.tag != null ? result.tag!.split(' ') : [],
+      learnedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    );
+    final repo = _ref.read(wordRepoProvider);
+    return repo.insert(word);
+  }
+}
