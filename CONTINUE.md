@@ -1,10 +1,10 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 8：数据联动刷新 + 自动播放 + 单词管理 + 毛玻璃 Pill）
+> 最后更新：2026-05-09（Session 9：真机测试修复 + 启动页）
 
 ## 一、现在到哪了
 
-**阶段：P0 MVP 全部实现完成，APK 构建通过（174MB debug APK）。**
+**阶段：P0 MVP 全部实现完成，真机测试问题修复，APK 构建通过（203MB debug APK）。**
 
 ### P0 MVP 完成清单（12/12）
 
@@ -140,6 +140,43 @@
 - google_mlkit_text_recognition: ^0.14.0
 + tesseract_ocr: ^0.5.0
 assets 新增: tessdata_config.json, tessdata/, ecdict_slim.db
+```
+
+### Session 9：真机测试问题修复 + 启动页（2026-05-09）
+
+#### 6 个真机 Bug 修复
+
+| # | 问题 | 根因 | 修复 |
+|---|------|------|------|
+| 1 | 启动页不显示 | Android 12+ 缺少 splash 配置；launch_background.xml 用硬编码颜色 | 新增 `values-v31/styles.xml`（windowSplashScreenBackground）+ `colors.xml`，launch_background 改用颜色资源 |
+| 2 | 主页不能滚动 | ListView 底部 padding 仅 16px，Pill 遮挡下方内容 | 底部 padding 改为 `MediaQuery.padding.bottom + 120`（Pill 高度） |
+| 3 | 毛玻璃效果不明显 | Pill 背景 80% 不透明（0xCC），模糊穿透不够 | 降为 10%（0x19） |
+| 4 | 学习设置保存按钮被遮挡 | BottomSheet 底部 padding 仅计算键盘高度，未算 Pill | 底部 padding 增加 Pill 高度（+120px） |
+| 5 | 批量管理按钮被导航键遮挡 | 底部操作栏未考虑系统导航栏高度 | padding 增加 `MediaQuery.padding.bottom` |
+| 6 | 拍照/输入保存崩溃 | `_NotebookSelector.notebooks` 泛型缺失 `List`→`List<Notebook>`，`orElse: () => null` 类型推断失败 | 加泛型 + import Notebook，`orElse` 改为 for-loop 查找 |
+
+#### 启动页（Web + Android）
+
+| 平台 | 实现 |
+|------|------|
+| Android | `launch_background.xml`：品牌蓝 #2F5CFF + splash_logo 居中；`values-v31/styles.xml`：Android 12+ splash API |
+| Web | `index.html`：全屏蓝色 overlay + 居中 logo，`flutter-first-frame` 事件后淡出（0.3s） |
+
+**设计稿参考**：纯 `#2F5CFF` 蓝色背景，居中白色 "W" logo（右上角橙色圆点点缀），无文字，极简风格。
+
+#### 修复文件（Session 9）
+```
+lib/features/capture/capture_sheet.dart          — _NotebookSelector 泛型修复
+lib/features/capture/photo_capture_page.dart     — _NotebookSelector 泛型修复
+lib/features/learn/learn_page.dart               — ListView 底部 padding
+lib/features/learn/learn_settings_sheet.dart     — BottomSheet 底部 padding
+lib/features/wordbook/notebook_detail_page.dart  — 批量管理底部 padding
+lib/widgets/bottom_pill.dart                     — 透明度 0xCC→0x19
+android/app/src/main/res/drawable/launch_background.xml  — 颜色资源化
+android/app/src/main/res/values/colors.xml               — 新增 splash_bg
+android/app/src/main/res/values-v31/styles.xml           — Android 12+ splash
+web/index.html                                  — 启动页 splash overlay
+assets/logo/splash-logo.png                     — 启动页 logo
 ```
 
 ### 构建注意事项
@@ -325,7 +362,7 @@ flutter clean && flutter pub get && flutter build apk --debug
 
 ### 测试
 - [x] 真机基础测试（OCR + 词典离线化已修复，2026-05-09）
-- [ ] 真机完整流程测试（拍照→OCR→查词→保存→学习）
+- [x] 真机完整流程测试（拍照→OCR→查词→保存→学习，Session 9 修复保存崩溃）
 - [ ] Widget test
 - [ ] Integration test
 
@@ -346,7 +383,8 @@ flutter clean && flutter pub get && flutter build apk --debug
    - 分享收录：Android ACTION_SEND intent filter + MethodChannel（无额外依赖），ShareReceiptSheet 自动查词 + 收录
 4. Session 4-7：底部 Pill 重构 + 空状态 UI + 配额逻辑 + 卡片 bug 修复 + OCR/词典离线化
 5. Session 8（05-09）：数据联动刷新（review_session 写入 + 返回时 load）+ 自动播放 TTS + 单词管理（移动/删除/批量管理）+ 底部 Pill 毛玻璃 + 英美切换移除 + 单词本卡片数据展示 + 文案修正
-6. P1 全部完成。下一步可选方向：
+6. Session 9（05-09）：真机测试 6 个 Bug 修复（启动页/滚动/毛玻璃透明度/设置保存遮挡/批量管理遮挡/拍照保存崩溃）+ 启动页（Web + Android）+ review_session Web 持久化
+7. P1 全部完成。下一步可选方向：
    - 导出文件实际写入/分享（当前 exportToJson 生成字符串但未保存到文件）
    - 真机/模拟器测试验证
    - P2 功能（每日一词实际数据、图片关联、release 签名+图标）
