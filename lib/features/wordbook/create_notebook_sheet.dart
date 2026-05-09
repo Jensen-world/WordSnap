@@ -34,7 +34,7 @@ class _CreateNotebookSheetState extends State<CreateNotebookSheet> {
         left: 20,
         right: 20,
         top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24 + MediaQuery.of(context).padding.bottom,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 10 + MediaQuery.of(context).padding.bottom,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
