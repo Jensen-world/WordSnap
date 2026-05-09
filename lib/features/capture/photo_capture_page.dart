@@ -92,8 +92,9 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
   }
 
   Widget _readyView(PhotoCaptureState state, {bool showLookupSpinner = false}) {
+    final bottomPad = 20 + MediaQuery.of(context).padding.bottom;
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, bottomPad),
       children: [
         if (state.imagePath != null)
           ClipRRect(
@@ -153,8 +154,9 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
 
   Widget _resultView(PhotoCaptureState state, {bool showSaveSpinner = false}) {
     final result = state.lookupResult!;
+    final bottomPad = 20 + MediaQuery.of(context).padding.bottom;
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, bottomPad),
       children: [
         _ResultCard(result: result),
         const SizedBox(height: 24),
@@ -320,6 +322,15 @@ class _ResultCard extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 10),
+          if (result.translation != null && result.translation.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                result.translation,
+                style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
+                textAlign: TextAlign.center,
+              ),
+            ),
           Text(
             result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : '',
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.lavender),

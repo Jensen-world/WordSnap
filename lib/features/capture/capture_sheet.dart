@@ -54,13 +54,14 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
   Widget build(BuildContext context) {
     final state = ref.watch(captureStateProvider);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPad = bottomInset + 24 + MediaQuery.of(context).padding.bottom;
 
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
         top: 24,
-        bottom: bottomInset + 24,
+        bottom: bottomPad,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -206,6 +207,15 @@ class _ResultCard extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 10),
+          if (result.translation != null && result.translation.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                result.translation,
+                style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
+                textAlign: TextAlign.center,
+              ),
+            ),
           Text(
             result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : '',
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.lavender),

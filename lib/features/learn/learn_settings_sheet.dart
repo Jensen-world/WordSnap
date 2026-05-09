@@ -32,7 +32,7 @@ class _LearnSettingsSheetState extends ConsumerState<LearnSettingsSheet> {
     final state = ref.watch(learnStateProvider);
     final current = state.currentNotebook;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final bottomPad = bottomInset + MediaQuery.of(context).padding.bottom + 120;
+    final bottomPad = bottomInset + 24 + 80 + MediaQuery.of(context).padding.bottom;
 
     return Padding(
       padding: EdgeInsets.only(left: 20, right: 20, top: 24, bottom: bottomPad),

@@ -14,12 +14,16 @@ class BottomPill extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Padding(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Color(0x10FFFFFF),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
           padding: EdgeInsets.only(left: 48, right: 48, top: 24, bottom: 24 + bottom),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0x192F5CFF),
+              color: const Color(0xCC2F5CFF),
               borderRadius: BorderRadius.circular(100),
             ),
             child: Row(

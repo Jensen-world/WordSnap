@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 9：真机测试修复 + 启动页）
+> 最后更新：2026-05-09（Session 10：第二轮真机测试修复）
 
 ## 一、现在到哪了
 
@@ -183,6 +183,30 @@ assets/logo/splash-logo.png                     — 启动页 logo
 - `flutter build web` 后可能有旧 Python 进程残留，需 `pkill` 后重启
 - 浏览器 service worker 会缓存旧版本，换端口（8080→9090）可绕过
 - 端口 8080 被多个 Python 进程监听时，`build/web` 目录无法删除
+
+### Session 10：第二轮真机测试修复（2026-05-09）
+
+#### 6 个 Bug 修复
+
+| # | 问题 | 根因 | 修复 |
+|---|------|------|------|
+| 1 | 主页滑过头，大片空白 | 底部 padding `MediaQuery.padding.bottom + 120` 过大 | 改为 `16 + 80 + MediaQuery.padding.bottom`（learn_page.dart） |
+| 2 | 底部椭圆按钮看不清 | 误改了 Pill 按钮颜色（0xCC→0x19），应改背景白色区域 | 恢复按钮 0xCC2F5CFF，添加白色半透明背景容器（0x10FFFFFF） |
+| 3 | 学习设置底部大片空白 | 底部 padding 过大 | 改为 `bottomInset + 24 + 80 + MediaQuery.padding.bottom` |
+| 4 | 拍照识别底部被导航键遮住 | `_resultView` ListView padding 未计算导航栏高度 | `EdgeInsets.all(20)` → `EdgeInsets.fromLTRB(20, 20, 20, 20 + padding.bottom)` |
+| 5 | 输入单词不能存入 + 底部按钮被遮 | capture_sheet Column 不能滚动，bottom padding 未算导航栏 | 包裹 `SingleChildScrollView`，padding 增加 `MediaQuery.padding.bottom` |
+| 6 | 拍照/输入显示英文释义而非中文 | `_ResultCard` 未使用 `result.translation` 字段 | 两个 `_ResultCard` 增加 `result.translation` 中文释义展示 |
+
+#### 中文释义展示
+
+`_ResultCard`（photo_capture_page.dart + capture_sheet.dart）：
+- 单词 → 音标+喇叭 → **中文翻译**（`result.translation`，14px inkBlack）→ 词性 → 英文定义
+
+#### 修复文件（Session 10）
+```
+lib/features/capture/photo_capture_page.dart  — _resultView 底部 padding + _ResultCard 中文翻译
+lib/features/capture/capture_sheet.dart        — SingleChildScrollView + 底部 padding + _ResultCard 中文翻译
+```
 
 ### Session 8：数据联动 + 自动播放 + 单词管理 + UI 打磨（2026-05-09）
 
