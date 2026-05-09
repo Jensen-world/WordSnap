@@ -1,14 +1,37 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/colors.dart';
 import 'core/theme/radius.dart';
 import 'core/router/app_router.dart';
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({super.key});
 
   @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  bool _showSplash = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Show the native splash screen logo in Flutter for consistent cross-device behavior.
+    // The native side only renders the blue background color — the logo is drawn here.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) setState(() => _showSplash = false);
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_showSplash) {
+      return const _SplashScreen();
+    }
     return ProviderScope(
       child: MaterialApp.router(
         title: '见词 WordSnap',
@@ -51,6 +74,26 @@ class App extends StatelessWidget {
           ),
         ),
         routerConfig: appRouter,
+      ),
+    );
+  }
+}
+
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: Scaffold(
+        backgroundColor: AppColors.signalBlue,
+        body: Center(
+          child: Image(
+            image: AssetImage('assets/logo/splash-logo.png'),
+            width: 120,
+            height: 120,
+          ),
+        ),
       ),
     );
   }

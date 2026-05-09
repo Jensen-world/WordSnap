@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 13：底部 padding 微调）
+> 最后更新：2026-05-09（Session 17：启动页 logo 修复 — Flutter 层 splash 方案）
 
 ## 一、现在到哪了
 
@@ -295,6 +295,52 @@ lib/features/learn/learn_page.dart                 — 底部 60→30
 lib/features/archive/archive_page.dart             — 底部 60→30
 lib/features/learn/learn_settings_sheet.dart       — 底部 80→40
 lib/features/wordbook/create_notebook_sheet.dart   — 加导航栏 padding
+```
+
+### Session 14：第四轮底部 padding 微调（2026-05-09）
+
+| 页面 | 改动 | 原因 |
+|------|------|------|
+| LearnPage | 底部 30 → 10 → 5 | 仍有空白 |
+| ArchivePage | 底部 30 → 10 → 0 | 仍有空白 |
+| LearnSettingsSheet | 底部 40 → 10 → 5 | 保存按钮只需不被导航键遮挡 |
+
+### Session 15-16：启动页 logo 持续排查（2026-05-09）
+
+**问题：** vivo Funtouch OS 上启动页只显示蓝色背景，logo 始终不显示。
+
+**多轮尝试全部失败：**
+| 尝试 | 改动 | 结果 |
+|------|------|------|
+| 1 | `values-v31/styles.xml` 加 `windowSplashScreenAnimatedIcon` | 不显示 |
+| 2 | 修复 `drawable-v21/launch_background.xml`（原始为 Flutter 默认白底无 logo）→ 加入 `<bitmap>` + logo | 不显示 |
+| 3 | 创建 `drawable/splash_icon.xml` 包装 bitmap | 不显示 |
+| 4 | 添加 `values-night-v31/styles.xml` 深色模式配置 | 不显示 |
+
+**根因分析：** `<layer-list>` 内 `<bitmap android:gravity="center">` 在 vivo Funtouch OS 上不渲染。1440×1440 PNG 可能超出 Android 12 splash API 图标区域（192dp 圆）。
+
+#### 最终方案：Flutter 层 splash（Session 17）
+
+**放弃原生 XML splash，改用 Flutter 渲染第一帧。**
+
+`lib/app.dart` 完全重写：
+- `App` 从 `StatelessWidget` → `StatefulWidget`，增加 `_showSplash` 状态
+- 初始化时显示 `_SplashScreen` widget（蓝色背景 + 居中 `AssetImage('assets/logo/splash-logo.png')` 120×120）
+- 100ms 延迟后 `setState` 切换到 `ProviderScope(child: MaterialApp.router(...))`
+- 原生层仅保留蓝色背景（`LaunchTheme` 的 `windowBackground`），logo 完全由 Flutter 负责
+
+**优势：** 跨所有 Android 版本和 OEM skin 一致可靠。
+
+#### 修复文件（Session 14-17）
+```
+lib/app.dart                                       — 完全重写：Flutter 层 splash screen
+android/app/src/main/res/drawable-v21/launch_background.xml — 添加 logo bitmap
+android/app/src/main/res/drawable/splash_icon.xml  — 新增：Android 12+ splash icon 包装
+android/app/src/main/res/values-v31/styles.xml     — 添加 splash icon
+android/app/src/main/res/values-night-v31/styles.xml — 新增：深色模式 splash
+lib/features/learn/learn_page.dart                 — 底部 padding 30→10→5
+lib/features/archive/archive_page.dart             — 底部 padding 30→10→0
+lib/features/learn/learn_settings_sheet.dart       — 底部 padding 40→10→5
 ```
 
 ### Session 8：数据联动 + 自动播放 + 单词管理 + UI 打磨（2026-05-09）
