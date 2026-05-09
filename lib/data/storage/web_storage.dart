@@ -9,8 +9,10 @@ class WebStorage {
 
   List<Map<String, dynamic>> _notebooks = [];
   List<Map<String, dynamic>> _words = [];
+  List<Map<String, dynamic>> _reviewSessions = [];
   int _nextNotebookId = 1;
   int _nextWordId = 1;
+  int _nextReviewSessionId = 1;
   bool _loaded = false;
 
   void _load() {
@@ -33,9 +35,18 @@ class WebStorage {
           if (id >= _nextWordId) _nextWordId = id + 1;
         }
       }
+      final rsJson = web.window.localStorage.getItem('ws_review_sessions');
+      if (rsJson != null) {
+        _reviewSessions = (jsonDecode(rsJson) as List).cast<Map<String, dynamic>>();
+        for (final s in _reviewSessions) {
+          final id = s['id'] as int;
+          if (id >= _nextReviewSessionId) _nextReviewSessionId = id + 1;
+        }
+      }
     } catch (_) {
       _notebooks = [];
       _words = [];
+      _reviewSessions = [];
     }
     if (_notebooks.isEmpty) {
       final now = DateTime.now().toIso8601String();
@@ -56,6 +67,10 @@ class WebStorage {
 
   void _saveWords() {
     web.window.localStorage.setItem('ws_words', jsonEncode(_words));
+  }
+
+  void _saveReviewSessions() {
+    web.window.localStorage.setItem('ws_review_sessions', jsonEncode(_reviewSessions));
   }
 
   // ── Notebooks ──
@@ -171,5 +186,45 @@ class WebStorage {
       result = result.where((w) => (w['isMastered'] as int) == (isMastered ? 1 : 0)).toList();
     }
     return result.length;
+  }
+
+  // ── Review Sessions ──
+
+  Map<String, dynamic>? getReviewSession(String dateStr) {
+    _load();
+    try {
+      return _reviewSessions.firstWhere((s) => s['date'] == dateStr);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  int insertReviewSession(Map<String, dynamic> map) {
+    _load();
+    final id = _nextReviewSessionId++;
+    final row = Map<String, dynamic>.from(map);
+    row['id'] = id;
+    _reviewSessions.add(row);
+    _saveReviewSessions();
+    return id;
+  }
+
+  void updateReviewSession(Map<String, dynamic> map) {
+    _load();
+    final id = map['id'] as int;
+    final idx = _reviewSessions.indexWhere((s) => s['id'] == id);
+    if (idx >= 0) _reviewSessions[idx] = Map<String, dynamic>.from(map);
+    _saveReviewSessions();
+  }
+
+  List<Map<String, dynamic>> getRecentReviewSessions(int days) {
+    _load();
+    final now = DateTime.now();
+    final cutoff = DateTime(now.year, now.month, now.day).subtract(Duration(days: days - 1));
+    final cutoffStr = cutoff.toIso8601String();
+    return _reviewSessions
+        .where((s) => (s['date'] as String).compareTo(cutoffStr) >= 0)
+        .toList()
+      ..sort((a, b) => (b['date'] as String).compareTo(a['date'] as String));
   }
 }
