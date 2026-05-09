@@ -1,10 +1,84 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 22：App 图标 + Release 签名 + imagePath 移除 + 每日一词实际数据）
+> 最后更新：2026-05-09（Session 23：启动页白方块修复 — 根因与最终方案）
 
 ## 一、现在到哪了
 
-**阶段：P0 MVP 全部实现完成，真机测试问题修复，Release 签名配置完成，APK 构建通过（83MB release APK）。**
+**阶段：P0 MVP 全部实现完成，真机测试问题修复，启动页白方块已解决，Release 签名配置完成。**
+
+---
+
+## 启动页白方块问题——完整排查记录
+
+### 现象
+vivo 真机（Android 12+）启动时出现白色方块/圆底板，持续多轮尝试（Session 9 ~ Session 23）。
+
+### 最终根因（两条）
+
+**1. Android 12+ 系统启动页对非 adaptive 图标的白色底板**
+- Android 12（API 31）引入了强制系统启动页，显示 `windowSplashScreenBackground` + `windowSplashScreenAnimatedIcon`
+- 如果 App 没有 adaptive launcher icon（`mipmap-anydpi-v26/ic_launcher.xml`），系统将默认 App 图标（非 adaptive PNG）渲染在白色圆形底板上
+- 即使不设置 `windowSplashScreenAnimatedIcon`，系统也会用默认 App 图标并加白底板
+
+**2. Flutter 端多余的启动层（`_SplashImage`）造成闪烁**
+- Flutter 的 `Image.asset` 需要异步加载，加载前显示空白
+- 原生 `windowBackground` 本就可以桥接到 Flutter 首帧，无需 Flutter 层再画一层
+
+### 错误尝试（Session 9 ~ 22，均无效）
+
+| 尝试 | 做法 | 结果 |
+|------|------|------|
+| 1 | `_SplashImage` 用 `Image.asset` 显示启动图 | 白方块（图片异步加载延迟） |
+| 2 | 加 `Container(color: blue)` 包裹 | 蓝屏→白方块→图片，更差 |
+| 3 | Python 合成蓝底+logo 合并图，2秒延迟 | 蓝屏先出现 |
+| 4 | `precacheImage` 预加载 | 仍有一帧白 |
+| 5 | 原生 `launch_background.xml` 替换为全屏图 bitmap | APK 解析失败（`<bitmap>` 不能作为 windowBackground 根元素） |
+| 6 | `<bitmap>` 根元素作为 `splash_icon` drawable | 白方块（`<bitmap>` 不是有效的 `AnimationDrawable`） |
+| 7 | 移除 `windowSplashScreenAnimatedIcon` | 白方块（系统回退到非 adaptive App 图标） |
+| 8 | `<animation-list>` 包裹 bitmap | 白方块（仍不是系统期望的格式） |
+| 9 | `<layer-list>` 包裹 bitmap | 白方块（同上） |
+
+### 正确方案（Session 23）
+
+**三步修复，缺一不可：**
+
+**第一步：创建 adaptive launcher icon**
+```xml
+<!-- mipmap-anydpi-v26/ic_launcher.xml -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/splash_bg"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>
+
+<!-- drawable/ic_launcher_foreground.xml -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/splash_logo"
+    android:inset="18dp" />
+```
+- adaptive icon 不会被 Android 12+ 加白色底板
+- 18dp inset = (108dp画布 - 72dp安全区) / 2，保证图标不越界
+
+**第二步：NormalTheme.windowBackground 改为品牌蓝色**
+```xml
+<!-- 所有 values*/styles.xml 中 -->
+<style name="NormalTheme">
+    <item name="android:windowBackground">@color/splash_bg</item>
+</style>
+```
+- 防止 LaunchTheme→NormalTheme 切换时的白屏间隙
+
+**第三步：删除 Flutter 端启动层**
+- `_SplashImage` 完全移除，`StatefulWidget`→`StatelessWidget`
+- 原生 `windowBackground`（launch_background.xml 全屏图）直接桥接到 Flutter 首帧
+
+### 教训
+1. **Android 12+ 启动页 = 系统层 + Activity层 + Flutter层，三层都要处理**
+2. **Android 12+ 系统启动页图标必须是 adaptive 格式，否则自动加白底板**
+3. **不要用 `<bitmap>` 作为 drawable 根元素——`windowSplashScreenAnimatedIcon` 要求 `AnimationDrawable`**
+4. **Flutter 端不要加启动页——原生的 `windowBackground` 天然桥接 Flutter 首帧**
+5. **NormalTheme 的 background 要和 LaunchTheme 一致，避免切换白屏**
+
+---
 
 ### P0 MVP 完成清单（12/12）
 
@@ -636,3 +710,9 @@ flutter build apk --release
    - 完成 JSON 导出：保存到 getApplicationDocumentsDirectory()，导出成功弹窗显示目录路径+文件名
    - 完成每日一词：根据当前日期和总词数确定性选取真实词条
    - .gitignore 添加 android/key.properties + android/*.jks
+9. Session 23（05-09）：启动页白方块彻底修复——经历 9 次错误尝试后找到根因
+   - 根因1：Android 12+ 对非 adaptive 图标加白色底板 → 创建 `mipmap-anydpi-v26/ic_launcher.xml` adaptive icon
+   - 根因2：Flutter `_SplashImage` 多余 → 删除，原生 `windowBackground` 直接桥接
+   - 根因3：`NormalTheme.windowBackground` 为白色 → 改为品牌蓝 `@color/splash_bg`
+   - 附加修复：adaptive icon 前景加 18dp inset（108dp画布→72dp安全区）
+   - 详见上方"启动页白方块问题——完整排查记录"
