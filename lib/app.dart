@@ -18,15 +18,11 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    // Preload the logo image, then dismiss splash after a brief delay.
-    // Using the same MaterialApp (via builder overlay) avoids the
-    // separate-MaterialApp asset loading issue on some Android OEMs.
-    Future.microtask(() async {
-      await precacheImage(const AssetImage('assets/logo/splash-logo.png'), context);
-      if (mounted) {
-        await Future.delayed(const Duration(milliseconds: 100));
-        if (mounted) setState(() => _showSplash = false);
-      }
+    // Show a single combined splash image (blue bg + logo merged)
+    // for a fixed duration. No separate asset loading means both
+    // appear together on the very first frame.
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) setState(() => _showSplash = false);
     });
   }
 
@@ -80,16 +76,10 @@ class _AppState extends State<App> {
               children: [
                 if (child != null) child,
                 Positioned.fill(
-                  child: ColoredBox(
-                    color: AppColors.signalBlue,
-                    child: Center(
-                      child: Image(
-                        image: const AssetImage('assets/logo/splash-logo.png'),
-                        width: 120,
-                        height: 120,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                      ),
-                    ),
+                  child: Image.asset(
+                    'assets/logo/splash_combined.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(color: AppColors.signalBlue),
                   ),
                 ),
               ],

@@ -426,7 +426,7 @@ class _DailyWordCard extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('美', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+                const Text('美', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
                 const SizedBox(width: 6),
                 Text(phonetic, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
                 const SizedBox(width: 6),

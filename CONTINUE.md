@@ -1,6 +1,6 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 18：5 个真机问题修复）
+> 最后更新：2026-05-09（Session 19：splash 合并图片 + 胶囊对齐 + padding 微调）
 
 ## 一、现在到哪了
 
@@ -361,6 +361,26 @@ lib/app.dart                                     — splash 改用 builder 叠�
 lib/features/learn/learn_page.dart               — 发音胶囊 padding + spacing
 lib/features/wordbook/wordbook_page.dart          — ListView 底部 padding
 lib/features/wordbook/notebook_detail_page.dart   — 底部 padding + isDefault 隐藏删除
+```
+
+### Session 19：splash 合并图片 + 胶囊对齐 + padding 微调（2026-05-09）
+
+| # | 问题 | 根因 | 修复 |
+|---|------|------|------|
+| 1 | 启动页蓝底先出，logo 后出且一闪而过 | precacheImage 异步等待 → logo 加载完才显示，100ms 后消失 | 用 Pillow 生成 `splash_combined.png`（蓝底+logo 合并），`Image.asset` 直接全屏显示，1.5s 固定时长 |
+| 2 | 发音胶囊不对称 | '美'(11px) 和音标(12px) 字号不同，Row center 对齐仍有视觉偏差 | 统一字号为 12 |
+| 3 | 单词本底部 padding 过多 | 80 留白太大 | 80 → 20 |
+
+#### 新增文件
+```
+assets/logo/splash_combined.png                  — Python Pillow 生成：1080×2400 蓝底 + 180×180 logo 居中
+```
+
+#### 修复文件（Session 19）
+```
+lib/app.dart                                     — 使用 splash_combined.png 单图，1.5s 固定显示
+lib/features/learn/learn_page.dart               — '美' 字号 11→12
+lib/features/wordbook/wordbook_page.dart          — 底部 80→20
 ```
 
 ### Session 8：数据联动 + 自动播放 + 单词管理 + UI 打磨（2026-05-09）

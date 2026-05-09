@@ -36,7 +36,7 @@ class WordbookPage extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async => ref.invalidate(notebooksProvider),
       child: ListView.builder(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, 80 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 20 + MediaQuery.of(context).padding.bottom),
         itemCount: notebooks.length + 1,
         itemBuilder: (context, i) {
           if (i == notebooks.length) {
