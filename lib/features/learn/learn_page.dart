@@ -351,9 +351,9 @@ class _DailyWordCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final total = ref.watch(learnStateProvider.select((s) => s.totalWords));
+    final word = dailyWord;
 
-    if (total == 0) {
+    if (word == null) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
@@ -387,12 +387,8 @@ class _DailyWordCard extends ConsumerWidget {
       );
     }
 
-    final word = dailyWord;
-    final wordText = word?.text ?? 'ephemeral';
-    final phonetic = word?.phonetic ?? '/ɪˈfemərəl/';
-    final pos = word?.partOfSpeech ?? 'adj.';
-    final def = (word?.definitions.isNotEmpty == true) ? word!.definitions.first : '短暂的，转瞬即逝的';
-    final ex = (word?.examples.isNotEmpty == true) ? word!.examples.first : 'Fame is ephemeral — don\'t chase it.';
+    final notebooks = ref.watch(learnStateProvider.select((s) => s.notebooks));
+    final sourceName = notebooks.where((n) => n.id == word.notebookId).firstOrNull?.name ?? notebookName;
 
     return Container(
       width: double.infinity,
@@ -411,12 +407,12 @@ class _DailyWordCard extends ConsumerWidget {
                 '每日一词',
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF999999), letterSpacing: 0.6),
               ),
-              Text('来自 $notebookName', style: const TextStyle(fontSize: 10, color: Color(0xFFBBBBBB))),
+              Text('来自 $sourceName', style: const TextStyle(fontSize: 10, color: Color(0xFFBBBBBB))),
             ],
           ),
           const SizedBox(height: 8),
           Text(
-            wordText,
+            word.text,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
           ),
           const SizedBox(height: 8),
@@ -431,10 +427,10 @@ class _DailyWordCard extends ConsumerWidget {
               children: [
                 const Text('美', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
                 const SizedBox(width: 6),
-                Text(phonetic, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                Text(word.phonetic ?? '', style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
                 const SizedBox(width: 6),
                 GestureDetector(
-                  onTap: () => ref.read(ttsServiceProvider).speak(wordText),
+                  onTap: () => ref.read(ttsServiceProvider).speak(word.text),
                   child: Container(
                     width: 28,
                     height: 28,
@@ -453,47 +449,48 @@ class _DailyWordCard extends ConsumerWidget {
             text: TextSpan(
               style: const TextStyle(fontSize: 13, color: AppColors.inkBlack, height: 1.5),
               children: [
-                TextSpan(text: '$pos ', style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.signalBlue)),
-                TextSpan(text: def),
+                TextSpan(text: '${word.partOfSpeech ?? ''} ', style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.signalBlue)),
+                TextSpan(text: word.definitions.isNotEmpty ? word.definitions.first : ''),
               ],
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            decoration: const BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Color(0xFFF0F0F5)),
-                bottom: BorderSide(color: Color(0xFFF0F0F5)),
+          if (word.examples.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Color(0xFFF0F0F5)),
+                  bottom: BorderSide(color: Color(0xFFF0F0F5)),
+                ),
               ),
-            ),
-            width: double.infinity,
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                style: const TextStyle(fontSize: 11, color: Color(0xFF666666), fontStyle: FontStyle.italic, height: 1.6),
-                children: [
-                  TextSpan(text: '"$ex"'),
-                  WidgetSpan(
-                    child: GestureDetector(
-                      onTap: () => ref.read(ttsServiceProvider).speak(ex),
-                      child: Container(
-                        width: 22,
-                        height: 22,
-                        margin: const EdgeInsets.only(left: 4),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEEF0FF),
-                          shape: BoxShape.circle,
+              width: double.infinity,
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF666666), fontStyle: FontStyle.italic, height: 1.6),
+                  children: [
+                    TextSpan(text: '"${word.examples.first}"'),
+                    WidgetSpan(
+                      child: GestureDetector(
+                        onTap: () => ref.read(ttsServiceProvider).speak(word.examples.first),
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          margin: const EdgeInsets.only(left: 4),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEEF0FF),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.volume_up_outlined, size: 11, color: AppColors.signalBlue),
                         ),
-                        child: const Icon(Icons.volume_up_outlined, size: 11, color: AppColors.signalBlue),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
           const SizedBox(height: 8),
           const Text('名声是短暂的，不要追逐它。', style: TextStyle(fontSize: 11, color: Color(0xFF999999))),
         ],

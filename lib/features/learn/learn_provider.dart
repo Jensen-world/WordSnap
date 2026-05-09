@@ -115,14 +115,23 @@ class LearnNotifier extends StateNotifier<LearnState> {
       final remaining = totalWords - masteredWords;
       final estimatedDays = dailyLimit > 0 ? (remaining / dailyLimit).ceil() : 0;
 
-      // Daily word: pick deterministically from today's date
+      // Daily word: pick from current notebook first, fall back to any notebook
       Word? dailyWord;
-      if (totalWords > 0) {
-        final words = await wordRepo.getByNotebook(currentNb.id!);
-        if (words.isNotEmpty) {
-          final now = DateTime.now();
-          final seed = now.year * 400 + now.month * 40 + now.day;
-          dailyWord = words[seed % words.length];
+      final now = DateTime.now();
+      final seed = now.year * 400 + now.month * 40 + now.day;
+
+      Future<Word?> pickDaily(int nbId) async {
+        final words = await wordRepo.getByNotebook(nbId);
+        if (words.isNotEmpty) return words[seed % words.length];
+        return null;
+      }
+
+      dailyWord = await pickDaily(currentNb.id!);
+      if (dailyWord == null) {
+        for (final nb in notebooks) {
+          if (nb.id == currentNb.id) continue;
+          dailyWord = await pickDaily(nb.id!);
+          if (dailyWord != null) break;
         }
       }
 

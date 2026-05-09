@@ -1,10 +1,10 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 23：启动页白方块修复 — 根因与最终方案）
+> 最后更新：2026-05-09（Session 24：数据刷新机制 + 每日一词 fallback + 弹窗底部 padding）
 
 ## 一、现在到哪了
 
-**阶段：P0 MVP 全部实现完成，真机测试问题修复，启动页白方块已解决，Release 签名配置完成。**
+**阶段：P0 MVP 全部实现完成，真机测试问题修复，启动页白方块已解决，Release 签名配置完成，数据刷新机制已建立，每日一词跨单词本 fallback 已实现。**
 
 ---
 
@@ -550,6 +550,61 @@ lib/app.dart                                               — _SplashImage 纯�
 | 右上角铅笔（废弃编辑模式） | → `more_vert` 弹出菜单：移动到其他单词本 / 删除单词 |
 | 移除编辑状态 | `_editing`、`_textCtrl`、TextField 全部移除，`_WordHeader` 简化为纯展示 |
 
+## Session 24 — 数据刷新 + 每日一词 fallback + UI 细节
+
+### 数据刷新机制（dataRefreshTrigger）
+
+**问题：** 删除/移动/清空单词后，单词本数量、LearnPage 统计、每日一词全都不更新。根因是 Riverpod `FutureProvider.family` 缓存永久有效，没有失效机制。
+
+**方案：** 全局 `dataRefreshTrigger` StateProvider 计数器，所有数据依赖方 watch 它。
+
+```dart
+// wordbook_provider.dart
+final dataRefreshTrigger = StateProvider<int>((ref) => 0);
+
+final notebookStatsProvider = FutureProvider.family<NotebookStats, int>((ref, notebookId) async {
+  ref.watch(dataRefreshTrigger); // 任何数据变更后重新查询
+  // ...
+});
+```
+
+**所有需要通知变更的位置 bump trigger：**
+
+| 文件 | 位置 |
+|------|------|
+| `notebook_detail_page.dart` | 删除单词、批量删除、清空单词本、移动单词、批量移动、删除单词本 |
+| `word_detail_page.dart` | 删除单词、移动单词 |
+| `learn_page.dart` | `ref.listen(dataRefreshTrigger)` 自动 reload |
+| `study_page.dart` | 3 个退出路径均 bump trigger |
+| `capture_sheet.dart` | 保存后 bump |
+| `photo_capture_page.dart` | 保存后 bump |
+| `share_receipt_sheet.dart` | 保存后 bump |
+
+### 级联删除
+
+`NotebookRepository.delete()` 删除单词本前先删除所有关联单词：
+```dart
+await db.delete('words', where: 'notebookId = ?', whereArgs: [id]);
+await db.delete('notebooks', where: 'id = ?', whereArgs: [id]);
+```
+
+### 学习设置改进
+
+- 每日新词上限步长从 1 改为 10
+- 减号按钮最低到 10（而非 0）
+- 新增重置按钮（设为 0）
+- 宽度调整：28→36 以容纳三位数
+
+### 每日一词跨单词本 fallback
+
+**问题：** 当前单词本清空后，即使其他单词本有单词，每日一词也显示空状态。
+
+**修复：** `learn_provider.dart` 选词逻辑先尝试当前单词本，没词则 fallback 到其他单词本；`_DailyWordCard` 改为 `dailyWord == null` 判定空状态（而非 `total == 0`），来源标签显示实际单词本名称。
+
+### 弹窗底部 padding
+
+`notebook_detail_page.dart` 和 `word_detail_page.dart` 的 `_showNotebookPicker()` 均加上 `MediaQuery.of(ctx).padding.bottom`。
+
 ## 二、关键技术决策
 
 ### 架构
@@ -673,7 +728,10 @@ flutter build apk --release
 - [x] 学习自动播放 TTS（Session 8）
 - [x] 数据联动刷新（review_session 写入 + 返回刷新，Session 8）
 - [x] 图片关联（已移除该功能，用户不需要）
-- [x] 每日一词实际数据（日期确定性选取当前单词本中的词，Session 22 完成）
+- [x] 每日一词实际数据（日期确定性选取，支持跨单词本 fallback，Session 22/24 完成）
+- [x] 全局数据刷新机制（dataRefreshTrigger 统一变更通知，Session 24 完成）
+- [x] 级联删除（删除单词本先删关联单词，Session 24 完成）
+- [x] 学习设置：步长 10 + 重置按钮 + 移动弹窗底部 padding（Session 24 完成）
 
 ### 测试
 - [x] 真机基础测试（OCR + 词典离线化已修复，2026-05-09）

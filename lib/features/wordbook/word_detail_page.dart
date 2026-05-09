@@ -82,16 +82,19 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
     }
     return showModalBottomSheet<int>(
       context: context,
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: others.map((n) => ListTile(
-            title: Text(n.name),
-            onTap: () => Navigator.pop(ctx, n.id),
-          )).toList(),
-        ),
-      ),
+      builder: (ctx) {
+        final bottomPad = 24 + MediaQuery.of(ctx).padding.bottom;
+        return Padding(
+          padding: EdgeInsets.fromLTRB(20, 24, 20, bottomPad),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: others.map((n) => ListTile(
+              title: Text(n.name),
+              onTap: () => Navigator.pop(ctx, n.id),
+            )).toList(),
+          ),
+        );
+      },
     );
   }
 
