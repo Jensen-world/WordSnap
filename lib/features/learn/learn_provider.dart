@@ -11,8 +11,10 @@ class LearnState {
   final List<Notebook> notebooks;
   final int? currentNotebookId;
   final Notebook? currentNotebook;
-  final int newWords;
-  final int reviewWords;
+  final int newWords; // today's session quota
+  final int reviewWords; // today's session quota
+  final int dbNewWords; // database count
+  final int dbReviewWords; // database count
   final int masteredWords;
   final int totalWords;
   final int dailyLimit;
@@ -27,6 +29,8 @@ class LearnState {
     this.currentNotebook,
     this.newWords = 0,
     this.reviewWords = 0,
+    this.dbNewWords = 0,
+    this.dbReviewWords = 0,
     this.masteredWords = 0,
     this.totalWords = 0,
     this.dailyLimit = 0,
@@ -42,6 +46,8 @@ class LearnState {
     Notebook? currentNotebook,
     int? newWords,
     int? reviewWords,
+    int? dbNewWords,
+    int? dbReviewWords,
     int? masteredWords,
     int? totalWords,
     int? dailyLimit,
@@ -55,6 +61,8 @@ class LearnState {
     currentNotebook: currentNotebook ?? this.currentNotebook,
     newWords: newWords ?? this.newWords,
     reviewWords: reviewWords ?? this.reviewWords,
+    dbNewWords: dbNewWords ?? this.dbNewWords,
+    dbReviewWords: dbReviewWords ?? this.dbReviewWords,
     masteredWords: masteredWords ?? this.masteredWords,
     totalWords: totalWords ?? this.totalWords,
     dailyLimit: dailyLimit ?? this.dailyLimit,
@@ -87,10 +95,10 @@ class LearnNotifier extends StateNotifier<LearnState> {
         return;
       }
 
-      final newWordsTotal = await wordRepo.getCount(notebookId: currentNb.id, isNew: true);
+      final dbNewCount = await wordRepo.getCount(notebookId: currentNb.id, isNew: true);
       final masteredWords = await wordRepo.getCount(notebookId: currentNb.id, isMastered: true);
       final totalWords = await wordRepo.getCount(notebookId: currentNb.id);
-      final reviewWordsTotal = totalWords - newWordsTotal - masteredWords;
+      final dbReviewCount = totalWords - dbNewCount - masteredWords;
       final dailyLimit = currentNb.dailyNewWordLimit;
 
       // Today's session counts
@@ -113,6 +121,8 @@ class LearnNotifier extends StateNotifier<LearnState> {
         currentNotebook: currentNb,
         newWords: todayNewWords,
         reviewWords: todayReviewWords,
+        dbNewWords: dbNewCount,
+        dbReviewWords: dbReviewCount,
         masteredWords: masteredWords,
         totalWords: totalWords,
         dailyLimit: dailyLimit,

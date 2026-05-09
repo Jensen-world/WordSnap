@@ -69,8 +69,8 @@ class _LearnPageState extends ConsumerState<LearnPage> {
       children: [
         _NotebookCard(
           name: current.name,
-          newCount: state.newWords,
-          reviewCount: state.reviewWords,
+          newCount: state.dbNewWords,
+          reviewCount: state.dbReviewWords,
           masteredCount: state.masteredWords,
           totalCount: state.totalWords,
           onEdit: _showSettings,
@@ -161,7 +161,9 @@ class _NotebookCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text('$newCount 待复习', style: const TextStyle(fontFamily: 'JetBrains Mono', fontSize: 11, color: AppColors.signalBlue)),
+                        Text('$newCount 新学', style: const TextStyle(fontFamily: 'JetBrains Mono', fontSize: 11, color: AppColors.lavender)),
+                        const SizedBox(width: 12),
+                        Text('$reviewCount 待复习', style: const TextStyle(fontFamily: 'JetBrains Mono', fontSize: 11, color: AppColors.signalBlue)),
                         const SizedBox(width: 12),
                         Text('$masteredCount 掌握', style: const TextStyle(fontFamily: 'JetBrains Mono', fontSize: 11, color: AppColors.mint)),
                         const SizedBox(width: 12),
