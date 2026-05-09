@@ -1,10 +1,24 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 24：数据刷新机制 + 每日一词 fallback + 弹窗底部 padding）
+> 最后更新：2026-05-09（Session 25：修复数据复活 bug + 移除种子数据）
 
 ## 一、现在到哪了
 
-**阶段：P0 MVP 全部实现完成，真机测试问题修复，启动页白方块已解决，Release 签名配置完成，数据刷新机制已建立，每日一词跨单词本 fallback 已实现。**
+**阶段：P0 MVP 全部实现完成，真机测试修复完毕。种子数据已移除，数据持久化已修复。**
+
+## Session 25 — 数据复活 bug 修复
+
+### 根因两条
+
+1. **`_onUpgrade` 毁库重建**：DB 版本 1→2 时 `_onUpgrade` DROP 全部表再 `_onCreate`，用户数据全丢。`seedIfEmpty` 守卫 `notebooks > 1` 在只剩 1 个笔记本时触发重新播种，23 个种子词全部复现。
+
+2. **`seedIfEmpty` 守卫脆弱**：判断 `COUNT(*) FROM notebooks > 1` 作为"是否已播种"标志。用户删掉 2 个预置笔记本只剩默认时，守卫失效。
+
+### 修复
+
+- `_onUpgrade`：DROP TABLE 改为空实现（v1→v2 schema 无变化）
+- `seedIfEmpty`：守卫改为 `COUNT(*) FROM words > 0`
+- **移除种子数据调用**：`main()` 不再调用 `seedIfEmpty()`。全新安装只有空默认单词本"拾词集"
 
 ---
 

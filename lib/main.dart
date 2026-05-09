@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:sqflite_common/sqflite.dart' show databaseFactory;
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'app.dart';
-import 'seed_data.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,8 +11,6 @@ Future<void> main() async {
     databaseFactory = databaseFactoryFfiWeb;
   }
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
-  await seedIfEmpty();
 
   runApp(const App());
 }

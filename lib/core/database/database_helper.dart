@@ -86,9 +86,7 @@ class DatabaseHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    await db.execute('DROP TABLE IF EXISTS words');
-    await db.execute('DROP TABLE IF EXISTS notebooks');
-    await db.execute('DROP TABLE IF EXISTS review_sessions');
-    await _onCreate(db, newVersion);
+    // v1 → v2: schema unchanged, no migration needed
+    // Future migrations: use ALTER TABLE, never DROP TABLE
   }
 }

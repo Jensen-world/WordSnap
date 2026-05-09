@@ -1,11 +1,10 @@
-import 'data/models/notebook.dart';
 import 'data/models/word.dart';
 import 'data/storage/web_storage.dart';
 
 Future<void> seedIfEmpty() async {
   final store = WebStorage();
-  final notebooks = store.getNotebooks();
-  if (notebooks.length > 1) return; // already seeded
+  final count = store.countWords();
+  if (count > 0) return; // already seeded (has words)
 
   final now = DateTime.now().toIso8601String();
 

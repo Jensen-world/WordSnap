@@ -1,11 +1,10 @@
-import 'data/models/notebook.dart';
 import 'data/models/word.dart';
 import 'core/database/database_helper.dart';
 
 Future<void> seedIfEmpty() async {
   final db = await DatabaseHelper.instance.db;
-  final count = await db.rawQuery('SELECT COUNT(*) as c FROM notebooks');
-  if ((count.first['c'] as int) > 1) return; // already seeded
+  final count = await db.rawQuery('SELECT COUNT(*) as c FROM words');
+  if ((count.first['c'] as int) > 0) return; // already seeded (has words)
 
   final now = DateTime.now().toIso8601String();
 
