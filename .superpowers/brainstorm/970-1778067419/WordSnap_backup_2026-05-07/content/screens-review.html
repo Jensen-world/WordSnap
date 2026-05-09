@@ -1,0 +1,101 @@
+<h2>复习 Tab — P0 核心页面</h2>
+<p class="subtitle">打开即复习，最高频场景。设计目标：极简、专注、让单词成为唯一焦点</p>
+
+<!-- 设计说明 -->
+<div class="section" style="display:flex;gap:24px;align-items:flex-start">
+
+<!-- 翻转卡片状态 -->
+<div class="mockup" style="flex:1;max-width:375px">
+  <div class="mockup-header">翻转卡片 · 正面（单词）</div>
+  <div class="mockup-body" style="background:#f9f9fb;min-height:500px;padding:0;display:flex;flex-direction:column">
+
+    <!-- Status bar -->
+    <div style="padding:12px 20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#0b0b0f;font-family:JetBrains Mono,monospace">
+      <span>9:41</span>
+      <span>今日 3/12</span>
+    </div>
+
+    <!-- Progress -->
+    <div style="padding:0 20px 16px">
+      <div style="height:3px;background:#e2e2ea;border-radius:2px">
+        <div style="width:25%;height:100%;background:#2f5cff;border-radius:2px"></div>
+      </div>
+    </div>
+
+    <!-- Word Card - Front -->
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:0 20px">
+      <div style="background:#ffffff;border:1px solid #e2e2ea;border-radius:20px;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center">
+        <span style="font-family:Georgia,serif;font-size:28px;color:#0b0b0f;font-weight:600">ephemeral</span>
+      </div>
+    </div>
+
+    <!-- Tap hint -->
+    <div style="text-align:center;padding:20px;font-size:14px;color:#7068f0">点击翻转查看释义</div>
+
+    <!-- Bottom nav placeholder -->
+    <div style="display:flex;border-top:1px solid #e2e2ea;background:#ffffff">
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#2f5cff;font-family:Inter,sans-serif;font-weight:600">复习</div>
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#999;font-family:Inter,sans-serif">单词本</div>
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#999;font-family:Inter,sans-serif">我的</div>
+    </div>
+  </div>
+</div>
+
+<!-- 翻转后 · 背面 -->
+<div class="mockup" style="flex:1;max-width:375px">
+  <div class="mockup-header">翻转卡片 · 背面（释义 + 操作）</div>
+  <div class="mockup-body" style="background:#f9f9fb;min-height:500px;padding:0;display:flex;flex-direction:column">
+
+    <div style="padding:12px 20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#0b0b0f;font-family:JetBrains Mono,monospace">
+      <span>9:41</span>
+      <span>今日 3/12</span>
+    </div>
+
+    <div style="padding:0 20px 16px">
+      <div style="height:3px;background:#e2e2ea;border-radius:2px">
+        <div style="width:25%;height:100%;background:#2f5cff;border-radius:2px"></div>
+      </div>
+    </div>
+
+    <!-- Word Card - Back -->
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:0 20px">
+      <div style="background:#ffffff;border:1px solid #e2e2ea;border-radius:20px;width:100%;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:16px">
+        <span style="font-family:Georgia,serif;font-size:24px;color:#0b0b0f;font-weight:600">ephemeral</span>
+        <span style="font-family:Inter,sans-serif;font-size:14px;color:#666">/ɪˈfemərəl/</span>
+        <span style="font-family:Inter,sans-serif;font-size:13px;color:#999;background:#f0f0f5;padding:4px 12px;border-radius:12px">adjective</span>
+        <p style="font-family:Inter,sans-serif;font-size:16px;color:#0b0b0f;text-align:center;line-height:1.6">lasting for a very short time</p>
+        <p style="font-family:Georgia,serif;font-size:13px;color:#666;text-align:center;font-style:italic">"an ephemeral moment of joy"</p>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div style="display:flex;gap:12px;padding:20px">
+      <button style="flex:1;padding:14px;border:1px solid #e2e2ea;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:15px;color:#0b0b0f;cursor:pointer">不认识</button>
+      <button style="flex:1;padding:14px;border:1px solid #ffa940;border-radius:100px;background:#fff;font-family:Inter,sans-serif;font-size:15px;color:#ffa940;cursor:pointer">模糊</button>
+      <button style="flex:1;padding:14px;border:none;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:15px;color:#fff;cursor:pointer">认识</button>
+    </div>
+
+    <div style="display:flex;border-top:1px solid #e2e2ea;background:#ffffff">
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#2f5cff;font-family:Inter,sans-serif;font-weight:600">复习</div>
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#999;font-family:Inter,sans-serif">单词本</div>
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#999;font-family:Inter,sans-serif">我的</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>设计要点</h3>
+  <ul>
+    <li><strong>卡片 1:1 方形</strong>：视觉重心在中间，无干扰</li>
+    <li><strong>单词用衬线体</strong>：Source Serif 4，给单词"阅读尊严"</li>
+    <li><strong>进度条细线</strong>：3px，配色信号蓝，安静存在</li>
+    <li><strong>三按钮区分</strong>：不认识=灰色边框 / 模糊=琥珀边框 / 认识=信号蓝实心 → 视觉权重递增</li>
+    <li><strong>计数用等宽字体</strong>：JetBrains Mono，「今日 3/12」仪表盘精度感</li>
+  </ul>
+</div>
+
+<div class="section">
+  <p style="color:var(--text-secondary)">先看复习页设计，是否OK？没问题我继续做单词本和录入面板。</p>
+</div>

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/colors.dart';
+import '../../data/models/notebook.dart';
 import '../wordbook/wordbook_provider.dart';
 import 'photo_capture_provider.dart';
 
@@ -343,7 +344,7 @@ class _ResultCard extends StatelessWidget {
 }
 
 class _NotebookSelector extends StatelessWidget {
-  final List notebooks;
+  final List<Notebook> notebooks;
   final int? selectedId;
   final ValueChanged<int> onSelected;
 
@@ -374,7 +375,10 @@ class _NotebookSelector extends StatelessWidget {
 
   String _selectedName() {
     if (selectedId == null) return '选择单词本';
-    return notebooks.firstWhere((n) => n.id == selectedId, orElse: () => null)?.name ?? '选择单词本';
+    for (final n in notebooks) {
+      if (n.id == selectedId) return n.name;
+    }
+    return '选择单词本';
   }
 
   void _showPicker(BuildContext context) {
@@ -394,7 +398,7 @@ class _NotebookSelector extends StatelessWidget {
               )),
               leading: isSelected ? const Icon(Icons.check, size: 18, color: AppColors.signalBlue) : null,
               onTap: () {
-                onSelected(n.id);
+                onSelected(n.id!);
                 Navigator.pop(context);
               },
             );

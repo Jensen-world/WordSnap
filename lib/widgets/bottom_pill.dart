@@ -19,7 +19,7 @@ class BottomPill extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xCC2F5CFF),
+              color: const Color(0x192F5CFF),
               borderRadius: BorderRadius.circular(100),
             ),
             child: Row(

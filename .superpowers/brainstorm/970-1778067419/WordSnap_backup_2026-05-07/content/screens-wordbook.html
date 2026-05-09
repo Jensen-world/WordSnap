@@ -1,0 +1,175 @@
+<h2>单词本 Tab</h2>
+<p class="subtitle">浏览、搜索、筛选所有已存单词</p>
+
+<div class="section" style="display:flex;gap:24px;align-items:flex-start">
+
+<!-- 单词本首页 -->
+<div class="mockup" style="flex:1;max-width:375px">
+  <div class="mockup-header">单词本 · 卡片列表</div>
+  <div class="mockup-body" style="background:#f9f9fb;min-height:600px;padding:0;display:flex;flex-direction:column">
+
+    <!-- Header -->
+    <div style="padding:16px 20px 12px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-family:Inter,sans-serif;font-size:24px;font-weight:600;color:#0b0b0f;letter-spacing:-0.02em">单词本</span>
+      <span style="font-family:JetBrains Mono,monospace;font-size:14px;color:#00c896">已掌握 48</span>
+    </div>
+
+    <!-- Filter row -->
+    <div style="padding:0 20px 12px;display:flex;gap:8px;overflow-x:auto">
+      <span style="padding:6px 16px;border-radius:12px;background:#2f5cff;color:#fff;font-family:Inter,sans-serif;font-size:13px;white-space:nowrap">全部</span>
+      <span style="padding:6px 16px;border-radius:12px;background:#f0f0f5;color:#0b0b0f;font-family:Inter,sans-serif;font-size:13px;white-space:nowrap">未掌握</span>
+      <span style="padding:6px 16px;border-radius:12px;background:#f0f0f5;color:#0b0b0f;font-family:Inter,sans-serif;font-size:13px;white-space:nowrap">GRE</span>
+      <span style="padding:6px 16px;border-radius:12px;background:#f0f0f5;color:#0b0b0f;font-family:Inter,sans-serif;font-size:13px;white-space:nowrap">工作</span>
+      <span style="padding:6px 16px;border-radius:12px;background:#f0f0f5;color:#0b0b0f;font-family:Inter,sans-serif;font-size:13px;white-space:nowrap">旅行</span>
+    </div>
+
+    <!-- Search -->
+    <div style="padding:0 20px 16px">
+      <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:10px 16px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span style="font-family:Inter,sans-serif;font-size:14px;color:#bbb">搜索单词...</span>
+      </div>
+    </div>
+
+    <!-- Word cards -->
+    <div style="flex:1;padding:0 16px;display:flex;flex-direction:column;gap:8px;overflow-y:auto">
+
+      <!-- Card 1 -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="font-family:Georgia,serif;font-size:20px;font-weight:600;color:#0b0b0f">ephemeral</span>
+          <p style="font-family:Inter,sans-serif;font-size:13px;color:#999;margin-top:4px">短暂的，转瞬即逝的</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="padding:3px 8px;border-radius:12px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:11px;color:#666">GRE</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#00c896"></span>
+        </div>
+      </div>
+
+      <!-- Card 2 - not mastered -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="font-family:Georgia,serif;font-size:20px;font-weight:600;color:#0b0b0f">serendipity</span>
+          <p style="font-family:Inter,sans-serif;font-size:13px;color:#999;margin-top:4px">意外发现美好事物的能力</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="padding:3px 8px;border-radius:12px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:11px;color:#666">旅行</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#7068f0"></span>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="font-family:Georgia,serif;font-size:20px;font-weight:600;color:#0b0b0f">ubiquitous</span>
+          <p style="font-family:Inter,sans-serif;font-size:13px;color:#999;margin-top:4px">无处不在的</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="padding:3px 8px;border-radius:12px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:11px;color:#666">工作</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#00c896"></span>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="font-family:Georgia,serif;font-size:20px;font-weight:600;color:#0b0b0f">eloquent</span>
+          <p style="font-family:Inter,sans-serif;font-size:13px;color:#999;margin-top:4px">雄辩的，有口才的</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="padding:3px 8px;border-radius:12px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:11px;color:#666">GRE</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#7068f0"></span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Floating button -->
+    <div style="position:relative">
+      <div style="position:absolute;right:24px;bottom:80px;width:56px;height:56px;border-radius:50%;background:#ffa940;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;box-shadow:0 2px 12px rgba(255,169,64,0.3)">+</div>
+    </div>
+
+    <!-- Bottom nav -->
+    <div style="display:flex;border-top:1px solid #e2e2ea;background:#ffffff">
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#999;font-family:Inter,sans-serif">复习</div>
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#2f5cff;font-family:Inter,sans-serif;font-weight:600">单词本</div>
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#999;font-family:Inter,sans-serif">我的</div>
+    </div>
+  </div>
+</div>
+
+<!-- 单词详情页 -->
+<div class="mockup" style="flex:1;max-width:375px">
+  <div class="mockup-header">单词详情页</div>
+  <div class="mockup-body" style="background:#f9f9fb;min-height:600px;padding:0;display:flex;flex-direction:column">
+
+    <!-- Header with back -->
+    <div style="padding:16px 20px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:20px;color:#0b0b0f">&larr;</span>
+      <span style="font-family:Inter,sans-serif;font-size:16px;font-weight:600;color:#0b0b0f">详情</span>
+    </div>
+
+    <!-- Word hero -->
+    <div style="padding:0 24px 24px;text-align:center">
+      <h1 style="font-family:Georgia,serif;font-size:36px;font-weight:600;color:#0b0b0f;margin:0 0 8px">ephemeral</h1>
+      <p style="font-family:Inter,sans-serif;font-size:16px;color:#666;margin:0">/ɪˈfemərəl/ · adjective</p>
+    </div>
+
+    <!-- Info cards -->
+    <div style="flex:1;padding:0 16px;display:flex;flex-direction:column;gap:12px">
+
+      <!-- Definitions -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;padding:20px">
+        <span style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:#999;text-transform:uppercase">释义</span>
+        <p style="font-family:Inter,sans-serif;font-size:16px;color:#0b0b0f;line-height:1.6;margin:8px 0 0">lasting for a very short time</p>
+        <p style="font-family:Inter,sans-serif;font-size:16px;color:#0b0b0f;line-height:1.6;margin:8px 0 0">短暂的，转瞬即逝的</p>
+      </div>
+
+      <!-- Examples -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;padding:20px">
+        <span style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:#999;text-transform:uppercase">例句</span>
+        <p style="font-family:Georgia,serif;font-size:15px;color:#0b0b0f;line-height:1.6;margin:8px 0 0;font-style:italic">"The beauty of cherry blossoms is <span style="background:#fff3e0;color:#ffa940">ephemeral</span>, lasting only a few days."</p>
+      </div>
+
+      <!-- Source / Context -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;padding:20px">
+        <span style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:#999;text-transform:uppercase">来源</span>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <span style="padding:4px 10px;border-radius:12px;background:#fff3e0;font-family:Inter,sans-serif;font-size:12px;color:#ffa940">剪贴板</span>
+          <span style="font-family:Inter,sans-serif;font-size:13px;color:#666">来自 Chrome · 2026-05-03</span>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;padding:20px">
+        <span style="font-family:Inter,sans-serif;font-size:11px;font-weight:600;color:#999;text-transform:uppercase">标签</span>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <span style="padding:4px 12px;border-radius:12px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f">GRE</span>
+          <span style="padding:4px 12px;border-radius:12px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f">文学</span>
+          <span style="padding:4px 12px;border:1px dashed #e2e2ea;border-radius:12px;font-family:Inter,sans-serif;font-size:13px;color:#bbb">+ 添加</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display:flex;border-top:1px solid #e2e2ea;background:#ffffff">
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#999;font-family:Inter,sans-serif">复习</div>
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#2f5cff;font-family:Inter,sans-serif;font-weight:600">单词本</div>
+      <div style="flex:1;text-align:center;padding:12px;font-size:11px;color:#999;font-family:Inter,sans-serif">我的</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>设计要点</h3>
+  <ul>
+    <li><strong>卡片行高固定 72px</strong>：一行可扫 5-6 个词，快速浏览</li>
+    <li><strong>右端两点信息</strong>：标签 Badge + 掌握状态圆点（绿=掌握 / 紫=待复习）</li>
+    <li><strong>筛选栏横向滚动</strong>："全部"用信号蓝实心，其余冷灰面</li>
+    <li><strong>悬浮按钮在单词本也出来</strong>：保持一致，琥珀色与蓝色复习功能区分</li>
+    <li><strong>详情页卡片式分区</strong>：释义 / 例句 / 来源 / 标签，1px border 区分层级</li>
+    <li><strong>例句中目标词高亮</strong>：琥珀背景标记，强化语境记忆</li>
+  </ul>
+</div>

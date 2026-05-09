@@ -1,0 +1,204 @@
+<h2>单词本 v2 · 带书本图标 + 默认本</h2>
+<p class="subtitle">默认本 = "拾词集"，每本有书本图标，记单词页显示当前正在学的本子</p>
+
+<div class="section" style="display:flex;gap:24px;align-items:flex-start">
+
+<!-- 单词本：书本卡片列表 -->
+<div class="mockup" style="flex:1;max-width:375px">
+  <div class="mockup-header">单词本 · 我的本子</div>
+  <div class="mockup-body" style="background:#f9f9fb;min-height:600px;padding:0;display:flex;flex-direction:column">
+
+    <div style="background:#fff;border-bottom:1px solid #e2e2ea;padding:14px 16px 10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 0 10px 8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-family:Inter,sans-serif;font-size:17px;font-weight:600;color:#0b0b0f">见词</span>
+          <span style="font-family:Inter,sans-serif;font-size:12px;color:#bbb">WordSnap</span>
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <div style="display:flex;gap:6px;padding:0 0 0 8px">
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;color:#999">记单词</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#fff">单词本</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;color:#999">档案卡</div>
+      </div>
+    </div>
+
+    <!-- Bookshelf -->
+    <div style="flex:1;padding:16px 20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto">
+
+      <!-- Default book: 拾词集 -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:16px;display:flex;gap:14px;align-items:center;cursor:pointer">
+        <!-- Book icon -->
+        <div style="width:48px;height:48px;border-radius:12px;background:#f0f0f5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><path d="M4 6h16v16H4z"/><path d="M4 6h16v2H4z"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="14" y2="16"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0b0b0f">拾词集</div>
+          <div style="font-family:Inter,sans-serif;font-size:11px;color:#bbb;margin-top:2px">默认单词本 · 所有词的家</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <div style="flex:1;height:3px;background:#e2e2ea;border-radius:2px">
+              <div style="width:60%;height:100%;background:#00c896;border-radius:2px"></div>
+            </div>
+            <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#00c896">21/35</span>
+          </div>
+        </div>
+        <span style="color:#ccc;font-size:14px">&rarr;</span>
+      </div>
+
+      <!-- Book 2: GRE -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:16px;display:flex;gap:14px;align-items:center;cursor:pointer">
+        <div style="width:48px;height:48px;border-radius:12px;background:#f0f0f5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><path d="M4 6h16v16H4z"/><path d="M4 6h16v2H4z"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="14" y2="16"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0b0b0f">GRE 核心词汇</div>
+          <div style="font-family:Inter,sans-serif;font-size:11px;color:#bbb;margin-top:2px">备考时遇到的生词</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <div style="flex:1;height:3px;background:#e2e2ea;border-radius:2px">
+              <div style="width:65%;height:100%;background:#00c896;border-radius:2px"></div>
+            </div>
+            <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#00c896">21/32</span>
+          </div>
+        </div>
+        <span style="color:#ccc;font-size:14px">&rarr;</span>
+      </div>
+
+      <!-- Book 3: 工作英语 -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:16px;display:flex;gap:14px;align-items:center;cursor:pointer">
+        <div style="width:48px;height:48px;border-radius:12px;background:#f0f0f5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><path d="M4 6h16v16H4z"/><path d="M4 6h16v2H4z"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="14" y2="16"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0b0b0f">工作英语</div>
+          <div style="font-family:Inter,sans-serif;font-size:11px;color:#bbb;margin-top:2px">邮件、会议中的表达</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <div style="flex:1;height:3px;background:#e2e2ea;border-radius:2px">
+              <div style="width:28%;height:100%;background:#7068f0;border-radius:2px"></div>
+            </div>
+            <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#7068f0">5/18</span>
+          </div>
+        </div>
+        <span style="color:#ccc;font-size:14px">&rarr;</span>
+      </div>
+
+      <!-- New -->
+      <div style="background:#fff;border:1px dashed #e2e2ea;border-radius:16px;padding:16px;text-align:center;cursor:pointer">
+        <span style="font-family:Inter,sans-serif;font-size:14px;color:#bbb">+ 新建单词本</span>
+      </div>
+
+    </div>
+
+    <div style="padding:0 20px 16px">
+      <div style="display:flex;gap:0;align-items:center;justify-content:center;background:#f0f0f5;border-radius:100px;padding:4px;gap:24px">
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M12 3v4"/></svg>
+          拍照
+        </button>
+        <div style="width:1px;height:12px;background:#ddd"></div>
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          记录
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 记单词：当前正在学 -->
+<div class="mockup" style="flex:1;max-width:375px">
+  <div class="mockup-header">记单词 · 正在学习</div>
+  <div class="mockup-body" style="background:#f9f9fb;min-height:600px;padding:0;display:flex;flex-direction:column">
+
+    <div style="background:#fff;border-bottom:1px solid #e2e2ea;padding:14px 16px 10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 0 10px 8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-family:Inter,sans-serif;font-size:17px;font-weight:600;color:#0b0b0f">见词</span>
+          <span style="font-family:Inter,sans-serif;font-size:12px;color:#bbb">WordSnap</span>
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <div style="display:flex;gap:6px;padding:0 0 0 8px">
+        <div style="padding:6px 14px;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#fff">记单词</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;color:#999">单词本</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;color:#999">档案卡</div>
+      </div>
+    </div>
+
+    <!-- Current book + status -->
+    <div style="flex:1;display:flex;flex-direction:column;padding:20px;gap:16px">
+
+      <!-- Active book indicator -->
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:#f0f0f5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><path d="M4 6h16v16H4z"/><path d="M4 6h16v2H4z"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="14" y2="16"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:#0b0b0f">拾词集</span>
+            <span style="font-size:12px;color:#ccc">&#9662;</span>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:4px">
+            <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#2f5cff">12 待复习</span>
+            <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#00c896">21 已掌握</span>
+            <span style="font-family:JetBrains Mono,monospace;font-size:11px;color:#999">35 总计</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="height:3px;background:#e2e2ea;border-radius:2px">
+        <div style="width:34%;height:100%;background:#2f5cff;border-radius:2px"></div>
+      </div>
+
+      <!-- Flip card -->
+      <div style="flex:1;display:flex;align-items:center;justify-content:center">
+        <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;width:100%;max-width:280px;aspect-ratio:1;display:flex;align-items:center;justify-content:center">
+          <span style="font-family:Georgia,serif;font-size:28px;color:#0b0b0f;font-weight:600">ephemeral</span>
+        </div>
+      </div>
+
+      <p style="text-align:center;font-family:Inter,sans-serif;font-size:12px;color:#7068f0">点击翻转查看释义</p>
+
+    </div>
+
+    <div style="padding:0 20px 16px">
+      <div style="display:flex;gap:0;align-items:center;justify-content:center;background:#f0f0f5;border-radius:100px;padding:4px;gap:24px">
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M12 3v4"/></svg>
+          拍照
+        </button>
+        <div style="width:1px;height:12px;background:#ddd"></div>
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          记录
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>改了什么</h3>
+  <table style="width:100%">
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">默认单词本</td>
+      <td style="padding:8px;color:#2f5cff"><strong>"拾词集"</strong> — 拾=捡起、收集，契合随手捕捉生词的场景。所有未指定本子的词自动归入</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">书本图标</td>
+      <td style="padding:8px;color:#2f5cff">每个本子左侧 48×48 圆角方块 + 书本线框 icon，视觉上"这是一本书"</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">记单词页</td>
+      <td style="padding:8px;color:#2f5cff">不再选本，直接展示<strong>当前单词本 + 学习状态</strong>（待复习/已掌握/总计），点击 ▾ 切换本子</td>
+    </tr>
+    <tr>
+      <td style="padding:8px">进度</td>
+      <td style="padding:8px;color:#2f5cff">掌握数/总词数 + 进度条，一目了然</td>
+    </tr>
+  </table>
+</div>

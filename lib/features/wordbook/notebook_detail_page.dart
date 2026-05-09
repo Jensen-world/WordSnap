@@ -300,7 +300,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
           ),
           if (_selectionMode)
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(top: BorderSide(color: Color(0xFFE2E2EA))),

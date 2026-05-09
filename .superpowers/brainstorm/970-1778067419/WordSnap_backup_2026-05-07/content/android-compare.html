@@ -1,0 +1,106 @@
+<h2>仅 Android 端：React Native vs Flutter 成本对比</h2>
+<p class="subtitle">去掉 iOS 包袱后，两个方案的成本结论会变化</p>
+
+<div class="section">
+  <h3>环境搭建难度</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">React Native + Expo</div>
+      <div class="mockup-body">
+        <p><strong>最简路径（Expo）：</strong></p>
+        <ul>
+          <li>安装 Node.js → <code>npx create-expo-app</code></li>
+          <li>手机装 Expo Go，扫码即跑</li>
+          <li>不需要 Android Studio（初期）</li>
+          <li>需要原生模块时再装 AS + JDK</li>
+        </ul>
+        <p style="margin-top:16px;color:#00c896"><strong>搭环境 ≈ 30 分钟</strong></p>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Flutter</div>
+      <div class="mockup-body">
+        <ul>
+          <li>安装 Flutter SDK + Dart SDK</li>
+          <li>Android Studio（必装，含模拟器 + SDK）</li>
+          <li>配置 ANDROID_HOME、PATH 环境变量</li>
+          <li><code>flutter doctor</code> 排错链路长</li>
+          <li>Windows 上 Gradle 同步偶尔挂</li>
+        </ul>
+        <p style="margin-top:16px;color:#ffa940"><strong>搭环境 ≈ 1-4 小时（看运气）</strong></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Android 端开发成本对比</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:12px">
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <th style="text-align:left;padding:10px 8px;color:var(--text-secondary)">维度</th>
+      <th style="text-align:center;padding:10px 8px">React Native</th>
+      <th style="text-align:center;padding:10px 8px">Flutter</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:10px 8px">OCR（ML Kit）</td>
+      <td style="text-align:center;padding:10px 8px"><a href="https://github.com/a7med-mahmoud/react-native-mlkit-ocr" target="_blank">社区包成熟</a>，需写原生桥接</td>
+      <td style="text-align:center;padding:10px 8px"><a href="https://pub.dev/packages/google_mlkit_text_recognition" target="_blank">官方 Google 插件</a>，直接 pub add</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:10px 8px">相机</td>
+      <td style="text-align:center;padding:10px 8px">expo-camera ✅</td>
+      <td style="text-align:center;padding:10px 8px">camera 插件 ✅</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:10px 8px">剪贴板</td>
+      <td style="text-align:center;padding:10px 8px">expo-clipboard ✅</td>
+      <td style="text-align:center;padding:10px 8px">super_clipboard ✅</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:10px 8px">SQLite</td>
+      <td style="text-align:center;padding:10px 8px">expo-sqlite ✅</td>
+      <td style="text-align:center;padding:10px 8px">sqflite ✅</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:10px 8px">本地通知</td>
+      <td style="text-align:center;padding:10px 8px">expo-notifications ✅</td>
+      <td style="text-align:center;padding:10px 8px">flutter_local_notifications ✅</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:10px 8px">UI 一致性</td>
+      <td style="text-align:center;padding:10px 8px">使用原生组件，需要调</td>
+      <td style="text-align:center;padding:10px 8px;color:#00c896">Material Design 原生感觉</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:10px 8px">动画 & 长列表</td>
+      <td style="text-align:center;padding:10px 8px">有一定性能损失</td>
+      <td style="text-align:center;padding:10px 8px;color:#00c896">渲染引擎自绘，流畅</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:10px 8px">热重载</td>
+      <td style="text-align:center;padding:10px 8px">Fast Refresh ✅</td>
+      <td style="text-align:center;padding:10px 8px">Hot Reload ✅</td>
+    </tr>
+    <tr>
+      <td style="padding:10px 8px;font-weight:600">学习 + 开发效率</td>
+      <td style="text-align:center;padding:10px 8px">JS/TS 通识技能，上手快</td>
+      <td style="text-align:center;padding:10px 8px">Dart 需学习，但文档全</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>结论：仅 Android 时，Flutter 优势更明显</h3>
+  <p>只做 Android 端，<strong>跨平台代码复用不再是优势</strong>，纯粹比 Android 开发体验：</p>
+  <ul>
+    <li><strong>ML Kit OCR</strong> — Flutter 有 Google 官方插件，RN 靠社区维护的桥接包</li>
+    <li><strong>UI 原生感</strong> — Flutter Material Design 对 Android 用户零违和感</li>
+    <li><strong>性能</strong> — 复习卡片动画、长列表滚动，Flutter 自绘引擎更稳</li>
+    <li><strong>环境搭建</strong> — RN(Expo) 更简单，但一旦要写原生模块，复杂度追平 Flutter</li>
+  </ul>
+  <p style="margin-top:16px">唯一牺牲：未来浏览器插件无法共享 UI 代码（仍需独立 Web 技术栈开发）。</p>
+</div>
+
+<div class="section">
+  <p style="color:var(--text-secondary)">请选择你的倾向，或继续在终端讨论。</p>
+</div>

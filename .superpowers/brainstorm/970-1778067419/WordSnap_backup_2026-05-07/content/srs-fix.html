@@ -1,0 +1,132 @@
+<h2>掌握判定 · 修正</h2>
+<p class="subtitle">不用绝对天数，用复习次数 + 表现。目标天数只管"坚持学了多久"，不管每个词的间隔</p>
+
+<div class="section" style="display:flex;gap:24px;align-items:flex-start">
+
+<!-- 修正后的规则 -->
+<div class="mockup" style="flex:1">
+  <div class="mockup-header">修正后的 SM-2 规则</div>
+  <div class="mockup-body" style="padding:20px">
+
+    <div style="margin-bottom:20px">
+      <div style="font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:#0b0b0f;margin-bottom:12px">复习间隔（只跟复习次数挂钩）</div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <tr style="border-bottom:1px solid #e2e2ea">
+          <th style="text-align:left;padding:8px;color:#999;font-weight:500">第N次复习</th>
+          <th style="text-align:left;padding:8px;color:#999;font-weight:500">间隔</th>
+        </tr>
+        <tr style="border-bottom:1px solid #f0f0f5"><td style="padding:8px">第1次（新学）</td><td style="padding:8px;font-family:JetBrains Mono,monospace">当天立即</td></tr>
+        <tr style="border-bottom:1px solid #f0f0f5"><td style="padding:8px">第2次</td><td style="padding:8px;font-family:JetBrains Mono,monospace">1 天后</td></tr>
+        <tr style="border-bottom:1px solid #f0f0f5"><td style="padding:8px">第3次</td><td style="padding:8px;font-family:JetBrains Mono,monospace">3 天后</td></tr>
+        <tr style="border-bottom:1px solid #f0f0f5"><td style="padding:8px">第4次</td><td style="padding:8px;font-family:JetBrains Mono,monospace">7 天后</td></tr>
+        <tr style="border-bottom:1px solid #f0f0f5"><td style="padding:8px">第5次</td><td style="padding:8px;font-family:JetBrains Mono,monospace">14 天后</td></tr>
+        <tr style="border-bottom:1px solid #f0f0f5"><td style="padding:8px">第6次</td><td style="padding:8px;font-family:JetBrains Mono,monospace">30 天后</td></tr>
+        <tr><td style="padding:8px">第7次及以后</td><td style="padding:8px;font-family:JetBrains Mono,monospace">60 天后</td></tr>
+      </table>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:#0b0b0f;margin-bottom:8px">掌握判定</div>
+      <div style="background:#f0f0f5;border-radius:12px;padding:16px">
+        <p style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;line-height:1.8;margin:0">
+          累计复习 <strong style="color:#2f5cff">≥ 4 次</strong><br>
+          且 最近 <strong style="color:#2f5cff">连续 3 次</strong> 回答"认识"<br>
+          → 标记为 <strong style="color:#00c896">已掌握 ✓</strong>
+        </p>
+      </div>
+      <p style="font-family:Inter,sans-serif;font-size:11px;color:#999;margin-top:8px">按这个逻辑，一个词从录入到掌握最快只需 4 天（天天认识），与目标天数无关。</p>
+    </div>
+
+    <div>
+      <div style="font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:#0b0b0f;margin-bottom:8px">已掌握词汇的维护</div>
+      <div style="background:#f0f0f5;border-radius:12px;padding:16px">
+        <p style="font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;line-height:1.8;margin:0">
+          已掌握的词不参与日常复习<br>
+          系统每周从中随机抽取 <strong style="color:#7068f0">5 个</strong> 穿插到复习中<br>
+          答错 → 退回"学习中"状态，重新计算间隔
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 模拟：30天计划中的词 -->
+<div class="mockup" style="flex:1">
+  <div class="mockup-header">一个词在 30 天计划中的完整历程</div>
+  <div class="mockup-body" style="padding:20px">
+    <table style="width:100%;font-size:12px;border-collapse:collapse">
+      <tr style="border-bottom:1px solid #e2e2ea">
+        <th style="text-align:left;padding:6px;color:#999;font-weight:500">天数</th>
+        <th style="text-align:left;padding:6px;color:#999;font-weight:500">事件</th>
+        <th style="text-align:left;padding:6px;color:#999;font-weight:500">状态</th>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="padding:6px;font-family:JetBrains Mono,monospace">第 1 天</td>
+        <td style="padding:6px">录入 + 初次学习</td>
+        <td style="padding:6px;color:#ffa940">新学</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="padding:6px;font-family:JetBrains Mono,monospace">第 2 天</td>
+        <td style="padding:6px">第2次复习 · 认识 ✓</td>
+        <td style="padding:6px">学习中</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="padding:6px;font-family:JetBrains Mono,monospace">第 5 天</td>
+        <td style="padding:6px">第3次复习 · 认识 ✓</td>
+        <td style="padding:6px">学习中</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="padding:6px;font-family:JetBrains Mono,monospace">第 12 天</td>
+        <td style="padding:6px">第4次复习 · 认识 ✓</td>
+        <td style="padding:6px;color:#00c896">连续3次认识 ✓</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0f0f5">
+        <td style="padding:6px;font-family:JetBrains Mono,monospace">第 12 天</td>
+        <td style="padding:6px" colspan="2"><strong style="color:#00c896">→ 标记为已掌握 🎉</strong></td>
+      </tr>
+      <tr>
+        <td style="padding:6px;font-family:JetBrains Mono,monospace">第 26 天</td>
+        <td style="padding:6px">系统抽查 · 认识 ✓</td>
+        <td style="padding:6px;color:#00c896">保持掌握</td>
+      </tr>
+    </table>
+
+    <div style="margin-top:20px;padding:14px;background:#fff3e0;border-radius:12px">
+      <p style="font-family:Inter,sans-serif;font-size:12px;color:#ffa940;line-height:1.7;margin:0">
+        <strong>关键区分：</strong><br>
+        <strong>目标天数 (30天)</strong> = 用户的打卡承诺，衡量坚持<br>
+        <strong>掌握判定 (≥4次复习 + 连续3次认识)</strong> = 每个词自己的学习成果<br><br>
+        两者独立：你可以在 30 天计划内让大部分词达到掌握，也可以计划结束后续继复习未掌握的词。目标天数到了不代表学习终止。
+      </p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>修正总结</h3>
+  <table style="width:100%">
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <th style="text-align:left;padding:8px;color:var(--text-secondary)">之前</th>
+      <th style="text-align:left;padding:8px;color:#2f5cff">修正后</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">掌握 = 间隔 ≥ 21天 + 连续3次认识</td>
+      <td style="padding:8px;color:#2f5cff">掌握 = 累计复习 ≥ 4次 + 连续3次认识</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">条件依赖绝对时间，短计划达不到</td>
+      <td style="padding:8px;color:#2f5cff">条件只看复习表现，与计划天数无关</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">60天穿插一次</td>
+      <td style="padding:8px;color:#2f5cff">每周随机抽5个已掌握词穿插</td>
+    </tr>
+    <tr>
+      <td style="padding:8px">目标天数与掌握混淆</td>
+      <td style="padding:8px;color:#2f5cff">目标天数=打卡承诺，掌握=每个词的独立状态</td>
+    </tr>
+  </table>
+</div>

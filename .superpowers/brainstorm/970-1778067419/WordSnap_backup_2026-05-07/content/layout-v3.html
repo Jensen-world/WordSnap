@@ -1,0 +1,275 @@
+<h2>布局 v3 · 胶囊 Tab + 紧凑底部</h2>
+<p class="subtitle">品牌名右侧缩进、Tab 改胶囊切换、底部与卡片同宽</p>
+
+<div class="section" style="display:flex;gap:24px;align-items:flex-start">
+
+<!-- 记单词 -->
+<div class="mockup" style="flex:1;max-width:375px">
+  <div class="mockup-header">记单词</div>
+  <div class="mockup-body" style="background:#f9f9fb;min-height:600px;padding:0;display:flex;flex-direction:column">
+
+    <!-- Header -->
+    <div style="background:#fff;border-bottom:1px solid #e2e2ea;padding:14px 16px 10px">
+      <!-- Row 1: brand + settings -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 0 10px 8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-family:Inter,sans-serif;font-size:17px;font-weight:600;color:#0b0b0f;letter-spacing:-0.02em">见词</span>
+          <span style="font-family:Inter,sans-serif;font-size:12px;color:#bbb;font-weight:400">WordSnap</span>
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <!-- Row 2: capsule tabs -->
+      <div style="display:flex;gap:6px;padding:0 0 0 8px">
+        <div style="padding:6px 14px;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#fff;white-space:nowrap">记单词</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#999;white-space:nowrap">单词本</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#999;white-space:nowrap">档案卡</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;gap:14px">
+      <div style="display:flex;gap:10px;width:100%">
+        <div style="flex:1;background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px;text-align:center">
+          <div style="font-family:JetBrains Mono,monospace;font-size:24px;color:#2f5cff">12</div>
+          <div style="font-family:Inter,sans-serif;font-size:11px;color:#999;margin-top:2px">待复习</div>
+        </div>
+        <div style="flex:1;background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px;text-align:center">
+          <div style="font-family:JetBrains Mono,monospace;font-size:24px;color:#00c896">48</div>
+          <div style="font-family:Inter,sans-serif;font-size:11px;color:#999;margin-top:2px">已掌握</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:20px;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;max-width:270px">
+        <span style="font-family:Georgia,serif;font-size:28px;color:#0b0b0f;font-weight:600">ephemeral</span>
+      </div>
+
+      <p style="font-family:Inter,sans-serif;font-size:12px;color:#7068f0">点击翻转查看释义</p>
+    </div>
+
+    <!-- Bottom bar: match card width -->
+    <div style="padding:0 20px 16px">
+      <div style="display:flex;gap:0;align-items:center;justify-content:center;background:#f0f0f5;border-radius:100px;padding:4px;gap:24px">
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M12 3v4"/></svg>
+          拍照
+        </button>
+        <div style="width:1px;height:12px;background:#ddd"></div>
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          记录
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 单词本 -->
+<div class="mockup" style="flex:1;max-width:375px">
+  <div class="mockup-header">单词本</div>
+  <div class="mockup-body" style="background:#f9f9fb;min-height:600px;padding:0;display:flex;flex-direction:column">
+
+    <div style="background:#fff;border-bottom:1px solid #e2e2ea;padding:14px 16px 10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 0 10px 8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-family:Inter,sans-serif;font-size:17px;font-weight:600;color:#0b0b0f;letter-spacing:-0.02em">见词</span>
+          <span style="font-family:Inter,sans-serif;font-size:12px;color:#bbb;font-weight:400">WordSnap</span>
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <div style="display:flex;gap:6px;padding:0 0 0 8px">
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#999;white-space:nowrap">记单词</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#fff;white-space:nowrap">单词本</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#999;white-space:nowrap">档案卡</div>
+      </div>
+    </div>
+
+    <div style="flex:1;padding:12px 20px;display:flex;flex-direction:column;gap:8px;overflow-y:auto">
+      <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e2ea;border-radius:12px;padding:9px 12px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span style="font-family:Inter,sans-serif;font-size:13px;color:#bbb">搜索</span>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="font-family:Georgia,serif;font-size:18px;font-weight:600;color:#0b0b0f">ephemeral</span>
+          <p style="font-family:Inter,sans-serif;font-size:12px;color:#999;margin:3px 0 0">短暂的，转瞬即逝的</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="padding:2px 8px;border-radius:10px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:10px;color:#666">GRE</span>
+          <div style="width:7px;height:7px;border-radius:50%;background:#00c896"></div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="font-family:Georgia,serif;font-size:18px;font-weight:600;color:#0b0b0f">serendipity</span>
+          <p style="font-family:Inter,sans-serif;font-size:12px;color:#999;margin:3px 0 0">意外发现美好事物的能力</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="padding:2px 8px;border-radius:10px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:10px;color:#666">旅行</span>
+          <div style="width:7px;height:7px;border-radius:50%;background:#7068f0"></div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span style="font-family:Georgia,serif;font-size:18px;font-weight:600;color:#0b0b0f">ubiquitous</span>
+          <p style="font-family:Inter,sans-serif;font-size:12px;color:#999;margin:3px 0 0">无处不在的</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="padding:2px 8px;border-radius:10px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:10px;color:#666">工作</span>
+          <div style="width:7px;height:7px;border-radius:50%;background:#00c896"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar: same width as cards (padding: 20px) -->
+    <div style="padding:0 20px 16px">
+      <div style="display:flex;gap:0;align-items:center;justify-content:center;background:#f0f0f5;border-radius:100px;padding:4px;gap:24px">
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M12 3v4"/></svg>
+          拍照
+        </button>
+        <div style="width:1px;height:12px;background:#ddd"></div>
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          记录
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 档案卡 -->
+<div class="mockup" style="flex:1;max-width:375px">
+  <div class="mockup-header">档案卡</div>
+  <div class="mockup-body" style="background:#f9f9fb;min-height:600px;padding:0;display:flex;flex-direction:column">
+
+    <div style="background:#fff;border-bottom:1px solid #e2e2ea;padding:14px 16px 10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 0 10px 8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-family:Inter,sans-serif;font-size:17px;font-weight:600;color:#0b0b0f;letter-spacing:-0.02em">见词</span>
+          <span style="font-family:Inter,sans-serif;font-size:12px;color:#bbb;font-weight:400">WordSnap</span>
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <div style="display:flex;gap:6px;padding:0 0 0 8px">
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#999;white-space:nowrap">记单词</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#f0f0f5;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#999;white-space:nowrap">单词本</div>
+        <div style="padding:6px 14px;border-radius:100px;background:#2f5cff;font-family:Inter,sans-serif;font-size:12px;font-weight:500;color:#fff;white-space:nowrap">档案卡</div>
+      </div>
+    </div>
+
+    <div style="flex:1;padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:10px">
+        <div style="flex:1;background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px;text-align:center">
+          <div style="font-family:JetBrains Mono,monospace;font-size:22px;color:#2f5cff">60</div>
+          <div style="font-family:Inter,sans-serif;font-size:10px;color:#999;margin-top:2px">总词汇</div>
+        </div>
+        <div style="flex:1;background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px;text-align:center">
+          <div style="font-family:JetBrains Mono,monospace;font-size:22px;color:#00c896">48</div>
+          <div style="font-family:Inter,sans-serif;font-size:10px;color:#999;margin-top:2px">已掌握</div>
+        </div>
+        <div style="flex:1;background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px;text-align:center">
+          <div style="font-family:JetBrains Mono,monospace;font-size:22px;color:#ffa940">12</div>
+          <div style="font-family:Inter,sans-serif;font-size:10px;color:#999;margin-top:2px">学习中</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:18px">
+        <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase">学习记录</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+          <div>
+            <div style="font-family:JetBrains Mono,monospace;font-size:30px;color:#0b0b0f">7</div>
+            <div style="font-family:Inter,sans-serif;font-size:11px;color:#999">连续打卡</div>
+          </div>
+          <div style="width:44px;height:44px;border-radius:50%;background:#fff3e0;display:flex;align-items:center;justify-content:center;font-size:22px">🔥</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:18px">
+        <span style="font-family:Inter,sans-serif;font-size:10px;font-weight:600;color:#999;text-transform:uppercase">复习趋势</span>
+        <div style="display:flex;align-items:flex-end;gap:6px;justify-content:center;padding-top:12px;height:64px">
+          <div style="width:20px;height:35%;background:#f0f0f5;border-radius:4px"></div>
+          <div style="width:20px;height:55%;background:#f0f0f5;border-radius:4px"></div>
+          <div style="width:20px;height:30%;background:#f0f0f5;border-radius:4px"></div>
+          <div style="width:20px;height:75%;background:#2f5cff;border-radius:4px"></div>
+          <div style="width:20px;height:50%;background:#f0f0f5;border-radius:4px"></div>
+          <div style="width:20px;height:85%;background:#2f5cff;border-radius:4px"></div>
+          <div style="width:20px;height:65%;background:#2f5cff;border-radius:4px"></div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-family:Inter,sans-serif;font-size:14px;color:#0b0b0f">导出数据</div>
+          <div style="font-family:Inter,sans-serif;font-size:10px;color:#999;margin-top:1px">JSON 格式备份</div>
+        </div>
+        <span style="color:#bbb">&rarr;</span>
+      </div>
+      <div style="background:#fff;border:1px solid #e2e2ea;border-radius:16px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-family:Inter,sans-serif;font-size:14px;color:#0b0b0f">导入数据</div>
+          <div style="font-family:Inter,sans-serif;font-size:10px;color:#999;margin-top:1px">从备份恢复</div>
+        </div>
+        <span style="color:#bbb">&rarr;</span>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div style="padding:0 20px 16px">
+      <div style="display:flex;gap:0;align-items:center;justify-content:center;background:#f0f0f5;border-radius:100px;padding:4px;gap:24px">
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3"/><path d="M12 3v4"/></svg>
+          拍照
+        </button>
+        <div style="width:1px;height:12px;background:#ddd"></div>
+        <button style="padding:6px 16px;border-radius:100px;border:none;background:#fff;font-family:Inter,sans-serif;font-size:13px;color:#0b0b0f;display:flex;align-items:center;gap:5px;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0b0b0f" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          记录
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>调整内容</h3>
+  <table style="width:100%">
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <th style="text-align:left;padding:8px;color:var(--text-secondary)">位置</th>
+      <th style="text-align:left;padding:8px;color:var(--text-secondary)">之前</th>
+      <th style="text-align:left;padding:8px;color:#2f5cff">调整为</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">产品名</td>
+      <td style="padding:8px">左对齐，无缩进</td>
+      <td style="padding:8px;color:#2f5cff">左缩进 8px，与设置同列</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">Tab 切换</td>
+      <td style="padding:8px">文字 + 下划线</td>
+      <td style="padding:8px;color:#2f5cff">胶囊 pill：选中=蓝底白字 / 未选中=灰底灰字</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">设置按钮</td>
+      <td style="padding:8px">与 Tab 同行右侧</td>
+      <td style="padding:8px;color:#2f5cff">与产品名同行右侧</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--light-border)">
+      <td style="padding:8px">底部按钮</td>
+      <td style="padding:8px">内按钮 14px 字、9px padding</td>
+      <td style="padding:8px;color:#2f5cff">内按钮 12px 字、7px padding，整体更小</td>
+    </tr>
+    <tr>
+      <td style="padding:8px">底部宽度</td>
+      <td style="padding:8px">max-width 320px 居中</td>
+      <td style="padding:8px;color:#2f5cff">左右 20px padding，与单词卡片同宽</td>
+    </tr>
+  </table>
+</div>

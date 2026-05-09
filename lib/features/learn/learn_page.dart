@@ -62,10 +62,12 @@ class _LearnPageState extends ConsumerState<LearnPage> {
       return const Center(child: Text('暂无单词本', style: TextStyle(color: Color(0xFF999999))));
     }
 
+    final bottomPad = MediaQuery.of(context).padding.bottom + 120;
+
     return RefreshIndicator(
       onRefresh: () => ref.read(learnStateProvider.notifier).load(),
       child: ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, bottomPad),
       children: [
         _NotebookCard(
           name: current.name,

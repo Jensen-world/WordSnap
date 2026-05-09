@@ -1,0 +1,810 @@
+- generic [active] [ref=e1]:
+  - heading "见词 WordSnap · 全部页面" [level=2] [ref=e2]
+  - paragraph [ref=e3]: 记单词 · 学习设置 · 学习卡片 · 学习释义 · 单词本 · 新建单词本 · 单词本详情 · 单词详情 · 档案卡 · 设置 · 导出 · 导入预览 · 导入完成 · 手动输入 · 拍照识别 · 分享收录
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: 启动页. 启动页 · Splash
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - generic [ref=e9]: 9:41
+          - generic [ref=e10]: Wi-Fi ▮▮▮▮
+        - generic [ref=e12]:
+          - img [ref=e13]
+          - generic [ref=e16]:
+            - generic [ref=e17]: 见词
+            - generic [ref=e18]: WordSnap
+    - generic [ref=e22]:
+      - generic [ref=e23]: 1. 记单词 · 主页
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - generic [ref=e26]: 9:41
+          - generic [ref=e27]: Wi-Fi ▮▮▮▮
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - generic [ref=e31]:
+                - generic [ref=e32]: 见词
+                - generic [ref=e33]: WordSnap
+              - img [ref=e34]
+            - generic [ref=e35]:
+              - generic [ref=e36]: 记单词
+              - generic [ref=e37]: 单词本
+              - generic [ref=e38]: 档案卡
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - generic [ref=e41]: 正在学习的单词本
+              - generic [ref=e42]:
+                - img [ref=e44]
+                - generic [ref=e47]:
+                  - generic [ref=e48]: 拾词集
+                  - generic [ref=e49]:
+                    - generic [ref=e50]: 12 待复习
+                    - generic [ref=e51]: 21 掌握
+                    - generic [ref=e52]: 35 总计
+                - button [ref=e53] [cursor=pointer]:
+                  - img [ref=e54]
+              - generic [ref=e59]:
+                - generic [ref=e60]: 已掌握 60%
+                - generic [ref=e61]: 21 / 35
+            - generic [ref=e62]:
+              - generic [ref=e63]: 今日学习计划
+              - generic [ref=e64]:
+                - generic [ref=e65]:
+                  - generic [ref=e66]: "8"
+                  - generic [ref=e67]: 新学词
+                - generic [ref=e68]:
+                  - generic [ref=e69]: "6"
+                  - generic [ref=e70]: 待复习
+              - generic [ref=e71]:
+                - generic [ref=e72]:
+                  - generic [ref=e73]: "10"
+                  - generic [ref=e74]: 每日新词
+                - generic [ref=e76]:
+                  - generic [ref=e77]: "23"
+                  - generic [ref=e78]: 预计天数
+                - generic [ref=e80]:
+                  - generic [ref=e81]: 10:1
+                  - generic [ref=e82]: 新复比
+              - button "开始学习" [ref=e83] [cursor=pointer]
+            - generic [ref=e84]:
+              - generic [ref=e85]:
+                - generic [ref=e86]: 每日一词
+                - generic [ref=e87]: 来自 GRE 核心词汇
+              - generic [ref=e88]: ephemeral
+              - generic [ref=e90]:
+                - button "美" [ref=e91] [cursor=pointer]:
+                  - text: 美
+                  - img [ref=e92]
+                - generic [ref=e96]: /ɪˈfemərəl/
+                - button [ref=e97] [cursor=pointer]:
+                  - img [ref=e98]
+              - generic [ref=e102]: adj. 短暂的，转瞬即逝的
+              - generic [ref=e103]:
+                - text: "\"Fame is ephemeral — don't chase it.\""
+                - button [ref=e104] [cursor=pointer]:
+                  - img [ref=e105]
+              - generic [ref=e109]: 名声是短暂的，不要追逐它。
+          - generic [ref=e111]:
+            - button "拍照" [ref=e112] [cursor=pointer]:
+              - img [ref=e113]
+              - text: 拍照
+            - button "记录" [ref=e117] [cursor=pointer]:
+              - img [ref=e118]
+              - text: 记录
+    - generic [ref=e123]:
+      - generic [ref=e124]: 2. 学习设置（弹出）
+      - generic [ref=e125]:
+        - generic [ref=e126]:
+          - generic [ref=e127]: 9:41
+          - generic [ref=e128]: Wi-Fi ▮▮▮▮
+        - generic [ref=e131]:
+          - generic [ref=e133]: 学习设置
+          - generic [ref=e134]:
+            - generic [ref=e135]: 切换单词本
+            - generic [ref=e136]:
+              - generic [ref=e137]:
+                - img [ref=e139]
+                - generic [ref=e142]: 拾词集
+              - img [ref=e143]
+            - generic [ref=e145]:
+              - generic [ref=e146]:
+                - img [ref=e147]
+                - generic [ref=e150]: 搜索单词本...
+              - generic [ref=e151]:
+                - generic [ref=e152]:
+                  - img [ref=e153]
+                  - generic [ref=e156]: 拾词集
+                  - generic [ref=e157]: 35词
+                - generic [ref=e158]:
+                  - img [ref=e159]
+                  - generic [ref=e162]: GRE 核心词汇
+                  - generic [ref=e163]: 32词
+                - generic [ref=e164]:
+                  - img [ref=e165]
+                  - generic [ref=e168]: 工作英语
+                  - generic [ref=e169]: 18词
+          - generic [ref=e170]:
+            - generic [ref=e171]: 每日新词上限
+            - generic [ref=e172]:
+              - generic [ref=e173]: 新词用完自动切纯复习
+              - generic [ref=e174]:
+                - button "−" [ref=e175] [cursor=pointer]
+                - generic [ref=e176]: "10"
+                - button "+" [ref=e177] [cursor=pointer]
+          - generic [ref=e178]:
+            - generic [ref=e179]: 剩余 23 个新词
+            - generic [ref=e180]:
+              - text: 预计
+              - strong [ref=e181]: 3 天
+              - text: 学完
+          - button "保存" [ref=e182] [cursor=pointer]
+    - generic [ref=e185]:
+      - generic [ref=e186]: 3a. 学习 · 卡片
+      - generic [ref=e187]:
+        - generic [ref=e188]:
+          - generic [ref=e189]: 9:41
+          - generic [ref=e190]: Wi-Fi ▮▮▮▮
+        - generic [ref=e191]:
+          - generic [ref=e192]:
+            - generic [ref=e193] [cursor=pointer]: ←
+            - generic [ref=e194]: 拾词集 · 学习中
+            - generic [ref=e195]: 3/8
+          - generic [ref=e196]:
+            - generic [ref=e197]: 新词
+            - generic [ref=e198]:
+              - generic [ref=e199]: ephemeral
+              - generic [ref=e200]:
+                - button "美" [ref=e201] [cursor=pointer]:
+                  - text: 美
+                  - img [ref=e202]
+                - generic [ref=e206]: /ɪˈfemərəl/
+                - button [ref=e207] [cursor=pointer]:
+                  - img [ref=e208]
+            - generic [ref=e212]:
+              - button "不认识" [ref=e213] [cursor=pointer]
+              - button "认识 ✓" [ref=e214] [cursor=pointer]
+          - generic [ref=e218]:
+            - generic [ref=e219]: ✓ 4
+            - generic [ref=e220]: ✗ 1
+    - generic [ref=e223]:
+      - generic [ref=e224]: 3b. 学习 · 释义
+      - generic [ref=e225]:
+        - generic [ref=e226]:
+          - generic [ref=e227]: 9:41
+          - generic [ref=e228]: Wi-Fi ▮▮▮▮
+        - generic [ref=e229]:
+          - generic [ref=e230]:
+            - generic [ref=e231] [cursor=pointer]: ←
+            - generic [ref=e232]: 拾词集 · 释义
+            - generic [ref=e233]: 3/8
+          - generic [ref=e234]:
+            - generic [ref=e235]:
+              - generic [ref=e236]: ephemeral
+              - generic [ref=e238]:
+                - button "美" [ref=e239] [cursor=pointer]:
+                  - text: 美
+                  - img [ref=e240]
+                - generic [ref=e244]: /ɪˈfemərəl/
+                - button [ref=e245] [cursor=pointer]:
+                  - img [ref=e246]
+            - generic [ref=e250]:
+              - generic [ref=e251]: 释义
+              - generic [ref=e252]: adj.
+              - generic [ref=e253]:
+                - text: 1. 短暂的，转瞬即逝的
+                - text: 2. 朝生暮死的（生物）
+            - generic [ref=e254]:
+              - generic [ref=e255]: 例句
+              - generic [ref=e256]:
+                - text: "\"Fame is ephemeral — don't chase it.\""
+                - button [ref=e257] [cursor=pointer]:
+                  - img [ref=e258]
+              - generic [ref=e262]: 名声是短暂的，不要追逐它。
+              - generic [ref=e263]:
+                - text: "\"The cherry blossoms are ephemeral, lasting only a few days.\""
+                - button [ref=e264] [cursor=pointer]:
+                  - img [ref=e265]
+              - generic [ref=e269]: 樱花转瞬即逝，只开几天。
+            - button "下一词 →" [ref=e270] [cursor=pointer]
+    - generic [ref=e273]:
+      - generic [ref=e274]: 4. 单词本（Notebook 列表）
+      - generic [ref=e275]:
+        - generic [ref=e276]:
+          - generic [ref=e277]: 9:41
+          - generic [ref=e278]: Wi-Fi ▮▮▮▮
+        - generic [ref=e279]:
+          - generic [ref=e280]:
+            - generic [ref=e281]:
+              - generic [ref=e282]:
+                - generic [ref=e283]: 见词
+                - generic [ref=e284]: WordSnap
+              - img [ref=e285]
+            - generic [ref=e286]:
+              - generic [ref=e287]: 记单词
+              - generic [ref=e288]: 单词本
+              - generic [ref=e289]: 档案卡
+          - generic [ref=e290]:
+            - generic [ref=e291]:
+              - img [ref=e293]
+              - generic [ref=e296]:
+                - generic [ref=e297]:
+                  - generic [ref=e298]: 拾词集
+                  - generic [ref=e299]: 默认
+                - generic [ref=e300]: 12待复习 · 21掌握 · 35总计
+              - button [ref=e301] [cursor=pointer]:
+                - img [ref=e302]
+            - generic [ref=e305]:
+              - img [ref=e307]
+              - generic [ref=e311]:
+                - generic [ref=e313]: GRE 核心词汇
+                - generic [ref=e314]: 8待复习 · 21掌握 · 32总计
+              - button [ref=e315] [cursor=pointer]:
+                - img [ref=e316]
+            - generic [ref=e319]:
+              - img [ref=e321]
+              - generic [ref=e325]:
+                - generic [ref=e327]: 工作英语
+                - generic [ref=e328]: 13待复习 · 5掌握 · 18总计
+              - button [ref=e329] [cursor=pointer]:
+                - img [ref=e330]
+            - button "+ 新建单词本" [ref=e333] [cursor=pointer]
+          - generic [ref=e335]:
+            - button "拍照" [ref=e336] [cursor=pointer]:
+              - img [ref=e337]
+              - text: 拍照
+            - button "记录" [ref=e341] [cursor=pointer]:
+              - img [ref=e342]
+              - text: 记录
+    - generic [ref=e347]:
+      - generic [ref=e348]: 新建. 新建单词本（弹出）
+      - generic [ref=e349]:
+        - generic [ref=e350]:
+          - generic [ref=e351]: 9:41
+          - generic [ref=e352]: Wi-Fi ▮▮▮▮
+        - generic [ref=e355]:
+          - generic [ref=e357]: 新建单词本
+          - generic [ref=e358]:
+            - generic [ref=e359]: 名称
+            - textbox "输入单词本名称..." [ref=e360]
+          - button "创建" [ref=e361] [cursor=pointer]
+          - button "取消" [ref=e362] [cursor=pointer]
+    - generic [ref=e365]:
+      - generic [ref=e366]: 5. 单词本详情（本子内单词）
+      - generic [ref=e367]:
+        - generic [ref=e368]:
+          - generic [ref=e369]: 9:41
+          - generic [ref=e370]: Wi-Fi ▮▮▮▮
+        - generic [ref=e371]:
+          - generic [ref=e372]:
+            - generic [ref=e373] [cursor=pointer]: ←
+            - generic [ref=e374]: 拾词集
+            - button "管理" [ref=e375] [cursor=pointer]:
+              - text: 管理
+              - img [ref=e376]
+          - generic [ref=e378]:
+            - button "全部" [ref=e379] [cursor=pointer]
+            - button "新词" [ref=e380] [cursor=pointer]
+            - button "掌握" [ref=e381] [cursor=pointer]
+          - generic [ref=e382]:
+            - generic [ref=e383]: 5月7日
+            - generic [ref=e384]:
+              - generic [ref=e386]:
+                - generic [ref=e387]: ephemeral
+                - generic [ref=e388]: adj.
+                - generic [ref=e389]: 短暂的
+              - button [ref=e390] [cursor=pointer]:
+                - img [ref=e391]
+            - generic [ref=e395]:
+              - generic [ref=e397]:
+                - generic [ref=e398]: serendipity
+                - generic [ref=e399]: n.
+                - generic [ref=e400]: 意外发现
+              - button [ref=e401] [cursor=pointer]:
+                - img [ref=e402]
+            - generic [ref=e406]: 5月5日
+            - generic [ref=e407]:
+              - generic [ref=e409]:
+                - generic [ref=e410]: ubiquitous
+                - generic [ref=e411]: adj.
+                - generic [ref=e412]: 无处不在的
+              - button [ref=e413] [cursor=pointer]:
+                - img [ref=e414]
+            - generic [ref=e418]:
+              - generic [ref=e420]:
+                - generic [ref=e421]: eloquent
+                - generic [ref=e422]: adj.
+                - generic [ref=e423]: 雄辩的
+              - button [ref=e424] [cursor=pointer]:
+                - img [ref=e425]
+            - generic [ref=e429]: 2025/12/3
+            - generic [ref=e430]:
+              - generic [ref=e432]:
+                - generic [ref=e433]: pragmatic
+                - generic [ref=e434]: adj.
+                - generic [ref=e435]: 务实的
+              - button [ref=e436] [cursor=pointer]:
+                - img [ref=e437]
+            - generic [ref=e441]:
+              - generic [ref=e443]:
+                - generic [ref=e444]: resilience
+                - generic [ref=e445]: n.
+                - generic [ref=e446]: 韧性
+              - button [ref=e447] [cursor=pointer]:
+                - img [ref=e448]
+    - generic [ref=e454]:
+      - generic [ref=e455]: 单词. 单词详情
+      - generic [ref=e456]:
+        - generic [ref=e457]:
+          - generic [ref=e458]: 9:41
+          - generic [ref=e459]: Wi-Fi ▮▮▮▮
+        - generic [ref=e460]:
+          - generic [ref=e461]:
+            - generic [ref=e462] [cursor=pointer]: ←
+            - generic [ref=e463]: 单词详情
+            - button [ref=e464] [cursor=pointer]:
+              - img [ref=e465]
+          - generic [ref=e468]:
+            - generic [ref=e469]:
+              - generic [ref=e470]: ephemeral
+              - generic [ref=e472]:
+                - button "美" [ref=e473] [cursor=pointer]:
+                  - text: 美
+                  - img [ref=e474]
+                - generic [ref=e478]: /ɪˈfemərəl/
+                - button [ref=e479] [cursor=pointer]:
+                  - img [ref=e480]
+            - generic [ref=e484]:
+              - generic [ref=e485]: 释义
+              - generic [ref=e486]: adj.
+              - generic [ref=e487]:
+                - text: 1. 短暂的，转瞬即逝的
+                - text: 2. 朝生暮死的（生物）
+            - generic [ref=e488]:
+              - generic [ref=e489]: 例句
+              - generic [ref=e490]:
+                - text: "\"Fame is ephemeral — don't chase it.\""
+                - button [ref=e491] [cursor=pointer]:
+                  - img [ref=e492]
+              - generic [ref=e496]: 名声是短暂的，不要追逐它。
+              - generic [ref=e497]:
+                - text: "\"The cherry blossoms are ephemeral, lasting only a few days.\""
+                - button [ref=e498] [cursor=pointer]:
+                  - img [ref=e499]
+              - generic [ref=e503]: 樱花转瞬即逝，只开几天。
+            - generic [ref=e504]:
+              - generic [ref=e505]: 学习状态
+              - generic [ref=e506]:
+                - generic [ref=e507]:
+                  - text: 录入时间
+                  - generic [ref=e508]: 2026/5/7
+                - generic [ref=e509]:
+                  - text: 状态
+                  - generic [ref=e510]: 复习中
+                - generic [ref=e511]:
+                  - text: 复习次数
+                  - generic [ref=e512]: 7/10
+            - generic [ref=e513]:
+              - generic [ref=e514]: 标签
+              - generic [ref=e515]:
+                - generic [ref=e516]: GRE
+                - generic [ref=e517]: 高频
+                - button "+ 添加" [ref=e518] [cursor=pointer]
+            - generic [ref=e519]:
+              - generic [ref=e520]: 录入来源
+              - generic [ref=e521]:
+                - img [ref=e522]
+                - generic [ref=e525]: 剪贴板
+                - generic [ref=e526]: 2026/5/7
+    - generic [ref=e529]:
+      - generic [ref=e530]: 6. 档案卡
+      - generic [ref=e531]:
+        - generic [ref=e532]:
+          - generic [ref=e533]: 9:41
+          - generic [ref=e534]: Wi-Fi ▮▮▮▮
+        - generic [ref=e535]:
+          - generic [ref=e536]:
+            - generic [ref=e537]:
+              - generic [ref=e538]:
+                - generic [ref=e539]: 见词
+                - generic [ref=e540]: WordSnap
+              - img [ref=e541]
+            - generic [ref=e542]:
+              - generic [ref=e543]: 记单词
+              - generic [ref=e544]: 单词本
+              - generic [ref=e545]: 档案卡
+          - generic [ref=e546]:
+            - generic [ref=e547]:
+              - generic [ref=e548]: 已掌握
+              - generic [ref=e549]: "42"
+              - generic [ref=e550]: 个单词
+              - generic [ref=e551]:
+                - generic [ref=e552]:
+                  - generic [ref=e553]: 首次学习
+                  - generic [ref=e554]: 2026/5/1
+                - generic [ref=e555]:
+                  - generic [ref=e556]: 学习天数
+                  - generic [ref=e557]: 12 天
+                - generic [ref=e558]:
+                  - generic [ref=e559]: 复习总次数
+                  - generic [ref=e560]: "328"
+            - generic [ref=e561]:
+              - generic [ref=e562]:
+                - generic [ref=e563]: "89"
+                - generic [ref=e564]: 词汇总量
+              - generic [ref=e565]:
+                - generic [ref=e566]: "47"
+                - generic [ref=e567]: 复习中
+              - generic [ref=e568]:
+                - generic [ref=e569]: "3"
+                - generic [ref=e570]: 单词本
+            - generic [ref=e571]: 成就
+            - generic [ref=e572]:
+              - generic [ref=e573]:
+                - generic [ref=e574]: ✓
+                - generic [ref=e575]: 掌握 10 词
+              - generic [ref=e576]:
+                - generic [ref=e577]: ○
+                - generic [ref=e578]: 掌握 100 词
+                - generic [ref=e579]: 42/100
+              - generic [ref=e580]:
+                - generic [ref=e581]: ○
+                - generic [ref=e582]: 掌握 1000 词
+                - generic [ref=e583]: 42/1000
+              - generic [ref=e584]:
+                - generic [ref=e585]: ○
+                - generic [ref=e586]: 掌握 5000 词
+                - generic [ref=e587]: 42/5000
+              - generic [ref=e588]:
+                - generic [ref=e589]: ✓
+                - generic [ref=e590]: 连续学习 7 天
+              - generic [ref=e591]:
+                - generic [ref=e592]: ○
+                - generic [ref=e593]: 连续学习 30 天
+                - generic [ref=e594]: 12/30
+              - generic [ref=e595]:
+                - generic [ref=e596]: ○
+                - generic [ref=e597]: 连续学习 90 天
+                - generic [ref=e598]: 12/90
+              - generic [ref=e599]:
+                - generic [ref=e600]: ○
+                - generic [ref=e601]: 连续学习 180 天
+                - generic [ref=e602]: 12/180
+              - generic [ref=e603]:
+                - generic [ref=e604]: ○
+                - generic [ref=e605]: 创建 3 个单词本
+                - generic [ref=e606]: 1/3
+              - generic [ref=e607]:
+                - generic [ref=e608]: ○
+                - generic [ref=e609]: 创建 10 个单词本
+                - generic [ref=e610]: 1/10
+          - generic [ref=e612]:
+            - button "拍照" [ref=e613] [cursor=pointer]:
+              - img [ref=e614]
+              - text: 拍照
+            - button "记录" [ref=e618] [cursor=pointer]:
+              - img [ref=e619]
+              - text: 记录
+    - generic [ref=e624]:
+      - generic [ref=e625]: 7. 设置
+      - generic [ref=e626]:
+        - generic [ref=e627]:
+          - generic [ref=e628]: 9:41
+          - generic [ref=e629]: Wi-Fi ▮▮▮▮
+        - generic [ref=e630]:
+          - generic [ref=e631]:
+            - generic [ref=e632] [cursor=pointer]: ←
+            - generic [ref=e633]: 设置
+          - generic [ref=e634]:
+            - generic [ref=e635]: 数据管理
+            - generic [ref=e636]:
+              - generic [ref=e637]:
+                - generic [ref=e638]:
+                  - generic [ref=e639]: 导出数据
+                  - generic [ref=e640]: JSON 文件，含所有单词本和单词
+                - generic [ref=e641]: ▸
+              - generic [ref=e642]:
+                - generic [ref=e643]:
+                  - generic [ref=e644]: 导入数据
+                  - generic [ref=e645]: 从 JSON 文件恢复，同名去重合并
+                - generic [ref=e646]: ▸
+            - generic [ref=e647]: 其他
+            - generic [ref=e648]:
+              - generic [ref=e650]: 剪贴板监听
+              - generic [ref=e653]:
+                - generic [ref=e654]: 关于见词
+                - generic [ref=e655]: v1.0.0
+    - generic [ref=e658]:
+      - generic [ref=e659]: 7-导出. 导出成功
+      - generic [ref=e660]:
+        - generic [ref=e661]:
+          - generic [ref=e662]: 9:41
+          - generic [ref=e663]: Wi-Fi ▮▮▮▮
+        - generic [ref=e664]:
+          - generic [ref=e665]:
+            - generic [ref=e666] [cursor=pointer]: ←
+            - generic [ref=e667]: 设置
+          - generic [ref=e668]:
+            - generic [ref=e669]: 数据管理
+            - generic [ref=e670]:
+              - generic [ref=e671]:
+                - generic [ref=e672]:
+                  - generic [ref=e673]: 导出数据
+                  - generic [ref=e674]: JSON 文件，含所有单词本和单词
+                - generic [ref=e675]: ">"
+              - generic [ref=e676]:
+                - generic [ref=e677]:
+                  - generic [ref=e678]: 导入数据
+                  - generic [ref=e679]: 从 JSON 文件恢复，同名去重合并
+                - generic [ref=e680]: ">"
+            - generic [ref=e681]: 其他
+            - generic [ref=e682]:
+              - generic [ref=e684]: 剪贴板监听
+              - generic [ref=e687]:
+                - generic [ref=e688]: 关于见词
+                - generic [ref=e689]: v1.0.0
+          - generic [ref=e691]:
+            - img [ref=e693]
+            - generic [ref=e695]: 导出成功
+            - generic [ref=e696]:
+              - generic [ref=e697]: wordsnap_backup_2026-05-07.json
+              - generic [ref=e698]: 89 词 · 3 个单词本
+            - generic [ref=e699]:
+              - button "分享文件" [ref=e700] [cursor=pointer]
+              - button "完成" [ref=e701] [cursor=pointer]
+    - generic [ref=e704]:
+      - generic [ref=e705]: 7-导入预览. 导入预览
+      - generic [ref=e706]:
+        - generic [ref=e707]:
+          - generic [ref=e708]: 9:41
+          - generic [ref=e709]: Wi-Fi ▮▮▮▮
+        - generic [ref=e710]:
+          - generic [ref=e711]:
+            - generic [ref=e712] [cursor=pointer]: ←
+            - generic [ref=e713]: 设置
+          - generic [ref=e714]:
+            - generic [ref=e715]: 数据管理
+            - generic [ref=e716]:
+              - generic [ref=e717]:
+                - generic [ref=e718]:
+                  - generic [ref=e719]: 导出数据
+                  - generic [ref=e720]: JSON 文件，含所有单词本和单词
+                - generic [ref=e721]: ">"
+              - generic [ref=e722]:
+                - generic [ref=e723]:
+                  - generic [ref=e724]: 导入数据
+                  - generic [ref=e725]: 从 JSON 文件恢复，同名去重合并
+                - generic [ref=e726]: ">"
+            - generic [ref=e727]: 其他
+            - generic [ref=e728]:
+              - generic [ref=e730]: 剪贴板监听
+              - generic [ref=e733]:
+                - generic [ref=e734]: 关于见词
+                - generic [ref=e735]: v1.0.0
+          - generic [ref=e737]:
+            - generic [ref=e738]: 导入预览
+            - generic [ref=e739]:
+              - generic [ref=e740]:
+                - generic [ref=e741]: "3"
+                - generic [ref=e742]: 单词本
+              - generic [ref=e743]:
+                - generic [ref=e744]: "47"
+                - generic [ref=e745]: 新增词
+              - generic [ref=e746]:
+                - generic [ref=e747]: "12"
+                - generic [ref=e748]: 已存在
+            - generic [ref=e749]:
+              - generic [ref=e750]:
+                - generic [ref=e751]: 📖 拾词集
+                - generic [ref=e752]: 35词 · 已存在
+              - generic [ref=e753]:
+                - generic [ref=e754]: 📖 GRE 核心词汇
+                - generic [ref=e755]: 32词 · 已存在
+              - generic [ref=e756]:
+                - generic [ref=e757]: 📖 医学英语
+                - generic [ref=e758]: 20词 · 新增
+            - generic [ref=e759]: 导入规则：同名单词本合并，同词去重
+            - generic [ref=e760]:
+              - button "取消" [ref=e761] [cursor=pointer]
+              - button "确认导入" [ref=e762] [cursor=pointer]
+    - generic [ref=e765]:
+      - generic [ref=e766]: 7-导入完成. 导入完成
+      - generic [ref=e767]:
+        - generic [ref=e768]:
+          - generic [ref=e769]: 9:41
+          - generic [ref=e770]: Wi-Fi ▮▮▮▮
+        - generic [ref=e771]:
+          - generic [ref=e772]:
+            - generic [ref=e773] [cursor=pointer]: ←
+            - generic [ref=e774]: 设置
+          - generic [ref=e775]:
+            - generic [ref=e776]: 数据管理
+            - generic [ref=e777]:
+              - generic [ref=e778]:
+                - generic [ref=e779]:
+                  - generic [ref=e780]: 导出数据
+                  - generic [ref=e781]: JSON 文件，含所有单词本和单词
+                - generic [ref=e782]: ">"
+              - generic [ref=e783]:
+                - generic [ref=e784]:
+                  - generic [ref=e785]: 导入数据
+                  - generic [ref=e786]: 从 JSON 文件恢复，同名去重合并
+                - generic [ref=e787]: ">"
+            - generic [ref=e788]: 其他
+            - generic [ref=e789]:
+              - generic [ref=e791]: 剪贴板监听
+              - generic [ref=e794]:
+                - generic [ref=e795]: 关于见词
+                - generic [ref=e796]: v1.0.0
+          - generic [ref=e798]:
+            - img [ref=e800]
+            - generic [ref=e802]: 导入完成
+            - generic [ref=e803]: 新增 47 词，合并 2 个单词本
+            - button "完成" [ref=e804] [cursor=pointer]
+    - generic [ref=e807]:
+      - generic [ref=e808]: 8a. 手动输入
+      - generic [ref=e809]:
+        - generic [ref=e810]:
+          - generic [ref=e811]: 9:41
+          - generic [ref=e812]: Wi-Fi ▮▮▮▮
+        - generic [ref=e815]:
+          - generic [ref=e817]: 输入单词
+          - generic [ref=e819]: 输入英文单词...
+          - generic [ref=e820]: 查询结果
+          - generic [ref=e821]:
+            - generic [ref=e822]: ephemeral
+            - generic [ref=e823]:
+              - button "美" [ref=e824] [cursor=pointer]:
+                - text: 美
+                - img [ref=e825]
+              - generic [ref=e828]: /ɪˈfemərəl/
+              - button [ref=e829] [cursor=pointer]:
+                - img [ref=e830]
+            - generic [ref=e834]: adj.
+            - generic [ref=e835]:
+              - text: 1. 短暂的，转瞬即逝的
+              - text: 2. 朝生暮死的（生物）
+          - generic [ref=e836]:
+            - generic [ref=e837]: 存入
+            - generic [ref=e838]: 拾词集
+            - img [ref=e839]
+          - generic [ref=e841]:
+            - button "取消" [ref=e842] [cursor=pointer]
+            - button "确认添加" [ref=e843] [cursor=pointer]
+    - generic [ref=e846]:
+      - generic [ref=e847]: 8b. 拍照识别
+      - generic [ref=e848]:
+        - generic [ref=e849]:
+          - generic [ref=e850]: 9:41
+          - generic [ref=e851]: Wi-Fi ▮▮▮▮
+        - generic [ref=e852]:
+          - generic [ref=e853]:
+            - generic [ref=e854] [cursor=pointer]: ←
+            - generic [ref=e855]: 拍照识别
+          - generic [ref=e856]:
+            - generic [ref=e857]:
+              - generic [ref=e861]: 轻触拍照
+              - img [ref=e864]
+            - generic [ref=e866]:
+              - generic [ref=e867]: 识别到 4 个单词 · 点选添加
+              - generic [ref=e868]:
+                - generic [ref=e869]: ephemeral ✓
+                - generic [ref=e870]: ubiquitous
+                - generic [ref=e871]: serendipity ✓
+                - generic [ref=e872]: eloquent
+              - generic [ref=e873]:
+                - generic [ref=e874]: 存入
+                - generic [ref=e875]: 拾词集
+                - img [ref=e876]
+              - button "添加选中词 (2)" [ref=e878] [cursor=pointer]
+    - generic [ref=e881]:
+      - generic [ref=e882]: 8c. 分享收录
+      - generic [ref=e883]:
+        - generic [ref=e884]:
+          - generic [ref=e885]: 9:41
+          - generic [ref=e886]: Wi-Fi ▮▮▮▮
+        - generic [ref=e889]:
+          - generic [ref=e891]:
+            - generic [ref=e892]: 已收到单词
+            - generic [ref=e893]: 来自 Chrome
+          - generic [ref=e894]:
+            - generic [ref=e895]: ephemeral
+            - generic [ref=e896]:
+              - button "美" [ref=e897] [cursor=pointer]:
+                - text: 美
+                - img [ref=e898]
+              - generic [ref=e901]: /ɪˈfemərəl/
+              - button [ref=e902] [cursor=pointer]:
+                - img [ref=e903]
+            - generic [ref=e907]: adj.
+            - generic [ref=e908]: 1. 短暂的，转瞬即逝的
+          - generic [ref=e909]:
+            - generic [ref=e910]: 存入
+            - generic [ref=e911]: 拾词集
+            - img [ref=e912]
+          - generic [ref=e914]:
+            - button "忽略" [ref=e915] [cursor=pointer]
+            - button "收录" [ref=e916] [cursor=pointer]
+  - generic [ref=e919]:
+    - heading "页面清单" [level=3] [ref=e920]
+    - table [ref=e921]:
+      - rowgroup [ref=e922]:
+        - row "# 页面 路由 说明" [ref=e923]:
+          - columnheader "#" [ref=e924]
+          - columnheader "页面" [ref=e925]
+          - columnheader "路由" [ref=e926]
+          - columnheader "说明" [ref=e927]
+        - row "1 记单词 /learn 默认 Tab，含当前本子卡片、计划摘要、今日学习" [ref=e928]:
+          - cell "1" [ref=e929]
+          - cell "记单词" [ref=e930]
+          - cell "/learn" [ref=e931]
+          - cell "默认 Tab，含当前本子卡片、计划摘要、今日学习" [ref=e932]
+        - row "2 学习设置 BottomSheet 从铅笔图标弹出，切换本子 + 每日上限" [ref=e933]:
+          - cell "2" [ref=e934]
+          - cell "学习设置" [ref=e935]
+          - cell "BottomSheet" [ref=e936]
+          - cell "从铅笔图标弹出，切换本子 + 每日上限" [ref=e937]
+        - row "3 学习/复习中 /learn/study 翻转卡片 + 认识/不认识 + 进度条" [ref=e938]:
+          - cell "3" [ref=e939]
+          - cell "学习/复习中" [ref=e940]
+          - cell "/learn/study" [ref=e941]
+          - cell "翻转卡片 + 认识/不认识 + 进度条" [ref=e942]
+        - row "4 单词本列表 /wordbook Notebook 卡片列表 + 新建入口" [ref=e943]:
+          - cell "4" [ref=e944]
+          - cell "单词本列表" [ref=e945]
+          - cell "/wordbook" [ref=e946]
+          - cell "Notebook 卡片列表 + 新建入口" [ref=e947]
+        - row "新建 新建单词本 BottomSheet 输入名称即创建，上限默认10" [ref=e948]:
+          - cell "新建" [ref=e949]
+          - cell "新建单词本" [ref=e950]
+          - cell "BottomSheet" [ref=e951]
+          - cell "输入名称即创建，上限默认10" [ref=e952]
+        - row "5 单词本详情 /wordbook/:id 本子内单词列表（含 SRS 状态）" [ref=e953]:
+          - cell "5" [ref=e954]
+          - cell "单词本详情" [ref=e955]
+          - cell "/wordbook/:id" [ref=e956]
+          - cell "本子内单词列表（含 SRS 状态）" [ref=e957]
+        - row "单词 单词详情 /word/:id 释义+例句+SRS状态+标签+来源" [ref=e958]:
+          - cell "单词" [ref=e959]
+          - cell "单词详情" [ref=e960]
+          - cell "/word/:id" [ref=e961]
+          - cell "释义+例句+SRS状态+标签+来源" [ref=e962]
+        - row "6 档案卡 /archive 学习统计 + 成就里程碑" [ref=e963]:
+          - cell "6" [ref=e964]
+          - cell "档案卡" [ref=e965]
+          - cell "/archive" [ref=e966]
+          - cell "学习统计 + 成就里程碑" [ref=e967]
+        - row "7 设置 /settings 导入/导出 + 剪贴板开关 + 关于" [ref=e968]:
+          - cell "7" [ref=e969]
+          - cell "设置" [ref=e970]
+          - cell "/settings" [ref=e971]
+          - cell "导入/导出 + 剪贴板开关 + 关于" [ref=e972]
+        - row "导出 导出成功 Dialog 导出完成弹窗，含文件名+词数统计+分享" [ref=e973]:
+          - cell "导出" [ref=e974]
+          - cell "导出成功" [ref=e975]
+          - cell "Dialog" [ref=e976]
+          - cell "导出完成弹窗，含文件名+词数统计+分享" [ref=e977]
+        - row "导入 导入预览 Dialog 解析JSON后预览单词本+新增词数+确认" [ref=e978]:
+          - cell "导入" [ref=e979]
+          - cell "导入预览" [ref=e980]
+          - cell "Dialog" [ref=e981]
+          - cell "解析JSON后预览单词本+新增词数+确认" [ref=e982]
+        - row "导入 导入完成 Dialog 导入结果摘要弹窗" [ref=e983]:
+          - cell "导入" [ref=e984]
+          - cell "导入完成" [ref=e985]
+          - cell "Dialog" [ref=e986]
+          - cell "导入结果摘要弹窗" [ref=e987]
+        - row "8a 手动输入 BottomSheet 点记录按钮弹出，输入单词→自动查释义→存入" [ref=e988]:
+          - cell "8a" [ref=e989]
+          - cell "手动输入" [ref=e990]
+          - cell "BottomSheet" [ref=e991]
+          - cell "点记录按钮弹出，输入单词→自动查释义→存入" [ref=e992]
+        - row "8b 拍照识别 FullScreen 点拍照按钮弹出，相机取景→OCR提词→点选添加" [ref=e993]:
+          - cell "8b" [ref=e994]
+          - cell "拍照识别" [ref=e995]
+          - cell "FullScreen" [ref=e996]
+          - cell "点拍照按钮弹出，相机取景→OCR提词→点选添加" [ref=e997]
+        - row "8c 分享收录 BottomSheet 其他App分享到见词，自动查释义→确认收录" [ref=e998]:
+          - cell "8c" [ref=e999]
+          - cell "分享收录" [ref=e1000]
+          - cell "BottomSheet" [ref=e1001]
+          - cell "其他App分享到见词，自动查释义→确认收录" [ref=e1002]

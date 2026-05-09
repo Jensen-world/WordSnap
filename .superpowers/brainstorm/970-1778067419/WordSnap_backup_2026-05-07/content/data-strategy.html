@@ -1,0 +1,48 @@
+<h2>数据持久化与同步策略</h2>
+<p class="subtitle">完全免费的前提下，本地和云端怎么分工？</p>
+
+<div class="section">
+  <h3>数据库选型</h3>
+  <div style="display:flex;gap:16px;margin-top:12px">
+    <div style="flex:1;background:#ffffff;border:2px solid var(--signal-blue);border-radius:12px;padding:16px">
+      <strong style="color:var(--signal-blue)">推荐：sqflite</strong>
+      <p style="font-size:14px;margin-top:8px">Flutter 生态最成熟的 SQLite 方案，pub 排名第一。零费用，完全本地。支持 JSON 导出用于备份恢复。</p>
+    </div>
+    <div style="flex:1;background:#ffffff;border:1px solid var(--light-border);border-radius:12px;padding:16px">
+      <strong>Drift (原 Moor)</strong>
+      <p style="font-size:14px;margin-top:8px">类型安全 ORM，编译期 SQL 校验。功能更强但学习成本高，对这个规模的项目可能过度。</p>
+    </div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card" data-choice="local-only" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>A · MVP 纯本地</h3>
+      <p class="subtitle">sqflite 存所有数据，导出 JSON 手动备份</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>零网络依赖，完全免费</li><li>无隐私顾虑（剪贴板数据不出机）</li><li>架构极简</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>换手机丢失数据</li><li>不能多设备同步</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" data-choice="google-drive" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <h3>B · 本地 + Google Drive 备份</h3>
+      <p class="subtitle">sqflite 本地 + 手动/自动备份到用户自己的 Google Drive</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>用户自己掌控数据</li><li>Google Drive 免费额度充足</li><li>换手机可恢复</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>需 Google Sign-In（用户反感注册）</li><li>首次开发量增加 2-3 天</li><li>备份冲突需处理</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>我的建议：MVP 选 A，P1 加 B</h3>
+  <p>P0 阶段 100% 本地存储，专注实现核心体验。P1 阶段加入 JSON 导出/导入和 Google Drive 备份（可选功能）。匹配"不要用户注册"的产品原则。</p>
+</div>
+
+<div class="section">
+  <p style="color:var(--text-secondary)">选择你倾向的方案，或在终端讨论。</p>
+</div>
