@@ -1,10 +1,10 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 21：splash 最终修复 — 原生 launch_background 替换为完整图）
+> 最后更新：2026-05-09（Session 22：App 图标 + Release 签名 + imagePath 移除 + 每日一词实际数据）
 
 ## 一、现在到哪了
 
-**阶段：P0 MVP 全部实现完成，真机测试问题修复，APK 构建通过（203MB debug APK）。**
+**阶段：P0 MVP 全部实现完成，真机测试问题修复，Release 签名配置完成，APK 构建通过（83MB release APK）。**
 
 ### P0 MVP 完成清单（12/12）
 
@@ -582,7 +582,10 @@ http: ^1.6.0
 ### 构建命令
 ```bash
 flutter clean && flutter pub get && flutter build apk --debug
-# APK: build/app/outputs/flutter-apk/app-debug.apk (203MB)
+# Debug APK: build/app/outputs/flutter-apk/app-debug.apk (203MB)
+
+flutter build apk --release
+# Release APK: build/app/outputs/flutter-apk/app-release.apk (83MB, 已签名)
 ```
 
 ## 五、已知待办
@@ -595,8 +598,8 @@ flutter clean && flutter pub get && flutter build apk --debug
 - [x] 单词移动/删除/批量管理（Session 8）
 - [x] 学习自动播放 TTS（Session 8）
 - [x] 数据联动刷新（review_session 写入 + 返回刷新，Session 8）
-- [ ] 图片关联（imagePath 字段已有，但 UI 未接）
-- [ ] 每日一词实际数据（当前为硬编码 ephemeral 示例）
+- [x] 图片关联（已移除该功能，用户不需要）
+- [x] 每日一词实际数据（日期确定性选取当前单词本中的词，Session 22 完成）
 
 ### 测试
 - [x] 真机基础测试（OCR + 词典离线化已修复，2026-05-09）
@@ -605,8 +608,8 @@ flutter clean && flutter pub get && flutter build apk --debug
 - [ ] Integration test
 
 ### 构建
-- [ ] Release APK 签名配置
-- [ ] App 图标替换（当前使用默认 Flutter 图标）
+- [x] Release APK 签名配置（Session 22：生成 RSA 2048 keystore + key.properties + build.gradle.kts 签名配置，83MB release APK 构建通过）
+- [x] App 图标替换（Session 22：flutter_launcher_icons 生成品牌图标）
 
 ## 六、明天回顾要点
 
@@ -626,3 +629,10 @@ flutter clean && flutter pub get && flutter build apk --debug
    - 导出文件实际写入/分享（当前 exportToJson 生成字符串但未保存到文件）
    - 真机/模拟器测试验证
    - P2 功能（每日一词实际数据、图片关联、release 签名+图标）
+8. Session 22（05-09）：App 品牌图标替换 + Release APK 签名配置 + imagePath 功能移除 + JSON 导出显示保存位置 + 每日一词实际数据
+   - 完成 App 图标：flutter_launcher_icons 从 assets/logo/wordsnap-icon-app.png 生成 android 密度图标
+   - 完成 Release 签名：生成 RSA 2048 keystore（wordsnap-release.jks，36500天有效期），key.properties 配置 + build.gradle.kts 读取签名信息
+   - 完成 imagePath 移除：从 Word、WordContext、数据库 schema 中完全移除
+   - 完成 JSON 导出：保存到 getApplicationDocumentsDirectory()，导出成功弹窗显示目录路径+文件名
+   - 完成每日一词：根据当前日期和总词数确定性选取真实词条
+   - .gitignore 添加 android/key.properties + android/*.jks
