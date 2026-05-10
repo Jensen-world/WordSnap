@@ -107,15 +107,15 @@ class LearnNotifier extends StateNotifier<LearnState> {
       final learnedReview = (today?.reviewWordsCorrect ?? 0) + (today?.reviewWordsWrong ?? 0);
 
       // Today's remaining quota: new words + review words per 10:1 ratio
-      // Empty notebook → all quotas are 0
+      // Cap to actual available words in DB (handles empty notebooks)
       final todayNewWords = totalWords == 0
           ? 0
-          : (dailyLimit - learnedNew).clamp(0, dailyLimit);
+          : (dailyLimit - learnedNew).clamp(0, dailyLimit).clamp(0, dbNewCount);
       final todayReviewBudget = (todayNewWords / 10).ceil();
       final todayReviewWords = totalWords == 0
           ? 0
-          : (todayReviewBudget - learnedReview).clamp(0, todayReviewBudget);
-      print('DEBUG todayNewWords=$todayNewWords todayReviewWords=$todayReviewWords learnedNew=$learnedNew learnedReview=$learnedReview');
+          : (todayReviewBudget - learnedReview).clamp(0, todayReviewBudget).clamp(0, dbReviewCount);
+      print('DEBUG todayNewWords=$todayNewWords todayReviewWords=$todayReviewWords dbNew=$dbNewCount dbReview=$dbReviewCount');
 
       final remaining = totalWords - masteredWords;
       final estimatedDays = dailyLimit > 0 ? (remaining / dailyLimit).ceil() : 0;

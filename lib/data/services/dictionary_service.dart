@@ -46,12 +46,8 @@ class DictionaryService {
       }
     }
 
-    // 3. Fallback to ECDICT
-    final ecdict = await _lookupEcdict(clean);
-    if (ecdict != null) {
-      await _putCache(ecdict);
-    }
-    return ecdict;
+    // 3. Fallback to ECDICT (not cached — so LLM gets another chance later)
+    return _lookupEcdict(clean);
   }
 
   Future<DictionaryResult?> _lookupEcdict(String word) async {

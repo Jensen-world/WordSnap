@@ -453,7 +453,7 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
     }
 
     final llm = LlmDictionaryService();
-    final result = await llm.lookup('hello',
+    final error = await llm.testConnection(
       baseUrl: baseUrl.isNotEmpty ? baseUrl : ConfigRepository.defaultBaseUrl,
       apiKey: apiKey,
       model: model.isNotEmpty ? model : ConfigRepository.defaultModel,
@@ -463,7 +463,7 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
       setState(() => _testing = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result != null ? '连接成功：${result.translation ?? "无释义"}' : '连接失败，请检查配置'),
+          content: Text(error == null ? '连接成功' : '连接失败: $error'),
         ),
       );
     }

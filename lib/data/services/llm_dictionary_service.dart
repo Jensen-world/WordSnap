@@ -9,6 +9,43 @@ class LlmDictionaryService {
 
 Word:''';
 
+  /// Returns null on success, or an error message string on failure.
+  Future<String?> testConnection({
+    required String baseUrl,
+    required String apiKey,
+    required String model,
+  }) async {
+    final url = '${baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl}/chat/completions';
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey',
+        },
+        body: jsonEncode({
+          'model': model,
+          'messages': [
+            {'role': 'user', 'content': 'Say "ok"'},
+          ],
+          'max_tokens': 16,
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode != 200) {
+        return 'HTTP ${response.statusCode}: ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}';
+      }
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final choices = data['choices'] as List<dynamic>?;
+      if (choices == null || choices.isEmpty) {
+        return '响应无 choices: ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}';
+      }
+      return null; // success
+    } catch (e) {
+      return '$e';
+    }
+  }
+
   Future<DictionaryResult?> lookup(
     String word, {
     required String baseUrl,
@@ -37,20 +74,33 @@ Word:''';
         }),
       ).timeout(const Duration(seconds: 15));
 
-      if (response.statusCode != 200) return null;
+      if (response.statusCode != 200) {
+        print('LLM API error: ${response.statusCode} ${response.body}');
+        return null;
+      }
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final choices = data['choices'] as List<dynamic>?;
-      if (choices == null || choices.isEmpty) return null;
+      if (choices == null || choices.isEmpty) {
+        print('LLM API: no choices in response: ${response.body}');
+        return null;
+      }
 
       final content = choices.first['message']?['content'] as String?;
-      if (content == null) return null;
+      if (content == null) {
+        print('LLM API: no content in message');
+        return null;
+      }
 
       final start = content.indexOf('{');
       final end = content.lastIndexOf('}');
-      if (start == -1 || end == -1) return null;
+      if (start == -1 || end == -1) {
+        print('LLM API: no JSON in content: $content');
+        return null;
+      }
 
       final json = jsonDecode(content.substring(start, end + 1)) as Map<String, dynamic>;
+      print('LLM success: ${json['definition']}');
       return DictionaryResult.fromLlmJson({
         'word': clean,
         'phonetic': json['phonetic'],
@@ -58,7 +108,8 @@ Word:''';
         'example': json['example'],
         'exampleTranslation': json['exampleTranslation'],
       });
-    } catch (_) {
+    } catch (e) {
+      print('LLM exception: $e');
       return null;
     }
   }
