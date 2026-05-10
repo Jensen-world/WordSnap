@@ -25,6 +25,11 @@
 - Photoshop 才是 logo 设计的正确工具
 - 程序化方案只适合批量/自动化场景，单次精细设计交给专业工具
 
+### 构建命名规范
+- 格式：`WordSnap-v{版本号}-{release/debug}-{日期}.apk`
+- 脚本：`python scripts/build_apk.py [release|debug]`
+- 输出：`build/dist/`
+
 ### 下一步
 1. GitHub 推送：`WordSnap-github/` 关联远程仓库并 push
 2. 可选：web 启动页、设置页等处同步更新 logo

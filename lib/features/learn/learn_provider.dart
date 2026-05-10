@@ -107,9 +107,14 @@ class LearnNotifier extends StateNotifier<LearnState> {
       final learnedReview = (today?.reviewWordsCorrect ?? 0) + (today?.reviewWordsWrong ?? 0);
 
       // Today's remaining quota: new words + review words per 10:1 ratio
-      final todayNewWords = (dailyLimit - learnedNew).clamp(0, dailyLimit);
+      // Empty notebook → all quotas are 0
+      final todayNewWords = totalWords == 0
+          ? 0
+          : (dailyLimit - learnedNew).clamp(0, dailyLimit);
       final todayReviewBudget = (todayNewWords / 10).ceil();
-      final todayReviewWords = (todayReviewBudget - learnedReview).clamp(0, todayReviewBudget);
+      final todayReviewWords = totalWords == 0
+          ? 0
+          : (todayReviewBudget - learnedReview).clamp(0, todayReviewBudget);
       print('DEBUG todayNewWords=$todayNewWords todayReviewWords=$todayReviewWords learnedNew=$learnedNew learnedReview=$learnedReview');
 
       final remaining = totalWords - masteredWords;

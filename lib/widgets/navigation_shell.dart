@@ -88,10 +88,11 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           surfaceTintColor: Colors.white,
+          toolbarHeight: 72,
           titleSpacing: 16,
           title: Image.asset(
             'assets/logo/wordmark.png',
-            height: 32,
+            height: 44,
           ),
           actions: [
             IconButton(
