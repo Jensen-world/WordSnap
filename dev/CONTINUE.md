@@ -1,129 +1,135 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-10（LLM 数据源接入 + 横板 Logo + Bug 修复 + APK 构建）
+> 最后更新：2026-05-10（Session 30：LLM 连接修复 + ECDICT 缓存污染 + 学习计划空状态防护）
 
 ## 一、现在到哪了
 
 **阶段：查词升级为 LLM 优先（智谱免费 API 默认）+ ECDICT 兜底 + 本地缓存。释义展示精简为发音→中文释义→例句→例句翻译。**
 
-## 2026-05-10 工作记录
+## Session 29 — LLM 智能查词 + 释义展示优化（2026-05-10）
 
-### 一、数据源重大更新：接入 AI 大模型
+### 需求
+- 查词结果展示太多条释义（ECDICT translation 包含所有词性释义）
+- 每日一词显示全部释义 + 硬编码占位符 "名声是短暂的..."
+- 用户期望格式：发音 → 中文释义 → 例句 → 例句翻译
+- 接入 AI 大模型查词，用户可自定义 API Key
 
-**查词从纯本地 ECDICT 升级为 LLM 优先 + 缓存 + ECDICT 兜底的三级策略。**
+### 已完成
 
-#### LLM 查词服务
-- 新增 `LlmDictionaryService`：OpenAI 兼容协议（`/chat/completions`），prompt 返回 JSON `{phonetic, definition, example, exampleTranslation}`
+#### 1. LLM 查词服务
+- 新增 `LlmDictionaryService`：OpenAI 兼容协议，prompt 返回 JSON `{phonetic, definition, example, exampleTranslation}`
 - 新增 `ConfigRepository`：API 配置持久化到 SQLite config 表
 - 新增 `api_config_provider.dart`：Riverpod 状态管理
-- 默认预设：智谱 API (`open.bigmodel.cn`)，模型 `glm-4-flash`（免费不限量）
-- `DictionaryService.lookup()` 流程：缓存命中 → LLM 查词 → ECDICT 兜底
+- 默认预设：智谱 API (`open.bigmodel.cn`)，模型 `glm-4-flash`（完全免费）
 
-#### 数据库 v3 迁移
+#### 2. 查词流程重构
+- `DictionaryService.lookup()` 三级策略：
+  1. 查本地缓存（`dictionary_cache` 表）
+  2. LLM 查词（需已配置 API Key）
+  3. ECDICT 离线兜底
+- 查词结果自动写入缓存，同一单词不重复调 API
+
+#### 3. 数据库 v3 迁移
 - `words` 表新增 `exampleSentence`、`exampleTranslation` 列
-- 新增 `dictionary_cache` 表（缓存 LLM 查词结果，避免重复调用）
+- 新增 `dictionary_cache` 表（word 为主键，缓存查词结果）
 - 新增 `config` 表（key-value 存储 API 配置）
-- 模型 `DictionaryResult`、`Word` 同步新增字段
+- `_onUpgrade` v2→v3：ALTER TABLE + CREATE TABLE IF NOT EXISTS
 
-#### 释义展示统一优化
-所有查词结果卡片（capture / photo / share / daily word）统一为：
-发音 → 中文释义 → 例句（斜体） → 例句翻译
+#### 4. 模型更新
+- `DictionaryResult`：新增 `exampleSentence`、`exampleTranslation`、`primaryDefinition` getter、`fromLlmJson`/`fromCache`/`toCacheMap`
+- `Word`：新增 `exampleSentence`、`exampleTranslation` 字段（copyWith/toMap/fromMap 全部更新）
 
-不再显示英文释义和词性标签，保存逻辑改为存储 `primaryDefinition`。
+#### 5. 释义展示统一优化
+- **查词结果卡片**（capture_sheet / photo_capture_page / share_receipt_sheet）：
+  - 单词 → 音标胶囊（美 /phonetic/ 🔊） → 中文释义 → 例句（斜体） → 例句翻译
+  - 不再显示英文释义和词性标签
+  - 例句区域仅在有数据时显示
+- **每日一词卡片**（learn_page）：
+  - 同等格式：单词 → 音标 → 中文释义 → 例句 → 例句翻译
+  - 移除硬编码占位符 "名声是短暂的，不要追逐它。"
 
-#### 设置页
+#### 6. 保存逻辑修复
+- 三个 save 方法（capture / photo / share）统一改为存储 `primaryDefinition`（首行释义）
+- 不再把所有释义拼成一个大字符串
+
+#### 7. 设置页
 - 新增「AI 查词」配置区：Base URL / API Key / Model
-- 测试连接按钮 + 状态指示（未配置灰色 / 已配置绿色+模型名）
+- 测试连接按钮（查 "hello" 验证配置）
+- 状态指示：未配置（灰色）/ 已配置（绿色 + 模型名）
 
-#### 新增文件
+### 涉及文件
+
 ```
+新增:
 lib/data/services/llm_dictionary_service.dart
 lib/data/repositories/config_repository.dart
 lib/features/settings/api_config_provider.dart
+
+修改:
+lib/core/database/database_helper.dart         — v3 迁移
+lib/data/models/word.dart                      — 新增 2 字段
+lib/data/services/dictionary_result.dart        — 新增字段 + LLM/缓存工厂
+lib/data/services/dictionary_service.dart       — LLM优先 + 缓存 + ECDICT兜底
+lib/features/capture/capture_provider.dart      — save 精简
+lib/features/capture/photo_capture_provider.dart — save 精简
+lib/features/capture/capture_sheet.dart         — ResultCard 新格式
+lib/features/capture/photo_capture_page.dart    — ResultCard 新格式
+lib/features/capture/share_receipt_sheet.dart   — save + ResultCard 新格式
+lib/features/learn/learn_page.dart              — DailyWordCard 新格式
+lib/features/settings/settings_page.dart        — API 配置区
 ```
 
----
-
-### 二、策略调整
-
-- **LLM 优先查词**：用户可自定义 API，兼容任意 OpenAI 协议的厂商
-- **释义精简**：从显示全部 ECDICT 释义改为只展示 LLM 返回的首条精确释义
-- **缓存策略**：仅 LLM 成功结果缓存，ECDICT 兜底结果不缓存（防止污染，确保下次可重试 LLM）
-- **学习计划配额**：增加 `.clamp()` 上限封顶，配额不超过实际可用词数，空数据库显示 0/0/10
+### 架构决策
+- LLM API 用 OpenAI 兼容协议（`/chat/completions`），方便用户切换任意厂商
+- 默认内置智谱免费 API（`glm-4-flash` 完全免费不限量），零成本起步
+- 缓存用 SQLite 而非文件，利用已有 sqflite 依赖，查词毫秒级响应
+- API 配置存 config 表而非 shared_preferences，避免新增依赖
+- ECDICT 保留作为兜底，确保离线可用
 
 ---
 
-### 三、Bug 修复
+## Session 30 — LLM 连接修复 + 缓存污染 + 学习计划空状态（2026-05-10）
 
-| # | 问题 | 根因 | 修复 |
-|---|------|------|------|
-| 1 | 新词没有例句 | ECDICT 兜底结果被写入缓存，同一单词永远不再调 LLM | 移除 ECDICT 路径的 `_putCache()`，只缓存 LLM 成功结果 |
-| 2 | LLM 连接失败无法诊断 | `LlmDictionaryService.lookup()` 所有错误静默吞掉 | 每个失败点加 `print()` 日志；新增 `testConnection()` 返回具体错误 |
-| 3 | 新装 APP 学习计划显示 10/1/10 | 配额未封顶到实际可用词数（空数据库 dbNewCount=0） | 加 `.clamp(0, dbNewCount)` / `.clamp(0, dbReviewCount)` |
-| 4 | 设置页测试连接信息不明确 | 用 `lookup('hello')` 测试，错误被吞 | 改用 `testConnection()`，SnackBar 显示具体 HTTP 状态码和响应 |
+### 问题
+用户测试报告三个 bug：
+1. LLM 大模型连接失败（智谱 API 有余额但调用不成功）
+2. 新增单词没有例句和例句翻译
+3. 新装 APP 学习计划显示 10/1/10 而非 0/0/10
 
-#### 涉及文件
+### 修复
+
+#### 1. ECDICT 缓存污染（Bug #2 根因）
+- `dictionary_service.dart`：ECDICT 回退结果不再写入缓存（`_putCache(ecdict)` 移除）
+- 之前：LLM 失败 → ECDICT 兜底 → 缓存 ECDICT 结果 → 同一单词再查直接命中缓存 → LLM 永不再试
+- 现在：只有 LLM 成功结果才缓存，ECDICT 每次实时查询
+
+#### 2. LLM 错误日志
+- `llm_dictionary_service.dart`：所有错误路径添加 `print()` 输出
+  - HTTP 非 200 → 打印状态码和响应体
+  - choices 为空 → 打印完整响应
+  - content 为空 → 打印提示
+  - JSON 解析失败 → 打印原始 content
+  - 异常 → 打印 `$e`
+- 新增 `testConnection()` 方法：返回具体错误信息（HTTP 状态码 + 响应片段）
+- `settings_page.dart`：测试连接改用 `testConnection()`，SnackBar 显示 "连接失败: HTTP 401: ..." 而非泛化的 "连接失败，请检查配置"
+
+#### 3. 学习计划空状态防护
+- `learn_provider.dart`：配额计算增加 `.clamp(0, dbNewCount)` / `.clamp(0, dbReviewCount)`
+- 即使 `totalWords` 非零，配额也不会超过实际可用词数
+- 增强调试日志：`print` 增加 dbNew/dbReview 值
+
+### 涉及文件
 ```
-lib/data/services/dictionary_service.dart      — ECDICT 不缓存
-lib/data/services/llm_dictionary_service.dart  — 错误日志 + testConnection()
-lib/features/learn/learn_provider.dart         — 配额 clamp
-lib/features/settings/settings_page.dart       — 测试连接显示详细错误
+lib/data/services/dictionary_service.dart     — ECDICT 不再缓存
+lib/data/services/llm_dictionary_service.dart — 错误日志 + testConnection()
+lib/features/learn/learn_provider.dart        — 配额 clamp 到实际词数
+lib/features/settings/settings_page.dart      — 测试连接显示详细错误
 ```
 
----
-
-### 四、项目文件夹整理 & 开源准备
-
-- 新增 `scripts/` 目录：Python 工具脚本（logo 生成、构建自动化）
-- 新增 `images/` 目录：设计中间文件和参考素材
-- 新增构建脚本 `scripts/build_apk.py`：自动读取版本号，输出命名 APK 到 `build/dist/`
-
----
-
-### 五、横板字体 Logo 设计
-
-#### 程序化字标渲染（6 轮 Python 迭代）
-参考 `字母样式.png` 设计稿，用 Pillow 像素级着色生成 wordmark：
-- `w` 区域（x=0~1310）暗色像素 → 品牌蓝 `#2F5CFF`
-- `ordsnap` 区域（x=1340~末尾）暗色像素 → 墨黑 `#0B0B0F`
-- `p` 字母反色区白色像素 + 椭圆叠加 → 橙色 `#FFA940`
-- 白色背景转透明，裁切后拼接 App 图标
-
-| 脚本 | 功能 |
-|------|------|
-| `analyze_letters.py` | 分析字母边界和 p counter 精确坐标 |
-| `generate_wordmark.py` ~ `v4.py` | 4 轮迭代优化颜色和填充 |
-| `render_wordmark_final.py` | 最终渲染：颜色替换 + 椭圆叠加 + 透明背景 |
-| `render_wordmark_clean.py` | 重写版：自动检测 p bowl 区域，无需硬编码坐标 |
-| `use_user_wordmark.py` | 处理用户 PS 精修版，白底转透明 |
-
-#### 横板 Logo
-- `横板logo.png`：水平布局版本
-- `横板logo.psd`：Photoshop 源文件（可继续编辑）
-- 最终采用用户 Photoshop 精修版（反锯齿效果优于程序化渲染）
-
-#### 品牌色规范
-| 颜色 | 色值 | 用途 |
-|------|------|------|
-| 品牌蓝 | `#2F5CFF` | w 字母 |
-| 墨黑 | `#0B0B0F` | ordsnap 字母 |
-| 橙色 | `#FFA940` | p 反色区填充 |
-
----
-
-### 六、APK 构建
-
-- `sqlite3` 包 native assets hook 需从 GitHub 下载 `libsqlite3.so`，直连超时
-- 用户开启代理后 `flutter build apk --debug` 成功
-- APK: `build/app/outputs/flutter-apk/app-debug.apk` (183MB)
-
----
-
-### 待验证（真机）
-1. LLM 连接：设置 → 测试连接 → 查看具体错误信息
-2. 新词例句：LLM 成功后自动缓存，例句和翻译是否正常显示
-3. 学习计划空状态：全新安装显示 0/0/10
-4. `scripts/`、`images/` 等新文件待提交
+### 下一步
+1. 真机测试 LLM 连接（设置 → 测试连接 → 查看具体错误信息）
+2. 确认新词例句是否正常（LLM 成功后自动缓存，下次免调 API）
+3. 确认学习计划空状态（全新安装应为 0/0/10）
 
 ---
 
