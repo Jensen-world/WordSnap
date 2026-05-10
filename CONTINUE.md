@@ -66,6 +66,20 @@ flutter test test/services/     # 仅服务
 flutter test test/widgets/      # 仅 widget
 ```
 
+### 集成测试（3 flows，需真机）
+
+| 测试 | 覆盖 |
+|------|------|
+| App 启动 → LearnPage | 启动页渲染，notebook card + 学习计划 |
+| 底部 Tab 切换 | Learn ↔ Wordbook ↔ Archive 三页切换 |
+| 新建单词本 | 弹 Sheet → 输入名称 → 创建 → 列表出现 |
+| 跳转学习页 | 点"开始学习" → 进入 StudyPage |
+
+运行（需要连接设备）：
+```bash
+flutter test integration_test/ -d <device_id>
+```
+
 ---
 
 ## Session 25 — 数据复活 bug 修复
@@ -813,7 +827,7 @@ flutter build apk --release
 - [x] 真机基础测试（OCR + 词典离线化已修复，2026-05-09）
 - [x] 真机完整流程测试（拍照→OCR→查词→保存→学习，Session 9 修复保存崩溃）
 - [x] Widget test（Session 26：41 tests，模型 22 + 服务 12 + Widget 7）
-- [ ] Integration test
+- [x] Integration test（Session 26：3 flows，需真机运行 `flutter test integration_test/`）
 
 ### 构建
 - [x] Release APK 签名配置（Session 22：生成 RSA 2048 keystore + key.properties + build.gradle.kts 签名配置，83MB release APK 构建通过）
