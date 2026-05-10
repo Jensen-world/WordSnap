@@ -1,6 +1,6 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-10（Session 30：LLM 连接修复 + ECDICT 缓存污染 + 学习计划空状态防护）
+> 最后更新：2026-05-10（Session 31：APK 构建成功 + 代理解决 GitHub 下载问题）
 
 ## 一、现在到哪了
 
@@ -130,6 +130,31 @@ lib/features/settings/settings_page.dart      — 测试连接显示详细错误
 1. 真机测试 LLM 连接（设置 → 测试连接 → 查看具体错误信息）
 2. 确认新词例句是否正常（LLM 成功后自动缓存，下次免调 API）
 3. 确认学习计划空状态（全新安装应为 0/0/10）
+
+---
+
+## Session 31 — APK 构建成功 + 代理网络（2026-05-10）
+
+### 背景
+Session 30 修复三个 bug 后尝试构建 APK，但 `sqlite3` 包 native assets hook 需要从 GitHub 下载 `libsqlite3.arm.android.so`，GitHub 直连超时导致构建失败。
+
+### 解决
+- 用户开启代理后 GitHub 可达
+- 清理上次残留的 Gradle 进程（`taskkill /f /im java.exe`）
+- `flutter build apk --debug` 构建成功
+- APK: `build/app/outputs/flutter-apk/app-debug.apk` (183MB)
+
+### 构建注意事项
+- Flutter 3.29+ native assets hook 在 `flutter pub get` 阶段下载 .so 文件
+- `sqlite3` 包的 hook 默认从 GitHub Releases 下载预编译二进制
+- `sqlite3_flutter_libs` 不解决此问题（hook 在 Gradle 之前运行）
+- 如果 GitHub 不可达，需代理或等待网络恢复
+
+### 下一步
+1. 真机安装 APK 测试三个 bug 修复
+2. 设置 → 测试连接，查看 LLM 具体错误信息
+3. 确认新词例句是否正常
+4. 确认学习计划空状态（全新安装应为 0/0/10）
 
 ---
 
