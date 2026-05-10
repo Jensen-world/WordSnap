@@ -1,6 +1,6 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-10（Session 29：LLM 智能查词 + 释义展示优化）
+> 最后更新：2026-05-10（Session 30：LLM 连接修复 + ECDICT 缓存污染 + 学习计划空状态防护）
 
 ## 一、现在到哪了
 
@@ -85,6 +85,51 @@ lib/features/settings/settings_page.dart        — API 配置区
 - 缓存用 SQLite 而非文件，利用已有 sqflite 依赖，查词毫秒级响应
 - API 配置存 config 表而非 shared_preferences，避免新增依赖
 - ECDICT 保留作为兜底，确保离线可用
+
+---
+
+## Session 30 — LLM 连接修复 + 缓存污染 + 学习计划空状态（2026-05-10）
+
+### 问题
+用户测试报告三个 bug：
+1. LLM 大模型连接失败（智谱 API 有余额但调用不成功）
+2. 新增单词没有例句和例句翻译
+3. 新装 APP 学习计划显示 10/1/10 而非 0/0/10
+
+### 修复
+
+#### 1. ECDICT 缓存污染（Bug #2 根因）
+- `dictionary_service.dart`：ECDICT 回退结果不再写入缓存（`_putCache(ecdict)` 移除）
+- 之前：LLM 失败 → ECDICT 兜底 → 缓存 ECDICT 结果 → 同一单词再查直接命中缓存 → LLM 永不再试
+- 现在：只有 LLM 成功结果才缓存，ECDICT 每次实时查询
+
+#### 2. LLM 错误日志
+- `llm_dictionary_service.dart`：所有错误路径添加 `print()` 输出
+  - HTTP 非 200 → 打印状态码和响应体
+  - choices 为空 → 打印完整响应
+  - content 为空 → 打印提示
+  - JSON 解析失败 → 打印原始 content
+  - 异常 → 打印 `$e`
+- 新增 `testConnection()` 方法：返回具体错误信息（HTTP 状态码 + 响应片段）
+- `settings_page.dart`：测试连接改用 `testConnection()`，SnackBar 显示 "连接失败: HTTP 401: ..." 而非泛化的 "连接失败，请检查配置"
+
+#### 3. 学习计划空状态防护
+- `learn_provider.dart`：配额计算增加 `.clamp(0, dbNewCount)` / `.clamp(0, dbReviewCount)`
+- 即使 `totalWords` 非零，配额也不会超过实际可用词数
+- 增强调试日志：`print` 增加 dbNew/dbReview 值
+
+### 涉及文件
+```
+lib/data/services/dictionary_service.dart     — ECDICT 不再缓存
+lib/data/services/llm_dictionary_service.dart — 错误日志 + testConnection()
+lib/features/learn/learn_provider.dart        — 配额 clamp 到实际词数
+lib/features/settings/settings_page.dart      — 测试连接显示详细错误
+```
+
+### 下一步
+1. 真机测试 LLM 连接（设置 → 测试连接 → 查看具体错误信息）
+2. 确认新词例句是否正常（LLM 成功后自动缓存，下次免调 API）
+3. 确认学习计划空状态（全新安装应为 0/0/10）
 
 ---
 
