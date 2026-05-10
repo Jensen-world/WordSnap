@@ -6,24 +6,29 @@
 
 **阶段：Logo 字标完成并接入 App。P0/P1 全部完成，测试全部通过。**
 
-## Session 28 — Logo 字标定稿（2026-05-10）
+## Session 28 — Logo 字标定稿 + 导航栏接入（2026-05-10）
 
 ### 已完成
 
 #### Logo 字标
-- 最终设计：`[蓝底W图标]` + `w`(品牌蓝) + `ordsnap`(墨黑) + `p`孔橙色填充
-- 用户用 Photoshop 完成最终渲染，替代了之前的程序化尝试
-- 文件：`assets/logo/wordmark.png`（3477×657, RGBA 透明背景）
+- 最终设计：纯文字版 `w`(品牌蓝) + `ordsnap`(墨黑) + `p`孔橙色填充，无图标
+- 用户用 Photoshop 完成最终渲染 + 裁切（去掉左侧图标）
+- 程序化裁切失败：gap detection 误判，裁掉了 "wor" 只留 "dsnap"
+- 文件：`assets/logo/wordmark.png`（用户裁切后替换）
 - 品牌色：蓝 `#2F5CFF`、橙 `#FFA940`、墨黑 `#0B0B0F`
 
 #### 导航栏接入
-- `navigation_shell.dart`：AppBar 标题从 `Row(图标 + "WordSnap" 文字)` 改为 `Image.asset('assets/logo/wordmark.png')`
-- 字标高度 32px，自动等比缩放
+- `navigation_shell.dart`：AppBar 标题改为 `Image.asset('assets/logo/wordmark.png', height: 44)`
+- 去掉了左侧图标，只保留文字字标
+- toolbarHeight: 72, titleSpacing: 16
+
+#### 空数据配额修复
+- `learn_provider.dart`：`totalWords == 0` 时新学词和待复习配额强制为 0
 
 ### 教训
 - Python/Pillow 做像素级 logo 精修不适合：反馈循环太慢，白边/反锯齿处理不精确
-- Photoshop 才是 logo 设计的正确工具
-- 程序化方案只适合批量/自动化场景，单次精细设计交给专业工具
+- 程序化裁切也不可靠：gap/edge detection 容易误判
+- Photoshop 才是 logo 设计和裁切的正确工具
 
 ### 构建命名规范
 - 格式：`WordSnap-v{版本号}-{release/debug}-{日期}.apk`
