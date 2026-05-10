@@ -89,37 +89,9 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           backgroundColor: Colors.white,
           surfaceTintColor: Colors.white,
           titleSpacing: 16,
-          title: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  image: const DecorationImage(
-                    image: AssetImage('assets/logo/wordsnap-icon-light.png'),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'WordSnap',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF0B0B0F),
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Text(
-                'WordSnap',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFFBBBBBB),
-                ),
-              ),
-            ],
+          title: Image.asset(
+            'assets/logo/wordmark.png',
+            height: 32,
           ),
           actions: [
             IconButton(

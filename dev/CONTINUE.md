@@ -1,10 +1,33 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-10（Session 27：开源准备 + 项目清理 + 品牌去中文 + Logo 字标设计）
+> 最后更新：2026-05-10（Session 28：Logo 字标定稿 + 导航栏接入）
 
 ## 一、现在到哪了
 
-**阶段：开源准备基本完成，Logo 字标设计进行中（未完成）。**
+**阶段：Logo 字标完成并接入 App。P0/P1 全部完成，测试全部通过。**
+
+## Session 28 — Logo 字标定稿（2026-05-10）
+
+### 已完成
+
+#### Logo 字标
+- 最终设计：`[蓝底W图标]` + `w`(品牌蓝) + `ordsnap`(墨黑) + `p`孔橙色填充
+- 用户用 Photoshop 完成最终渲染，替代了之前的程序化尝试
+- 文件：`assets/logo/wordmark.png`（3477×657, RGBA 透明背景）
+- 品牌色：蓝 `#2F5CFF`、橙 `#FFA940`、墨黑 `#0B0B0F`
+
+#### 导航栏接入
+- `navigation_shell.dart`：AppBar 标题从 `Row(图标 + "WordSnap" 文字)` 改为 `Image.asset('assets/logo/wordmark.png')`
+- 字标高度 32px，自动等比缩放
+
+### 教训
+- Python/Pillow 做像素级 logo 精修不适合：反馈循环太慢，白边/反锯齿处理不精确
+- Photoshop 才是 logo 设计的正确工具
+- 程序化方案只适合批量/自动化场景，单次精细设计交给专业工具
+
+### 下一步
+1. GitHub 推送：`WordSnap-github/` 关联远程仓库并 push
+2. 可选：web 启动页、设置页等处同步更新 logo
 
 ## Session 27 — 开源准备 + 品牌重塑（2026-05-10）
 
@@ -28,17 +51,6 @@
 #### 3. 去中文名
 - 所有 "见词" → "WordSnap"
 - 涉及文件：`app.dart`、`navigation_shell.dart`、`settings_page.dart`、`AndroidManifest.xml`、`web/index.html`、`README.md`、`CONTINUE.md`
-
-#### 4. 品牌字标设计（进行中）
-- 创建 `logo.pen`（Pencil 设计文件）
-- 选定蓝底 W 图标（`wordsnap-icon-app.png`）
-- 方向：图标 + "WordSnap" 连写，W 品牌蓝，p 洞填橙色
-- **待定**：字体变形方案（手绘路径太糙、AI 生文字不准、需找替代方案）
-
-### 下一步
-1. Logo 字标：用 Canva/Figma 做专业字标，或继续在 Pencil 里迭代
-2. 字标完成后：导出 PNG → 替换 `navigation_shell.dart` 导航栏 → 同步 github 目录
-3. GitHub 推送：`WordSnap-github/` 关联远程仓库并 push
 
 **阶段：P0/P1 全部完成，测试体系建立。41 个测试全部通过。**
 
