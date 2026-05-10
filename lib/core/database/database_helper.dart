@@ -3,7 +3,7 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   static const _dbName = 'wordsnap.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
 
   static final DatabaseHelper instance = DatabaseHelper._();
   DatabaseHelper._();
@@ -48,6 +48,8 @@ class DatabaseHelper {
         contexts TEXT NOT NULL DEFAULT '[]',
         tags TEXT NOT NULL DEFAULT '[]',
         sourceUrl TEXT,
+        exampleSentence TEXT,
+        exampleTranslation TEXT,
         isPhrase INTEGER NOT NULL DEFAULT 0,
         isNew INTEGER NOT NULL DEFAULT 1,
         reviewCount INTEGER NOT NULL DEFAULT 0,
@@ -56,6 +58,25 @@ class DatabaseHelper {
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL,
         FOREIGN KEY (notebookId) REFERENCES notebooks(id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE dictionary_cache (
+        word TEXT PRIMARY KEY,
+        phonetic TEXT,
+        definition TEXT,
+        exampleSentence TEXT,
+        exampleTranslation TEXT,
+        source TEXT NOT NULL DEFAULT 'llm',
+        createdAt TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE config (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
       )
     ''');
 
@@ -86,7 +107,26 @@ class DatabaseHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // v1 → v2: schema unchanged, no migration needed
-    // Future migrations: use ALTER TABLE, never DROP TABLE
+    if (oldVersion < 3) {
+      await db.execute("ALTER TABLE words ADD COLUMN exampleSentence TEXT");
+      await db.execute("ALTER TABLE words ADD COLUMN exampleTranslation TEXT");
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS dictionary_cache (
+          word TEXT PRIMARY KEY,
+          phonetic TEXT,
+          definition TEXT,
+          exampleSentence TEXT,
+          exampleTranslation TEXT,
+          source TEXT NOT NULL DEFAULT 'llm',
+          createdAt TEXT NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS config (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        )
+      ''');
+    }
   }
 }

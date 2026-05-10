@@ -445,54 +445,39 @@ class _DailyWordCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          RichText(
-            text: TextSpan(
-              style: const TextStyle(fontSize: 13, color: AppColors.inkBlack, height: 1.5),
-              children: [
-                TextSpan(text: '${word.partOfSpeech ?? ''} ', style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.signalBlue)),
-                TextSpan(text: word.definitions.isNotEmpty ? word.definitions.first : ''),
-              ],
+          if (word.definitions.isNotEmpty)
+            Text(
+              word.definitions.first,
+              style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          if (word.examples.isNotEmpty)
+          if (word.exampleSentence != null && word.exampleSentence!.isNotEmpty) ...[
+            const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: const BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Color(0xFFF0F0F5)),
-                  bottom: BorderSide(color: Color(0xFFF0F0F5)),
-                ),
+                border: Border(top: BorderSide(color: Color(0xFFF0F0F5))),
               ),
               width: double.infinity,
-              child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF666666), fontStyle: FontStyle.italic, height: 1.6),
-                  children: [
-                    TextSpan(text: '"${word.examples.first}"'),
-                    WidgetSpan(
-                      child: GestureDetector(
-                        onTap: () => ref.read(ttsServiceProvider).speak(word.examples.first),
-                        child: Container(
-                          width: 22,
-                          height: 22,
-                          margin: const EdgeInsets.only(left: 4),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFEEF0FF),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.volume_up_outlined, size: 11, color: AppColors.signalBlue),
-                        ),
-                      ),
+              child: Column(
+                children: [
+                  Text(
+                    '"${word.exampleSentence}"',
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF666666), fontStyle: FontStyle.italic),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (word.exampleTranslation != null && word.exampleTranslation!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      word.exampleTranslation!,
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                      textAlign: TextAlign.center,
                     ),
                   ],
-                ),
+                ],
               ),
             ),
-          const SizedBox(height: 8),
-          const Text('名声是短暂的，不要追逐它。', style: TextStyle(fontSize: 11, color: Color(0xFF999999))),
+          ],
         ],
       ),
     );

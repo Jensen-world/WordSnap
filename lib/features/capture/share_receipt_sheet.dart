@@ -59,17 +59,18 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
     setState(() => _saving = true);
     try {
       final now = DateTime.now();
-      final allDefs = <String>[];
-      if (_result!.translation != null) allDefs.add(_result!.translation!);
-      allDefs.addAll(_result!.meanings.expand((m) => m.definitions.map((d) => d.definition)));
+      final r = _result!;
+      final def = r.primaryDefinition;
       final word = Word(
         notebookId: _selectedNotebookId!,
-        text: _result!.word,
-        phonetic: _result!.phonetic,
-        partOfSpeech: _result!.meanings.isNotEmpty ? _result!.meanings.first.partOfSpeech : null,
-        definitions: allDefs,
-        examples: _result!.meanings.expand((m) => m.definitions.map((d) => d.example).whereType<String>()).toList(),
-        tags: _result!.tag != null ? _result!.tag!.split(' ') : [],
+        text: r.word,
+        phonetic: r.phonetic,
+        partOfSpeech: r.meanings.isNotEmpty ? r.meanings.first.partOfSpeech : null,
+        definitions: def.isNotEmpty ? [def] : [],
+        exampleSentence: r.exampleSentence,
+        exampleTranslation: r.exampleTranslation,
+        examples: r.exampleSentence != null ? [r.exampleSentence!] : [],
+        tags: r.tag != null ? r.tag!.split(' ') : [],
         learnedAt: now,
         createdAt: now,
         updatedAt: now,
@@ -202,17 +203,38 @@ class _ResultCard extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 10),
-          Text(
-            result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : '',
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.lavender),
-          ),
-          const SizedBox(height: 4),
-          ...(result.meanings.isNotEmpty
-              ? result.meanings.first.definitions.take(3).map((d) => Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: Text(d.definition, style: const TextStyle(fontSize: 13, color: AppColors.inkBlack), textAlign: TextAlign.center),
-                  ))
-              : []),
+          if (result.primaryDefinition.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                result.primaryDefinition,
+                style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          if (result.exampleSentence != null && result.exampleSentence!.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: Color(0xFFF0F0F5))),
+              ),
+              width: double.infinity,
+              child: Text(
+                '"${result.exampleSentence}"',
+                style: const TextStyle(fontSize: 12, color: Color(0xFF666666), fontStyle: FontStyle.italic),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            if (result.exampleTranslation != null && result.exampleTranslation!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  result.exampleTranslation!,
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
         ],
       ),
     );

@@ -7,7 +7,10 @@ import '../../core/theme/colors.dart';
 import '../../data/services/export_import_service.dart';
 import '../../data/services/file_io.dart'
   if (dart.library.js_interop) '../../data/services/file_web.dart';
+import '../../data/services/llm_dictionary_service.dart';
+import '../../data/repositories/config_repository.dart';
 import '../wordbook/wordbook_provider.dart';
+import 'api_config_provider.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -320,6 +323,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onTap: _importing ? null : _handleImport,
           ),
           const SizedBox(height: 16),
+          _SectionHeader(title: 'AI 查词'),
+          _ApiConfigTile(),
+          const SizedBox(height: 16),
           _SectionHeader(title: '其他'),
           _SwitchTile(
             title: '剪贴板监听',
@@ -405,6 +411,178 @@ class _StatChip extends StatelessWidget {
         Text(label, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: c)),
         Text(suffix, style: const TextStyle(fontSize: 11, color: Color(0xFF999999))),
       ],
+    );
+  }
+}
+
+class _ApiConfigTile extends ConsumerStatefulWidget {
+  const _ApiConfigTile();
+
+  @override
+  ConsumerState<_ApiConfigTile> createState() => _ApiConfigTileState();
+}
+
+class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
+  bool _expanded = false;
+  final _baseUrlCtrl = TextEditingController();
+  final _apiKeyCtrl = TextEditingController();
+  final _modelCtrl = TextEditingController();
+  bool _testing = false;
+
+  @override
+  void dispose() {
+    _baseUrlCtrl.dispose();
+    _apiKeyCtrl.dispose();
+    _modelCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _test() async {
+    setState(() => _testing = true);
+    final baseUrl = _baseUrlCtrl.text.trim();
+    final apiKey = _apiKeyCtrl.text.trim();
+    final model = _modelCtrl.text.trim();
+    if (apiKey.isEmpty) {
+      setState(() => _testing = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('请先填写 API Key')),
+        );
+      }
+      return;
+    }
+
+    final llm = LlmDictionaryService();
+    final result = await llm.lookup('hello',
+      baseUrl: baseUrl.isNotEmpty ? baseUrl : ConfigRepository.defaultBaseUrl,
+      apiKey: apiKey,
+      model: model.isNotEmpty ? model : ConfigRepository.defaultModel,
+    );
+
+    if (mounted) {
+      setState(() => _testing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result != null ? '连接成功：${result.translation ?? "无释义"}' : '连接失败，请检查配置'),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final config = ref.watch(apiConfigProvider);
+
+    if (config.loading) {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
+
+    // Init controllers once
+    if (_baseUrlCtrl.text.isEmpty && config.baseUrl.isNotEmpty) {
+      _baseUrlCtrl.text = config.baseUrl;
+      _apiKeyCtrl.text = config.apiKey;
+      _modelCtrl.text = config.model;
+    }
+
+    if (!_expanded) {
+      return GestureDetector(
+        onTap: () => setState(() => _expanded = true),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('大模型 API', style: TextStyle(fontSize: 14, color: AppColors.inkBlack)),
+                    const SizedBox(height: 2),
+                    Text(
+                      config.isConfigured ? '已配置 · ${config.model}' : '未配置 · 点击设置',
+                      style: TextStyle(fontSize: 12, color: config.isConfigured ? AppColors.mint : const Color(0xFF999999))),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, size: 20, color: Color(0xFFBBBBBB)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text('大模型 API', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+              ),
+              GestureDetector(
+                onTap: () async {
+                  await ref.read(apiConfigProvider.notifier).setBaseUrl(_baseUrlCtrl.text.trim());
+                  await ref.read(apiConfigProvider.notifier).setApiKey(_apiKeyCtrl.text.trim());
+                  await ref.read(apiConfigProvider.notifier).setModel(_modelCtrl.text.trim());
+                  setState(() => _expanded = false);
+                },
+                child: const Icon(Icons.check, size: 20, color: AppColors.mint),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildField('Base URL', _baseUrlCtrl, hint: ConfigRepository.defaultBaseUrl,
+            onChanged: (v) => ref.read(apiConfigProvider.notifier).setBaseUrl(v)),
+          const SizedBox(height: 8),
+          _buildField('API Key', _apiKeyCtrl, obscure: true, hint: 'sk-...',
+            onChanged: (v) => ref.read(apiConfigProvider.notifier).setApiKey(v)),
+          const SizedBox(height: 8),
+          _buildField('Model', _modelCtrl, hint: ConfigRepository.defaultModel,
+            onChanged: (v) => ref.read(apiConfigProvider.notifier).setModel(v)),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: _testing ? null : _test,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFE2E2EA)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: _testing
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('测试连接', style: TextStyle(fontSize: 13, color: AppColors.signalBlue)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildField(String label, TextEditingController ctrl, {bool obscure = false, String hint = '', ValueChanged<String>? onChanged}) {
+    return TextField(
+      controller: ctrl,
+      obscureText: obscure,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E2EA))),
+      ),
+      style: const TextStyle(fontSize: 13, fontFamily: 'JetBrains Mono'),
     );
   }
 }

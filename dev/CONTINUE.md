@@ -1,10 +1,92 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-10（Session 28：Logo 字标定稿 + 导航栏接入）
+> 最后更新：2026-05-10（Session 29：LLM 智能查词 + 释义展示优化）
 
 ## 一、现在到哪了
 
-**阶段：Logo 字标完成并接入 App。P0/P1 全部完成，测试全部通过。**
+**阶段：查词升级为 LLM 优先（智谱免费 API 默认）+ ECDICT 兜底 + 本地缓存。释义展示精简为发音→中文释义→例句→例句翻译。**
+
+## Session 29 — LLM 智能查词 + 释义展示优化（2026-05-10）
+
+### 需求
+- 查词结果展示太多条释义（ECDICT translation 包含所有词性释义）
+- 每日一词显示全部释义 + 硬编码占位符 "名声是短暂的..."
+- 用户期望格式：发音 → 中文释义 → 例句 → 例句翻译
+- 接入 AI 大模型查词，用户可自定义 API Key
+
+### 已完成
+
+#### 1. LLM 查词服务
+- 新增 `LlmDictionaryService`：OpenAI 兼容协议，prompt 返回 JSON `{phonetic, definition, example, exampleTranslation}`
+- 新增 `ConfigRepository`：API 配置持久化到 SQLite config 表
+- 新增 `api_config_provider.dart`：Riverpod 状态管理
+- 默认预设：智谱 API (`open.bigmodel.cn`)，模型 `glm-4-flash`（完全免费）
+
+#### 2. 查词流程重构
+- `DictionaryService.lookup()` 三级策略：
+  1. 查本地缓存（`dictionary_cache` 表）
+  2. LLM 查词（需已配置 API Key）
+  3. ECDICT 离线兜底
+- 查词结果自动写入缓存，同一单词不重复调 API
+
+#### 3. 数据库 v3 迁移
+- `words` 表新增 `exampleSentence`、`exampleTranslation` 列
+- 新增 `dictionary_cache` 表（word 为主键，缓存查词结果）
+- 新增 `config` 表（key-value 存储 API 配置）
+- `_onUpgrade` v2→v3：ALTER TABLE + CREATE TABLE IF NOT EXISTS
+
+#### 4. 模型更新
+- `DictionaryResult`：新增 `exampleSentence`、`exampleTranslation`、`primaryDefinition` getter、`fromLlmJson`/`fromCache`/`toCacheMap`
+- `Word`：新增 `exampleSentence`、`exampleTranslation` 字段（copyWith/toMap/fromMap 全部更新）
+
+#### 5. 释义展示统一优化
+- **查词结果卡片**（capture_sheet / photo_capture_page / share_receipt_sheet）：
+  - 单词 → 音标胶囊（美 /phonetic/ 🔊） → 中文释义 → 例句（斜体） → 例句翻译
+  - 不再显示英文释义和词性标签
+  - 例句区域仅在有数据时显示
+- **每日一词卡片**（learn_page）：
+  - 同等格式：单词 → 音标 → 中文释义 → 例句 → 例句翻译
+  - 移除硬编码占位符 "名声是短暂的，不要追逐它。"
+
+#### 6. 保存逻辑修复
+- 三个 save 方法（capture / photo / share）统一改为存储 `primaryDefinition`（首行释义）
+- 不再把所有释义拼成一个大字符串
+
+#### 7. 设置页
+- 新增「AI 查词」配置区：Base URL / API Key / Model
+- 测试连接按钮（查 "hello" 验证配置）
+- 状态指示：未配置（灰色）/ 已配置（绿色 + 模型名）
+
+### 涉及文件
+
+```
+新增:
+lib/data/services/llm_dictionary_service.dart
+lib/data/repositories/config_repository.dart
+lib/features/settings/api_config_provider.dart
+
+修改:
+lib/core/database/database_helper.dart         — v3 迁移
+lib/data/models/word.dart                      — 新增 2 字段
+lib/data/services/dictionary_result.dart        — 新增字段 + LLM/缓存工厂
+lib/data/services/dictionary_service.dart       — LLM优先 + 缓存 + ECDICT兜底
+lib/features/capture/capture_provider.dart      — save 精简
+lib/features/capture/photo_capture_provider.dart — save 精简
+lib/features/capture/capture_sheet.dart         — ResultCard 新格式
+lib/features/capture/photo_capture_page.dart    — ResultCard 新格式
+lib/features/capture/share_receipt_sheet.dart   — save + ResultCard 新格式
+lib/features/learn/learn_page.dart              — DailyWordCard 新格式
+lib/features/settings/settings_page.dart        — API 配置区
+```
+
+### 架构决策
+- LLM API 用 OpenAI 兼容协议（`/chat/completions`），方便用户切换任意厂商
+- 默认内置智谱免费 API（`glm-4-flash` 完全免费不限量），零成本起步
+- 缓存用 SQLite 而非文件，利用已有 sqflite 依赖，查词毫秒级响应
+- API 配置存 config 表而非 shared_preferences，避免新增依赖
+- ECDICT 保留作为兜底，确保离线可用
+
+---
 
 ## Session 28 — Logo 字标定稿 + 导航栏接入（2026-05-10）
 

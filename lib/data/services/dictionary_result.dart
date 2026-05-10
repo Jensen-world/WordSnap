@@ -7,6 +7,8 @@ class DictionaryResult {
   final String? translation;
   final String? exchange;
   final String? tag;
+  final String? exampleSentence;
+  final String? exampleTranslation;
 
   const DictionaryResult({
     required this.word,
@@ -17,6 +19,8 @@ class DictionaryResult {
     this.translation,
     this.exchange,
     this.tag,
+    this.exampleSentence,
+    this.exampleTranslation,
   });
 
   factory DictionaryResult.fromEcdict(Map<String, dynamic> row) {
@@ -58,6 +62,44 @@ class DictionaryResult {
       final code = p.split(':').first.toLowerCase();
       return map[code] ?? code;
     }).join('/');
+  }
+
+  factory DictionaryResult.fromLlmJson(Map<String, dynamic> json) {
+    return DictionaryResult(
+      word: json['word'] as String,
+      phonetic: json['phonetic'] as String?,
+      translation: json['definition'] as String?,
+      exampleSentence: json['example'] as String?,
+      exampleTranslation: json['exampleTranslation'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toCacheMap() => {
+    'word': word,
+    'phonetic': phonetic,
+    'definition': translation,
+    'exampleSentence': exampleSentence,
+    'exampleTranslation': exampleTranslation,
+    'source': 'llm',
+    'createdAt': DateTime.now().toIso8601String(),
+  };
+
+  factory DictionaryResult.fromCache(Map<String, dynamic> row) {
+    return DictionaryResult(
+      word: row['word'] as String,
+      phonetic: row['phonetic'] as String?,
+      translation: row['definition'] as String?,
+      exampleSentence: row['exampleSentence'] as String?,
+      exampleTranslation: row['exampleTranslation'] as String?,
+    );
+  }
+
+  String get primaryDefinition {
+    if (translation != null && translation!.isNotEmpty) {
+      final lines = translation!.split('\n');
+      return lines.first.trim();
+    }
+    return '';
   }
 
   factory DictionaryResult.fromJson(Map<String, dynamic> json) {

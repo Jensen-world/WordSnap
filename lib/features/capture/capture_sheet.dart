@@ -200,7 +200,7 @@ class _ResultCard extends StatelessWidget {
                 children: [
                   const Text('美', style: TextStyle(fontSize: 11, color: AppColors.inkBlack)),
                   const SizedBox(width: 6),
-                  Text(result.phonetic, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                  Text(result.phonetic!, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
                   const SizedBox(width: 4),
                   GestureDetector(
                     onTap: () => ProviderScope.containerOf(context).read(ttsServiceProvider).speak(result.word),
@@ -210,32 +210,38 @@ class _ResultCard extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 10),
-          if (result.translation != null && result.translation.isNotEmpty)
+          if (result.primaryDefinition.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Text(
-                result.translation,
+                result.primaryDefinition,
                 style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
                 textAlign: TextAlign.center,
               ),
             ),
-          Text(
-            result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : '',
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.lavender),
-          ),
-          const SizedBox(height: 4),
-          ...(result.meanings.isNotEmpty
-              ? result.meanings.first.definitions.take(3).map<Widget>((d) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: Text(
-                      d.definition,
-                      style: const TextStyle(fontSize: 13, color: AppColors.inkBlack),
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }).toList()
-              : []),
+          if (result.exampleSentence != null && result.exampleSentence!.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: Color(0xFFF0F0F5))),
+              ),
+              width: double.infinity,
+              child: Text(
+                '"${result.exampleSentence}"',
+                style: const TextStyle(fontSize: 12, color: Color(0xFF666666), fontStyle: FontStyle.italic),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            if (result.exampleTranslation != null && result.exampleTranslation!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  result.exampleTranslation!,
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
           const SizedBox(height: 4),
         ],
       ),

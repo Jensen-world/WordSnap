@@ -12,6 +12,8 @@ class Word {
   final List<WordContext> contexts;
   final List<String> tags;
   final String? sourceUrl;
+  final String? exampleSentence;
+  final String? exampleTranslation;
   final bool isPhrase;
   final bool isNew;
   final int reviewCount;
@@ -31,6 +33,8 @@ class Word {
     this.contexts = const [],
     this.tags = const [],
     this.sourceUrl,
+    this.exampleSentence,
+    this.exampleTranslation,
     this.isPhrase = false,
     this.isNew = true,
     this.reviewCount = 0,
@@ -51,6 +55,8 @@ class Word {
     List<WordContext>? contexts,
     List<String>? tags,
     String? sourceUrl,
+    String? exampleSentence,
+    String? exampleTranslation,
     bool? isPhrase,
     bool? isNew,
     int? reviewCount,
@@ -69,6 +75,8 @@ class Word {
     contexts: contexts ?? this.contexts,
     tags: tags ?? this.tags,
     sourceUrl: sourceUrl ?? this.sourceUrl,
+    exampleSentence: exampleSentence ?? this.exampleSentence,
+    exampleTranslation: exampleTranslation ?? this.exampleTranslation,
     isPhrase: isPhrase ?? this.isPhrase,
     isNew: isNew ?? this.isNew,
     reviewCount: reviewCount ?? this.reviewCount,
@@ -89,6 +97,8 @@ class Word {
     'contexts': jsonEncode(contexts.map((c) => c.toJson()).toList()),
     'tags': jsonEncode(tags),
     'sourceUrl': sourceUrl,
+    'exampleSentence': exampleSentence,
+    'exampleTranslation': exampleTranslation,
     'isPhrase': isPhrase ? 1 : 0,
     'isNew': isNew ? 1 : 0,
     'reviewCount': reviewCount,
@@ -114,6 +124,8 @@ class Word {
       contexts: contextsJson.map((c) => WordContext.fromJson(c as Map<String, dynamic>)).toList(),
       tags: tagsJson.cast<String>(),
       sourceUrl: map['sourceUrl'] as String?,
+      exampleSentence: map['exampleSentence'] as String?,
+      exampleTranslation: map['exampleTranslation'] as String?,
       isPhrase: (map['isPhrase'] as int) == 1,
       isNew: (map['isNew'] as int) == 1,
       reviewCount: map['reviewCount'] as int? ?? 0,
