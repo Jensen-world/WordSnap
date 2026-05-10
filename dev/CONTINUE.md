@@ -1,4 +1,4 @@
-# 见词 WordSnap — 断点续接指南
+# WordSnap — 断点续接指南
 
 > 最后更新：2026-05-10（Session 26：补全单元测试 + widget 测试）
 

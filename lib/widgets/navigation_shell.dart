@@ -104,7 +104,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
               ),
               const SizedBox(width: 8),
               const Text(
-                '见词',
+                'WordSnap',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,

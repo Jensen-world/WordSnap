@@ -327,7 +327,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onChanged: (v) => setState(() => _clipboardEnabled = v),
           ),
           _ListTile(
-            title: '关于见词',
+            title: '关于 WordSnap',
             subtitle: 'v1.0.0',
             trailing: const SizedBox.shrink(),
             onTap: null,

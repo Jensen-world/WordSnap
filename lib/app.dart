@@ -11,7 +11,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       child: MaterialApp.router(
-        title: '见词 WordSnap',
+        title: 'WordSnap',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
