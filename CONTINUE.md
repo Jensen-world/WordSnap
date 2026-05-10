@@ -848,7 +848,7 @@ flutter build apk --release
 5. Session 8（05-09）：数据联动刷新（review_session 写入 + 返回时 load）+ 自动播放 TTS + 单词管理（移动/删除/批量管理）+ 底部 Pill 毛玻璃 + 英美切换移除 + 单词本卡片数据展示 + 文案修正
 6. Session 9（05-09）：真机测试 6 个 Bug 修复（启动页/滚动/毛玻璃透明度/设置保存遮挡/批量管理遮挡/拍照保存崩溃）+ 启动页（Web + Android）+ review_session Web 持久化
 7. P1 全部完成。下一步可选方向：
-   - 导出文件实际写入/分享（当前 exportToJson 生成字符串但未保存到文件）
+   - 导出文件实际写入/分享（Session 22 已实现：writeExportFile 写入文档目录 + share_plus 系统分享）
    - 真机/模拟器测试验证
    - P2 功能（每日一词实际数据、图片关联、release 签名+图标）
 8. Session 22（05-09）：App 品牌图标替换 + Release APK 签名配置 + imagePath 功能移除 + JSON 导出显示保存位置 + 每日一词实际数据
