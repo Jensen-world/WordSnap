@@ -43,5 +43,38 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android keystore & signing
 /android/key.properties
 /android/*.jks
+
+# Dev tool artifacts
+/.playwright-mcp/
+/.superpowers/
+/%LOCALAPPDATA%/
+/.claude/
+
+# Temp design previews
+/splash-preview.png
+/splash-v2.png
+/header-with-logo.png
+
+# Dev tool artifacts
+/app-*.png
+/archive-page.png
+/current-screenshot.png
+/debug-screenshot.png
+/learn-*.png
+/notebook-detail.png
+/release-loaded.png
+/screenshot-*.png
+/settings-page.png
+/study-page.png
+/verify-*.png
+/wordbook-page.png
+/working-final.png
+/snap.txt
+/test_screenshots/
+
+# Dev backups
+/WordSnap 1.0/
