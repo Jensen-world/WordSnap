@@ -1,10 +1,72 @@
 # 见词 WordSnap — 断点续接指南
 
-> 最后更新：2026-05-09（Session 25：修复数据复活 bug + 移除种子数据）
+> 最后更新：2026-05-10（Session 26：补全单元测试 + widget 测试）
 
 ## 一、现在到哪了
 
-**阶段：P0 MVP 全部实现完成，真机测试修复完毕。种子数据已移除，数据持久化已修复。**
+**阶段：P0/P1 全部完成，测试体系建立。41 个测试全部通过。**
+
+## Session 26 — 补全测试（2026-05-10）
+
+### 模型单元测试（22 tests）
+
+| 文件 | 测试数 | 覆盖 |
+|------|--------|------|
+| `test/models/word_test.dart` | 6 | toMap/fromMap roundtrip, null fields, copyWith |
+| `test/models/notebook_test.dart` | 4 | toMap/fromMap roundtrip, defaults, copyWith |
+| `test/models/review_session_test.dart` | 3 | toMap/fromMap roundtrip, defaults, copyWith |
+| `test/models/word_context_test.dart` | 3 | all ContextType values, null source, omit null |
+| `test/models/dictionary_result_test.dart` | 6 | fromEcdict full/partial/empty, _expandPos, fromJson |
+
+### ReviewService 单元测试（12 tests）
+
+| 测试组 | 测试数 | 覆盖 |
+|--------|--------|------|
+| getMode | 3 | normal (≥10新词), transition (1-9), pureReview (0) |
+| getTodayQueue | 3 | 10:1 interleave, dailyLimit, learnedAt 排序 |
+| getPureReviewQueue | 1 | 排除 mastered，按 learnedAt 排序 |
+| markCorrect | 3 | +1, 阈值10=掌握, 持久化 |
+| markIncorrect | 1 | reviewCount 归零 |
+| markNewCorrect | 1 | isNew→false, reviewCount→1 |
+
+使用 `FakeWordRepository` (in-memory) 模拟数据库，无需 mock 框架。
+
+### Widget 测试（7 tests）
+
+| 页面 | 测试数 | 覆盖 |
+|------|--------|------|
+| LearnPage | 5 | loading spinner, error 重试, 学习计划, 每日一词, 空状态 |
+| ArchivePage | 1 | 已掌握/总量/学习天数 统计数字 |
+| WordbookPage | 1 | 多单词本卡片名称渲染 |
+
+使用 ProviderScope + overrideWith 注入 fake notifiers，避免数据库依赖。
+
+### 测试架构
+
+```
+test/
+├── models/
+│   ├── word_test.dart
+│   ├── notebook_test.dart
+│   ├── review_session_test.dart
+│   ├── word_context_test.dart
+│   └── dictionary_result_test.dart
+├── services/
+│   └── review_service_test.dart
+└── widgets/
+    └── core_pages_test.dart
+```
+
+### 运行测试
+
+```bash
+flutter test                    # 全部 41 tests
+flutter test test/models/       # 仅模型
+flutter test test/services/     # 仅服务
+flutter test test/widgets/      # 仅 widget
+```
+
+---
 
 ## Session 25 — 数据复活 bug 修复
 
@@ -750,7 +812,7 @@ flutter build apk --release
 ### 测试
 - [x] 真机基础测试（OCR + 词典离线化已修复，2026-05-09）
 - [x] 真机完整流程测试（拍照→OCR→查词→保存→学习，Session 9 修复保存崩溃）
-- [ ] Widget test
+- [x] Widget test（Session 26：41 tests，模型 22 + 服务 12 + Widget 7）
 - [ ] Integration test
 
 ### 构建
