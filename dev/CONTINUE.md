@@ -1,6 +1,6 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-10（Session 31：APK 构建成功 + 代理解决 GitHub 下载问题）
+> 最后更新：2026-05-10（Session 32：Logo 字标程序化重渲染 + 构建脚本 + 横板 logo）
 
 ## 一、现在到哪了
 
@@ -155,6 +155,85 @@ Session 30 修复三个 bug 后尝试构建 APK，但 `sqlite3` 包 native asset
 2. 设置 → 测试连接，查看 LLM 具体错误信息
 3. 确认新词例句是否正常
 4. 确认学习计划空状态（全新安装应为 0/0/10）
+
+---
+
+## Session 32 — Logo 字标程序化重渲染 + 构建脚本 + 横板 logo（2026-05-10）
+
+### 背景
+之前 Session 28 的 wordmark 是用 Photoshop 手动裁切渲染的，反馈循环慢，像素级精度不可控。本次用 Python/Pillow 完全程序化重建，实现像素级精确控制。
+
+### 已完成
+
+#### 1. 参考设计分析
+- `scripts/analyze_letters.py`：分析 `字母样式.png`（参考设计稿，699×1440）
+  - 逐列扫描像素亮度，识别 8 个字母边界（w/o/r/d/s/n/a/p）
+  - 定位 p 字母反色区域（counter）的精确坐标
+
+#### 2. 程序化字标生成（6 轮迭代）
+
+| 脚本 | 功能 |
+|------|------|
+| `generate_wordmark.py` (v1) | w 区域着品牌蓝 + p 反色区着橙色 + 图标拼接 |
+| `generate_wordmark_v2.py` | 改进颜色检测阈值，处理反锯齿边缘 |
+| `generate_wordmark_v3.py` | 优化橙色区域覆盖范围 |
+| `generate_wordmark_v4.py` | w 右上角加橙色圆点（匹配 App 图标样式） |
+| `render_wordmark_final.py` | 基于 `字母样式.png`，像素级颜色替换 + 椭圆叠加填充 p counter + 白色背景转透明 + 图标拼接 |
+| `render_wordmark_clean.py` | 完全重写：自动检测 p 字母 bowl 区域，动态计算 counter 位置，无需硬编码坐标 |
+
+**渲染逻辑（`render_wordmark_final.py`）：**
+1. 加载 `字母样式.png` 作为文字模板
+2. x=0~1310 区域暗色像素 → 品牌蓝 `#2F5CFF`（覆盖 "word"）
+3. x=1340~末尾 暗色像素 → 墨黑 `#0B0B0F`（覆盖 "snap"）
+4. p 反色区（x=2425~2650, y=235~380）白色像素 → 橙色 `#FFA940`，叠加椭圆确保无缝填充
+5. 白色/近白像素 → 透明（含反锯齿边缘渐变透明度）
+6. 裁切透明边距，拼接 App 图标（缩放至文字高度 88%）
+
+#### 3. 用户 Photoshop 版本处理
+- 用户提供 Photoshop 精修版 `修改图片 (2).png`
+- `use_user_wordmark.py`：将白色背景转透明 + 裁切 → 直接输出 `assets/logo/wordmark.png`
+- 最终采用此版本（PS 精修的反锯齿效果优于程序化渲染）
+
+#### 4. 横板 Logo
+- `横板logo.png`：水平布局 logo，用于横版场景
+- `横板logo.psd`：Photoshop 源文件，方便后续编辑
+- `横板logo-1.png`：备选版本
+
+#### 5. 构建脚本
+- `scripts/build_apk.py`：自动化 APK 构建 + 版本命名
+  - 从 `pubspec.yaml` 读取版本号
+  - 构建后重命名为 `WordSnap-v{版本}-{模式}-{日期}.apk`
+  - 输出到 `build/dist/`
+
+### 生成的中间文件
+```
+images/
+├── generated-1778382392172.png     — 早期生成测试
+├── generated-1778382421137.png     — 早期生成测试
+├── generated-1778382682828.png     — 早期生成测试
+├── wordsnap_text_colored.png       — 着色后的纯文字（未拼接图标）
+├── ordsnap_colored.png            — ordsnap 部分着色
+├── _text_before_pfill.png         — p counter 填充前的文字（调试用）
+├── _canvas_before_pfill.png       — p counter 填充前的完整画布（调试用）
+├── E00NRG.png                     — 参考素材
+└── d3UVjB.png                     — 参考素材
+```
+
+### 品牌色规范
+| 颜色 | 色值 | 用途 |
+|------|------|------|
+| 品牌蓝 | `#2F5CFF` | w 字母 |
+| 墨黑 | `#0B0B0F` | ordsnap 字母 |
+| 橙色 | `#FFA940` | p 字母反色区填充 |
+
+### 教训
+- Python/Pillow 像素级颜色替换对反锯齿边缘处理不如 Photoshop
+- 程序化方案适合快速原型和批量生成，但精修仍需 PS
+- 最终采用用户 PS 版本，程序化脚本保留作为未来迭代的基础
+
+### 下一步
+- 将 scripts/ 和 images/ 加入 git track（当前未提交）
+- 横板 logo 可接入设置页或关于页
 
 ---
 
