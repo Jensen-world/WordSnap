@@ -1,8 +1,44 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-10（Session 26：补全单元测试 + widget 测试）
+> 最后更新：2026-05-10（Session 27：开源准备 + 项目清理 + 品牌去中文 + Logo 字标设计）
 
 ## 一、现在到哪了
+
+**阶段：开源准备基本完成，Logo 字标设计进行中（未完成）。**
+
+## Session 27 — 开源准备 + 品牌重塑（2026-05-10）
+
+### 已完成
+
+#### 1. 开源准备
+- 创建 `WordSnap-github/` 干净发布目录（119 files, 独立 git 仓库）
+- 添加 Apache 2.0 LICENSE
+- 重写 README.md（中英文功能列表、技术栈、截图、SRS 算法）
+- 拷贝 `screenshots/` 4 张精选截图
+- `.gitignore` 已配置完整排除规则
+
+#### 2. 项目目录清理
+- 删除 `%LOCALAPPDATA%/` （4781个 npm 缓存文件）
+- 删除 `WordSnap 1.0/` 备份目录
+- 删除 40+ 根目录调试截图 PNG
+- 删除 `snap.txt`、`wordsnap.iml`、`.flutter-plugins-dependencies`
+- 新建 `dev/` 目录，CONTINUE.md 移入
+- `git commit` — 5158 files changed, -1,065,045 lines
+
+#### 3. 去中文名
+- 所有 "见词" → "WordSnap"
+- 涉及文件：`app.dart`、`navigation_shell.dart`、`settings_page.dart`、`AndroidManifest.xml`、`web/index.html`、`README.md`、`CONTINUE.md`
+
+#### 4. 品牌字标设计（进行中）
+- 创建 `logo.pen`（Pencil 设计文件）
+- 选定蓝底 W 图标（`wordsnap-icon-app.png`）
+- 方向：图标 + "WordSnap" 连写，W 品牌蓝，p 洞填橙色
+- **待定**：字体变形方案（手绘路径太糙、AI 生文字不准、需找替代方案）
+
+### 下一步
+1. Logo 字标：用 Canva/Figma 做专业字标，或继续在 Pencil 里迭代
+2. 字标完成后：导出 PNG → 替换 `navigation_shell.dart` 导航栏 → 同步 github 目录
+3. GitHub 推送：`WordSnap-github/` 关联远程仓库并 push
 
 **阶段：P0/P1 全部完成，测试体系建立。41 个测试全部通过。**
 
