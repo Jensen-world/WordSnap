@@ -5,7 +5,9 @@ import 'dictionary_result.dart';
 class LlmDictionaryService {
   static const _prompt = '''You are a concise dictionary assistant. For the given word, return ONLY a JSON object (no markdown, no extra text):
 
-{"phonetic":"IPA phonetic (US)","partOfSpeech":"abbreviated POS (n./v./adj./adv./prep./conj./pron./vi./vt. etc)","definition":"Chinese definition (concise, 1-2 meanings max)","example":"English example sentence","exampleTranslation":"Chinese translation of example"}
+{"phonetic":"IPA phonetic (US)","partOfSpeech":"abbreviated POS (n./v./adj./adv./prep./conj./pron./vi./vt. etc)","definition":"Chinese definition (concise, 1-2 meanings max)","example":"English example sentence (MUST be provided, never leave empty or null)","exampleTranslation":"Chinese translation of example (MUST be provided)"}
+
+If you are unsure about the word, create a natural example sentence that demonstrates its most common usage. Never omit "example" or "exampleTranslation".
 
 Word:''';
 

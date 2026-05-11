@@ -1,6 +1,6 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-11（Session 34：输入查词交互重构）
+> 最后更新：2026-05-11（Session 34：输入查词交互重构 + 例句强制 + 卡片交互增强）
 
 ## 一、现在到哪了
 
@@ -13,7 +13,31 @@
 
 ---
 
-## Session 34 — 输入查词交互重构（2026-05-11）
+## Session 34 — 输入查词交互重构 + 例句 + 卡片交互（2026-05-11）
+
+### 1. LLM 例句强制生成
+- prompt 增加 `MUST be provided, never leave empty or null` 强制要求
+- 追加兜底指令：`If you are unsure about the word, create a natural example sentence`
+
+### 2. 单词本卡片点击跳转
+- `_NotebookCard` 新增 `notebookId` 参数
+- 封面图标和名称均可点击 → `/wordbook/:id`
+
+### 3. 每日一词增强
+- 点击单词文字 → `/word/:id` 单词详情页
+- 新增「↻ 换一个」按钮，随时手动切换
+- 换词逻辑：`(日期种子 + dailyWordIndex) % 词数`，同一天不会重复
+
+### 涉及文件
+```
+lib/data/services/llm_dictionary_service.dart — prompt 强化例句要求
+lib/features/learn/learn_provider.dart         — dailyWordIndex + nextDailyWord()
+lib/features/learn/learn_page.dart             — 封面/标题/单词可点击 + 换一个按钮
+```
+
+---
+
+## Session 34 前半 — 输入查词交互重构（2026-05-11）
 
 ### 问题
 CaptureSheet 底部弹出层交互混乱：500ms debounce 自动查询，用户打字过程中结果闪现；缺少显式"确认"操作；提示字过大（20px）。

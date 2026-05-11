@@ -20,6 +20,7 @@ class LearnState {
   final int dailyLimit;
   final int estimatedDays;
   final Word? dailyWord;
+  final int dailyWordIndex;
   final bool loading;
   final String? errorMessage;
 
@@ -36,6 +37,7 @@ class LearnState {
     this.dailyLimit = 0,
     this.estimatedDays = 0,
     this.dailyWord,
+    this.dailyWordIndex = 0,
     this.loading = true,
     this.errorMessage,
   });
@@ -53,6 +55,7 @@ class LearnState {
     int? dailyLimit,
     int? estimatedDays,
     Word? dailyWord,
+    int? dailyWordIndex,
     bool? loading,
     String? errorMessage,
   }) => LearnState(
@@ -68,6 +71,7 @@ class LearnState {
     dailyLimit: dailyLimit ?? this.dailyLimit,
     estimatedDays: estimatedDays ?? this.estimatedDays,
     dailyWord: dailyWord ?? this.dailyWord,
+    dailyWordIndex: dailyWordIndex ?? this.dailyWordIndex,
     loading: loading ?? this.loading,
     errorMessage: errorMessage ?? this.errorMessage,
   );
@@ -127,7 +131,7 @@ class LearnNotifier extends StateNotifier<LearnState> {
 
       Future<Word?> pickDaily(int nbId) async {
         final words = await wordRepo.getByNotebook(nbId);
-        if (words.isNotEmpty) return words[seed % words.length];
+        if (words.isNotEmpty) return words[(seed + state.dailyWordIndex) % words.length];
         return null;
       }
 
@@ -171,5 +175,20 @@ class LearnNotifier extends StateNotifier<LearnState> {
     final updated = nb.copyWith(dailyNewWordLimit: limit);
     await _ref.read(notebookRepoProvider).update(updated);
     load();
+  }
+
+  Future<void> nextDailyWord() async {
+    final nb = state.currentNotebook;
+    if (nb == null) return;
+    final wordRepo = _ref.read(wordRepoProvider);
+    final words = await wordRepo.getByNotebook(nb.id!);
+    if (words.isEmpty) return;
+
+    final now = DateTime.now();
+    final seed = now.year * 400 + now.month * 40 + now.day;
+    final nextIndex = state.dailyWordIndex + 1;
+    final nextWord = words[(seed + nextIndex) % words.length];
+
+    state = state.copyWith(dailyWord: nextWord, dailyWordIndex: nextIndex);
   }
 }

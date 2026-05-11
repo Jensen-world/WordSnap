@@ -74,6 +74,7 @@ class _LearnPageState extends ConsumerState<LearnPage> {
       padding: EdgeInsets.fromLTRB(16, 16, 16, bottomPad),
       children: [
         _NotebookCard(
+          notebookId: current.id,
           name: current.name,
           newCount: state.dbNewWords,
           reviewCount: state.dbReviewWords,
@@ -101,6 +102,7 @@ class _LearnPageState extends ConsumerState<LearnPage> {
 }
 
 class _NotebookCard extends StatelessWidget {
+  final int? notebookId;
   final String name;
   final int newCount;
   final int reviewCount;
@@ -112,6 +114,7 @@ class _NotebookCard extends StatelessWidget {
   final String masteredFraction;
 
   const _NotebookCard({
+    required this.notebookId,
     required this.name,
     required this.newCount,
     required this.reviewCount,
@@ -144,26 +147,32 @@ class _NotebookCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 64,
-                height: 84,
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFF0F0F5), Color(0xFFE8E8F0)],
+              GestureDetector(
+                onTap: () => context.push('/wordbook/$notebookId'),
+                child: Container(
+                  width: 64,
+                  height: 84,
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFF0F0F5), Color(0xFFE8E8F0)],
+                    ),
+                    border: Border.fromBorderSide(BorderSide(color: Color(0xFFE2E2EA))),
                   ),
-                  border: Border.fromBorderSide(BorderSide(color: Color(0xFFE2E2EA))),
+                  child: const Icon(Icons.menu_book_rounded, size: 32, color: AppColors.signalBlue),
                 ),
-                child: const Icon(Icons.menu_book_rounded, size: 32, color: AppColors.signalBlue),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+                    GestureDetector(
+                      onTap: () => context.push('/wordbook/$notebookId'),
+                      child: Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+                    ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -407,13 +416,34 @@ class _DailyWordCard extends ConsumerWidget {
                 '每日一词',
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF999999), letterSpacing: 0.6),
               ),
-              Text('来自 $sourceName', style: const TextStyle(fontSize: 10, color: Color(0xFFBBBBBB))),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => ref.read(learnStateProvider.notifier).nextDailyWord(),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.refresh, size: 12, color: Color(0xFF999999)),
+                        SizedBox(width: 2),
+                        Text('换一个', style: TextStyle(fontSize: 10, color: Color(0xFF999999))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text('来自 $sourceName', style: const TextStyle(fontSize: 10, color: Color(0xFFBBBBBB))),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            word.text,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+          GestureDetector(
+            onTap: () {
+              if (word.id != null) context.push('/word/${word.id}');
+            },
+            child: Text(
+              word.text,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+            ),
           ),
           const SizedBox(height: 8),
           Container(
