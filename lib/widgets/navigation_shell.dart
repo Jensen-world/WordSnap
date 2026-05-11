@@ -101,19 +101,38 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
             ),
           ],
         ),
-        body: Column(
+        body: Stack(
           children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
-              ),
-              child: CapsuleTabBar(
-                currentIndex: widget.navigationShell.currentIndex,
-                onTap: (i) => widget.navigationShell.goBranch(i),
+            Column(
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
+                  ),
+                  child: CapsuleTabBar(
+                    currentIndex: widget.navigationShell.currentIndex,
+                    onTap: (i) => widget.navigationShell.goBranch(i),
+                  ),
+                ),
+                Expanded(child: widget.navigationShell),
+              ],
+            ),
+            Positioned(
+              left: 0, right: 0, bottom: 0,
+              child: IgnorePointer(
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.3,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [Color(0xFFE8ECFC), Color(0x00E8ECFC)],
+                    ),
+                  ),
+                ),
               ),
             ),
-            Expanded(child: widget.navigationShell),
           ],
         ),
         bottomNavigationBar: const BottomPill(),

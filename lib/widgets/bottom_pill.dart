@@ -21,9 +21,9 @@ class BottomPill extends ConsumerWidget {
             color: Color(0x05FFFFFF),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          padding: EdgeInsets.only(left: 48, right: 48, top: 8, bottom: 24 + bottom),
+          padding: EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 24 + bottom),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: const Color(0xCC2F5CFF),
               borderRadius: BorderRadius.circular(100),

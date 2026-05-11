@@ -1,15 +1,40 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-11（Session 37：拍照涂抹选词 — 拍照后手指涂抹选中单词区域，裁剪 OCR 查词）
+> 最后更新：2026-05-11（Session 38：UI 打磨 — 底部渐变背景 + 卡片阴影 + Pill 全宽）
 
 ## 一、现在到哪了
 
-**阶段：拍照查词从全图 OCR chip 选词改为涂抹选中区域 OCR。待真机验证。**
+**阶段：底部渐变过渡、卡片阴影代替边框、Pill 全宽等 UI 打磨完成。待真机验证。**
 
 ### 待处理
-- 真机验证：拍照涂抹选词 / WordChat / 例句三层数据源
+- 真机验证：整体视觉效果 / 拍照涂抹选词 / WordChat / 例句
 - 开源仓库（WordSnap-github/）关联远程并 push
 - `scripts/`、`images/`（设计素材）工作树未提交文件
+
+---
+
+## Session 38 — UI 打磨：底部渐变 + 卡片阴影 + Pill 全宽（2026-05-11）
+
+### 改动
+
+#### 1. NavigationShell 底部渐变背景
+- body Column → Stack：底部叠加 30% 屏幕高度的淡蓝渐变（#E8ECFC → 透明）
+- IgnorePointer 包裹不影响交互
+
+#### 2. LearnPage 卡片去边框改阴影
+- _NotebookCard / _StudyPlanCard / _DailyWordCard（含空状态）：border → boxShadow
+- 阴影参数：黑色 4% 透明度、blurRadius 12、偏移 (0, 2)
+
+#### 3. BottomPill 全宽
+- 左右 padding 48 → 20，与"开始学习"按钮等宽
+- vertical padding 12 → 14（视觉补偿）
+
+### 涉及文件
+```
+lib/widgets/navigation_shell.dart           — 底部渐变 Stack 叠加
+lib/widgets/bottom_pill.dart               — 全宽 padding
+lib/features/learn/learn_page.dart          — 4 处卡片 border → boxShadow
+```
 
 ---
 
