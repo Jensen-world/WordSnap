@@ -5,6 +5,7 @@ import '../../core/theme/colors.dart';
 import '../../data/models/word.dart';
 import 'study_provider.dart';
 import 'learn_provider.dart';
+import 'learn_settings_sheet.dart';
 import '../wordbook/wordbook_provider.dart';
 
 class StudyPage extends ConsumerStatefulWidget {
@@ -29,6 +30,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(studyProvider);
+    final learn = ref.watch(learnStateProvider);
     final word = state.currentWord;
 
     if (state.loading) {
@@ -40,6 +42,72 @@ class _StudyPageState extends ConsumerState<StudyPage> {
 
     if (state.finished) {
       if (state.queue.isEmpty) {
+        if (learn.dailyLimit == 0 && learn.totalWords > 0) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('学习中')),
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.menu_book_rounded, size: 64, color: Color(0xFFE8E8F0)),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '暂无单词需要学习',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '请先设置每日学习计划',
+                    style: TextStyle(fontSize: 14, color: Color(0xFF999999)),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      OutlinedButton(
+                        onPressed: () { ref.read(dataRefreshTrigger.notifier).state++; ref.read(learnStateProvider.notifier).load(); context.pop(); },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFE2E2EA)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                        ),
+                        child: const Text('返回', style: TextStyle(color: Color(0xFF999999))),
+                      ),
+                      const SizedBox(width: 12),
+                      FilledButton(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            useRootNavigator: true,
+                            backgroundColor: Colors.white,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                            ),
+                            builder: (_) => const LearnSettingsSheet(),
+                          ).then((_) {
+                            final updated = ref.read(learnStateProvider);
+                            if (updated.dailyLimit > 0) {
+                              ref.read(studyProvider.notifier).startSession(
+                                updated.currentNotebookId ?? 1,
+                                updated.dailyLimit,
+                              );
+                            }
+                          });
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.signalBlue,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                        ),
+                        child: const Text('设置'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         return Scaffold(
           appBar: AppBar(title: const Text('学习中')),
           body: Center(
