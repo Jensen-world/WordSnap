@@ -65,6 +65,10 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
     state = state.copyWith(input: input, clearResult: true, clearError: true);
   }
 
+  void reset() {
+    state = const CaptureState();
+  }
+
   Future<void> lookup() async {
     final word = state.input.trim();
     if (word.isEmpty) return;

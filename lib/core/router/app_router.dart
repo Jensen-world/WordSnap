@@ -7,6 +7,7 @@ import '../../features/wordbook/word_detail_page.dart';
 import '../../features/archive/archive_page.dart';
 import '../../features/settings/settings_page.dart';
 import '../../features/capture/photo_capture_page.dart';
+import '../../features/capture/capture_result_page.dart';
 import '../../widgets/navigation_shell.dart';
 
 final appRouter = GoRouter(
@@ -60,6 +61,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/capture/photo',
       builder: (context, state) => const PhotoCapturePage(),
+    ),
+    GoRoute(
+      path: '/capture/result',
+      builder: (context, state) => const CaptureResultPage(),
     ),
   ],
 );

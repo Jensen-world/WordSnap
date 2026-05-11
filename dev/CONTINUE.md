@@ -1,19 +1,61 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-11（Session 33：3 个 Bug 修复 + OCR 预处理）
+> 最后更新：2026-05-11（Session 34：输入查词交互重构）
 
 ## 一、现在到哪了
 
-**阶段：LLM 查词已完成 + APK 构建成功 + 横板 Logo 定稿。4 个 Bug 已修复，待真机验证。**
+**阶段：LLM 查词已完成 + APK 构建成功 + 横板 Logo 定稿 + 输入查词交互重构。待真机验证。**
 
 ### 待处理
-- 工作树有未提交文件：`scripts/`、`images/`（设计素材）
-- 真机验证：LLM 连接 / 例句 / 空状态 / 每日一词格式
+- 真机验证：输入查词新流程 / LLM 连接 / 例句 / 空状态 / 每日一词格式
 - 开源仓库（WordSnap-github/）关联远程并 push
+- `scripts/`、`images/`（设计素材）工作树未提交文件
 
 ---
 
-## Session 33 — 3 个 Bug 修复（2026-05-11）
+## Session 34 — 输入查词交互重构（2026-05-11）
+
+### 问题
+CaptureSheet 底部弹出层交互混乱：500ms debounce 自动查询，用户打字过程中结果闪现；缺少显式"确认"操作；提示字过大（20px）。
+
+### 方案
+两步交互：输入→确认→跳转结果页（可修改重查）→保存
+
+### 改动
+
+#### 1. CaptureSheet 简化
+- 移除 debounce 自动查询、行内结果展示、单词本选择器、保存按钮
+- 只保留：输入框 + 确认按钮
+- hint: `请输入或粘贴你想记录的单词`（14px 灰色）
+- 支持键盘 `done` 和按钮两种确认方式
+- 确认后：setInput → lookup → pop sheet → push `/capture/result`
+
+#### 2. 新建 CaptureResultPage（全屏页面）
+- 顶部：可编辑输入框（预填单词）+ 搜索图标按钮，支持修改后重新查询
+- 中间：查询结果卡片（复用 _ResultCard）
+- 底部：单词本选择器 + 取消/确认添加按钮
+- AppBar 带返回箭头
+
+#### 3. CaptureNotifier 新增 reset()
+- 每次打开 CaptureSheet 重置状态，避免上次残留
+
+#### 4. 路由
+- 新增 `/capture/result` → CaptureResultPage
+
+### 涉及文件
+```
+新增:
+lib/features/capture/capture_result_page.dart
+
+修改:
+lib/features/capture/capture_sheet.dart        — 大幅简化，仅输入+确认
+lib/features/capture/capture_provider.dart      — 新增 reset()
+lib/core/router/app_router.dart                 — 新增 /capture/result 路由
+```
+
+---
+
+## Session 33 — 3 个 Bug 修复 + 展示格式 Round 2（2026-05-11）
 
 ### Bug 1：空数据状态下每日新学显示 10
 
