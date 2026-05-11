@@ -1,10 +1,15 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-10（Session 30：LLM 连接修复 + ECDICT 缓存污染 + 学习计划空状态防护）
+> 最后更新：2026-05-11（Session 32：APK 构建 + 横板 Logo + 构建脚本）
 
 ## 一、现在到哪了
 
-**阶段：查词升级为 LLM 优先（智谱免费 API 默认）+ ECDICT 兜底 + 本地缓存。释义展示精简为发音→中文释义→例句→例句翻译。**
+**阶段：LLM 查词已完成 + APK 构建成功 + 横板 Logo 定稿。待真机验证 LLM 连接和新词例句。**
+
+### 待处理
+- 工作树有未提交文件：`pubspec.yaml`（sqlite3_flutter_libs）、`scripts/`、`images/`
+- 真机验证：LLM 连接 / 例句 / 空状态
+- 开源仓库（WordSnap-github/）关联远程并 push
 
 ## Session 29 — LLM 智能查词 + 释义展示优化（2026-05-10）
 
@@ -130,6 +135,38 @@ lib/features/settings/settings_page.dart      — 测试连接显示详细错误
 1. 真机测试 LLM 连接（设置 → 测试连接 → 查看具体错误信息）
 2. 确认新词例句是否正常（LLM 成功后自动缓存，下次免调 API）
 3. 确认学习计划空状态（全新安装应为 0/0/10）
+
+---
+
+## Session 32 — Logo 字标程序化重渲染 + 构建脚本 + 横板 logo（2026-05-10）
+
+### 已完成
+
+#### 横板 Logo 设计
+- 参考 `字母样式.png` 设计稿，Python/Pillow 像素级着色生成 wordmark
+- `w` 区域 → 品牌蓝 `#2F5CFF`，`ordsnap` 区域 → 墨黑 `#0B0B0F`，`p` 反色区 → 橙色 `#FFA940`
+- 6 轮脚本迭代（analyze_letters → generate_wordmark v1-v4 → render_wordmark_final → render_wordmark_clean）
+- 最终采用用户 Photoshop 精修版（反锯齿优于程序化渲染）
+- 输出：`横板logo.png`、`横板logo.psd`
+
+#### 构建脚本
+- 新增 `scripts/build_apk.py`：自动读取 pubspec.yaml 版本号，输出命名 APK 到 `build/dist/`
+- 命名格式：`WordSnap-v{版本号}-{release/debug}-{日期}.apk`
+
+#### 图像素材
+- `images/` 目录：设计中间文件和参考素材（ordsnap_colored.png, wordsnap_text_colored.png 等）
+
+---
+
+## Session 31 — APK 构建成功（2026-05-10）
+
+### 问题
+`sqlite3` 包 native assets hook 需从 GitHub 下载 `libsqlite3.so`，直连超时导致构建失败。
+
+### 解决
+- 用户开启代理后 `flutter build apk --debug` 成功
+- APK: `build/app/outputs/flutter-apk/app-debug.apk` (183MB)
+- `pubspec.yaml` 新增 `sqlite3_flutter_libs: ^0.5.34` 依赖
 
 ---
 
