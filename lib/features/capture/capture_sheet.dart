@@ -38,8 +38,11 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPad = (bottomInset > 0 ? bottomInset : MediaQuery.of(context).padding.bottom) + 24;
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(20, 24, 20, bottomPad),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

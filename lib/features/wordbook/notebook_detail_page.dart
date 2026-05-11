@@ -273,7 +273,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
             if (_selectionMode) {
               setState(() { _selectionMode = false; _selectedWordIds.clear(); });
             } else {
-              GoRouter.of(context).go('/wordbook');
+              context.pop();
             }
           },
         ),

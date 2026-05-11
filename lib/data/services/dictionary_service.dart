@@ -76,7 +76,13 @@ class DictionaryService {
         limit: 1,
       );
       if (rows.isEmpty) return null;
-      return DictionaryResult.fromCache(rows.first);
+      final cached = DictionaryResult.fromCache(rows.first);
+      // Skip stale cache entries that lack example sentences —
+      // the old LLM prompt didn't require them, so re-query via LLM.
+      if (cached.exampleSentence == null || cached.exampleSentence!.isEmpty) {
+        return null;
+      }
+      return cached;
     } catch (_) {
       return null;
     }
