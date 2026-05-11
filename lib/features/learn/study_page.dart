@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/colors.dart';
-import '../wordbook/wordbook_provider.dart';
 import '../../data/models/word.dart';
 import 'study_provider.dart';
 import 'learn_provider.dart';
@@ -379,15 +378,18 @@ class _DefinitionViewState extends ConsumerState<_DefinitionView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                word.partOfSpeech ?? '',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.lavender),
-              ),
-              const SizedBox(height: 6),
+              if (word.partOfSpeech != null && word.partOfSpeech!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    word.partOfSpeech!,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.lavender),
+                  ),
+                ),
               ...word.definitions.asMap().entries.map((e) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                  '${e.key + 1}. ${e.value}',
+                  word.definitions.length > 1 ? '${e.key + 1}. ${e.value}' : e.value,
                   style: const TextStyle(fontSize: 14, color: AppColors.inkBlack, height: 1.5),
                 ),
               )),
@@ -399,15 +401,28 @@ class _DefinitionViewState extends ConsumerState<_DefinitionView> {
           title: '例句',
           child: Column(
             children: word.examples.asMap().entries.map((e) {
+              final isFirst = e.key == 0;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Text(
-                        e.value,
-                        style: const TextStyle(fontSize: 13, color: AppColors.inkBlack, fontStyle: FontStyle.italic),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.value,
+                            style: const TextStyle(fontSize: 13, color: AppColors.inkBlack, fontStyle: FontStyle.italic),
+                          ),
+                          if (isFirst && word.exampleTranslation != null && word.exampleTranslation!.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              word.exampleTranslation!,
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),

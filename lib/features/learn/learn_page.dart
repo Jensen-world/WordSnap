@@ -446,10 +446,15 @@ class _DailyWordCard extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           if (word.definitions.isNotEmpty)
-            Text(
-              word.definitions.first,
-              style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
-              textAlign: TextAlign.center,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Text(
+                (word.partOfSpeech != null && word.partOfSpeech!.isNotEmpty)
+                    ? '${word.partOfSpeech}  ${word.definitions.first}'
+                    : word.definitions.first,
+                style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
+                textAlign: TextAlign.center,
+              ),
             ),
           if (word.exampleSentence != null && word.exampleSentence!.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -461,10 +466,21 @@ class _DailyWordCard extends ConsumerWidget {
               width: double.infinity,
               child: Column(
                 children: [
-                  Text(
-                    '"${word.exampleSentence}"',
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF666666), fontStyle: FontStyle.italic),
-                    textAlign: TextAlign.center,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '"${word.exampleSentence}"',
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF666666), fontStyle: FontStyle.italic),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => ref.read(ttsServiceProvider).speak(word.exampleSentence!),
+                        child: const Icon(Icons.volume_up_outlined, size: 16, color: Color(0xFF999999)),
+                      ),
+                    ],
                   ),
                   if (word.exampleTranslation != null && word.exampleTranslation!.isNotEmpty) ...[
                     const SizedBox(height: 4),

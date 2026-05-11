@@ -97,7 +97,9 @@ class DictionaryResult {
   String get primaryDefinition {
     if (translation != null && translation!.isNotEmpty) {
       final lines = translation!.split('\n');
-      return lines.first.trim();
+      var text = lines.first.trim();
+      text = text.replaceFirst(RegExp(r'^[a-z]+\.\s*'), '');
+      return text;
     }
     return '';
   }

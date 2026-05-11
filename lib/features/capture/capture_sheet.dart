@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/colors.dart';
@@ -16,6 +17,7 @@ class CaptureSheet extends ConsumerStatefulWidget {
 class _CaptureSheetState extends ConsumerState<CaptureSheet> {
   final _controller = TextEditingController();
   bool _saving = false;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -26,13 +28,17 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
   @override
   void dispose() {
     _controller.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
   void _onInputChanged(String value) {
     ref.read(captureStateProvider.notifier).setInput(value);
-    if (value.length >= 2) {
-      ref.read(captureStateProvider.notifier).lookup();
+    _debounce?.cancel();
+    if (value.trim().length >= 2) {
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        ref.read(captureStateProvider.notifier).lookup();
+      });
     }
   }
 

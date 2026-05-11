@@ -101,7 +101,7 @@ class DatabaseHelper {
     await db.insert('notebooks', {
       'name': '拾词集',
       'isDefault': 1,
-      'dailyNewWordLimit': 10,
+      'dailyNewWordLimit': 0,
       'createdAt': now,
     });
   }

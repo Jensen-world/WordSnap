@@ -186,19 +186,18 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  word.partOfSpeech ?? '',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.lavender,
+                if (word.partOfSpeech != null && word.partOfSpeech!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      word.partOfSpeech!,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.lavender),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
                 ...word.definitions.asMap().entries.map((e) => Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
-                    '${e.key + 1}. ${e.value}',
+                    word.definitions.length > 1 ? '${e.key + 1}. ${e.value}' : e.value,
                     style: const TextStyle(fontSize: 14, color: AppColors.inkBlack, height: 1.5),
                   ),
                 )),
@@ -227,11 +226,13 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '', // translation would come from data
-                              style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
-                            ),
+                            if (word.exampleTranslation != null && word.exampleTranslation!.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                word.exampleTranslation!,
+                                style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                              ),
+                            ],
                           ],
                         ),
                       ),
