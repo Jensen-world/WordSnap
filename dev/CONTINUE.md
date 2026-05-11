@@ -1,17 +1,60 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-11（Session 32：APK 构建 + 横板 Logo + 构建脚本）
+> 最后更新：2026-05-11（Session 33：3 个 Bug 修复 + OCR 预处理）
 
 ## 一、现在到哪了
 
-**阶段：LLM 查词已完成 + APK 构建成功 + 横板 Logo 定稿。待真机验证 LLM 连接和新词例句。**
+**阶段：LLM 查词已完成 + APK 构建成功 + 横板 Logo 定稿。4 个 Bug 已修复，待真机验证。**
 
 ### 待处理
-- 工作树有未提交文件：`pubspec.yaml`（sqlite3_flutter_libs）、`scripts/`、`images/`
-- 真机验证：LLM 连接 / 例句 / 空状态
+- 工作树有未提交文件：`scripts/`、`images/`（设计素材）
+- 真机验证：LLM 连接 / 例句 / 空状态 / 每日一词格式
 - 开源仓库（WordSnap-github/）关联远程并 push
 
-## Session 29 — LLM 智能查词 + 释义展示优化（2026-05-10）
+---
+
+## Session 33 — 3 个 Bug 修复（2026-05-11）
+
+### Bug 1：空数据状态下每日新学显示 10
+
+**根因：** `database_helper.dart` `_onCreate` 创建默认笔记本"拾词集"时硬编码 `dailyNewWordLimit: 10`
+
+**修复：** `dailyNewWordLimit: 10` → `0`，用户未主动设置学习计划时不显示默认值
+
+涉及文件：`lib/core/database/database_helper.dart`
+
+### Bug 2：每日一词 / 单词详情 / 学习界面格式错误
+
+三个子问题：
+1. **发音胶囊显示的不是音标** — ECDICT phonetic 格式与 LLM 不一致
+2. **显示英文释义而非"词性+中文释义"** — ECDICT translation 带词性前缀（如 "n. "），与 `partOfSpeech` 冗余
+3. **例句没有播放按钮** — `_DailyWordCard` 缺失
+
+**修复：**
+- `dictionary_result.dart`：`primaryDefinition` 正则去除 ECDICT 词性前缀 `^[a-z]+\.\s*`
+- `learn_page.dart` `_DailyWordCard`：释义行合并 `partOfSpeech + definition`，例句添加播放按钮+翻译
+- `study_page.dart` `_DefinitionView`：释义格式统一 + 例句翻译支持
+- `word_detail_page.dart`：释义格式统一 + 例句翻译填入实际数据
+
+涉及文件：`lib/data/services/dictionary_result.dart`、`lib/features/learn/learn_page.dart`、`lib/features/learn/study_page.dart`、`lib/features/wordbook/word_detail_page.dart`
+
+### Bug 3：记录按钮输入即查 + OCR 不灵敏
+
+**Bug 3a 根因：** `capture_sheet.dart` `_onInputChanged` 输入 ≥2 字符即触发查词，无 debounce
+
+**修复：** 添加 500ms `Timer` debounce，用户停止输入后才触发查词
+
+**Bug 3b 根因：** Tesseract 默认参数对屏幕文字（反光、摩尔纹）不友好；`tesseract_ocr` 0.5.0 包的 `extractText` 未转发 PSM 配置
+
+**修复：**
+- `ocr_service.dart`：OCR 前加灰度化预处理（`image` 包），减少屏幕照片的彩色噪声
+- `pubspec.yaml`：新增 `image: ^4.5.4` 依赖
+
+涉及文件：`lib/features/capture/capture_sheet.dart`、`lib/data/services/ocr_service.dart`、`pubspec.yaml`
+
+---
+
+## Session 32 — Logo 字标程序化重渲染 + 构建脚本 + 横板 logo（2026-05-10）
 
 ### 需求
 - 查词结果展示太多条释义（ECDICT translation 包含所有词性释义）
