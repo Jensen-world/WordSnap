@@ -126,13 +126,13 @@ class PhotoCaptureNotifier extends StateNotifier<PhotoCaptureState> {
     }
     state = state.copyWith(step: PhotoStep.saving);
     final now = DateTime.now();
-    final def = result.primaryDefinition;
+    final defs = result.primaryDefinitions;
     final word = Word(
       notebookId: state.selectedNotebookId!,
       text: result.word,
       phonetic: result.phonetic,
       partOfSpeech: result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : null,
-      definitions: def.isNotEmpty ? [def] : [],
+      definitions: defs,
       exampleSentence: result.exampleSentence,
       exampleTranslation: result.exampleTranslation,
       examples: result.exampleSentence != null ? [result.exampleSentence!] : [],

@@ -191,14 +191,14 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(
                       word.partOfSpeech!,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.lavender),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.signalBlue),
                     ),
                   ),
                 ...word.definitions.asMap().entries.map((e) => Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
                     word.definitions.length > 1 ? '${e.key + 1}. ${e.value}' : e.value,
-                    style: const TextStyle(fontSize: 14, color: AppColors.inkBlack, height: 1.5),
+                    style: const TextStyle(fontSize: 13, color: AppColors.inkBlack, height: 1.5),
                   ),
                 )),
               ],

@@ -49,13 +49,13 @@ class DictionaryResult {
 
   static String _expandPos(String pos) {
     final map = {
-      'n': 'noun', 'v': 'verb', 'vi': 'verb', 'vt': 'verb',
-      'adj': 'adjective', 'a': 'adjective', 'j': 'adjective',
-      'adv': 'adverb', 'r': 'adverb',
-      'prep': 'preposition', 'pron': 'pronoun',
-      'conj': 'conjunction', 'num': 'numeral',
-      'art': 'article', 'interj': 'interjection',
-      'u': 'uncountable', 'c': 'countable',
+      'n': 'n.', 'v': 'v.', 'vi': 'vi.', 'vt': 'vt.',
+      'adj': 'adj.', 'a': 'adj.', 'j': 'adj.',
+      'adv': 'adv.', 'r': 'adv.',
+      'prep': 'prep.', 'pron': 'pron.',
+      'conj': 'conj.', 'num': 'num.',
+      'art': 'art.', 'interj': 'interj.',
+      'u': 'u.', 'c': 'c.',
     };
     final parts = pos.split('/');
     return parts.map((p) {
@@ -65,12 +65,16 @@ class DictionaryResult {
   }
 
   factory DictionaryResult.fromLlmJson(Map<String, dynamic> json) {
+    final pos = json['partOfSpeech'] as String?;
     return DictionaryResult(
       word: json['word'] as String,
       phonetic: json['phonetic'] as String?,
       translation: json['definition'] as String?,
       exampleSentence: json['example'] as String?,
       exampleTranslation: json['exampleTranslation'] as String?,
+      meanings: pos != null && pos.isNotEmpty
+          ? [WordMeaning(partOfSpeech: pos, definitions: [])]
+          : [],
     );
   }
 
@@ -78,6 +82,7 @@ class DictionaryResult {
     'word': word,
     'phonetic': phonetic,
     'definition': translation,
+    'partOfSpeech': meanings.isNotEmpty ? meanings.first.partOfSpeech : null,
     'exampleSentence': exampleSentence,
     'exampleTranslation': exampleTranslation,
     'source': 'llm',
@@ -85,12 +90,16 @@ class DictionaryResult {
   };
 
   factory DictionaryResult.fromCache(Map<String, dynamic> row) {
+    final pos = row['partOfSpeech'] as String?;
     return DictionaryResult(
       word: row['word'] as String,
       phonetic: row['phonetic'] as String?,
       translation: row['definition'] as String?,
       exampleSentence: row['exampleSentence'] as String?,
       exampleTranslation: row['exampleTranslation'] as String?,
+      meanings: pos != null && pos.isNotEmpty
+          ? [WordMeaning(partOfSpeech: pos, definitions: [])]
+          : [],
     );
   }
 
@@ -102,6 +111,16 @@ class DictionaryResult {
       return text;
     }
     return '';
+  }
+
+  List<String> get primaryDefinitions {
+    final first = primaryDefinition;
+    if (first.isEmpty) return [];
+    return first
+        .split(';')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
   }
 
   factory DictionaryResult.fromJson(Map<String, dynamic> json) {

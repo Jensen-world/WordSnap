@@ -22,7 +22,7 @@ void main() {
       expect(result.exchange, 'tests/testing/tested');
       expect(result.tag, 'cet4 cet6 ielts');
       expect(result.meanings.length, 1);
-      expect(result.meanings[0].partOfSpeech, 'noun');
+      expect(result.meanings[0].partOfSpeech, 'n.');
       expect(result.meanings[0].definitions.length, 2);
       expect(result.meanings[0].definitions[0].definition,
           'a procedure for critical evaluation');
@@ -78,7 +78,7 @@ void main() {
       };
 
       final result = DictionaryResult.fromEcdict(row);
-      expect(result.meanings[0].partOfSpeech, 'verb/verb/noun');
+      expect(result.meanings[0].partOfSpeech, 'vi./vt./n.');
     });
   });
 

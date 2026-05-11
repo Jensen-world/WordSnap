@@ -60,13 +60,13 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
     try {
       final now = DateTime.now();
       final r = _result!;
-      final def = r.primaryDefinition;
+      final defs = r.primaryDefinitions;
       final word = Word(
         notebookId: _selectedNotebookId!,
         text: r.word,
         phonetic: r.phonetic,
         partOfSpeech: r.meanings.isNotEmpty ? r.meanings.first.partOfSpeech : null,
-        definitions: def.isNotEmpty ? [def] : [],
+        definitions: defs,
         exampleSentence: r.exampleSentence,
         exampleTranslation: r.exampleTranslation,
         examples: r.exampleSentence != null ? [r.exampleSentence!] : [],

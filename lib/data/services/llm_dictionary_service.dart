@@ -5,7 +5,7 @@ import 'dictionary_result.dart';
 class LlmDictionaryService {
   static const _prompt = '''You are a concise dictionary assistant. For the given word, return ONLY a JSON object (no markdown, no extra text):
 
-{"phonetic":"IPA phonetic (US)","definition":"Chinese definition (concise, 1-2 meanings max)","example":"English example sentence","exampleTranslation":"Chinese translation of example"}
+{"phonetic":"IPA phonetic (US)","partOfSpeech":"abbreviated POS (n./v./adj./adv./prep./conj./pron./vi./vt. etc)","definition":"Chinese definition (concise, 1-2 meanings max)","example":"English example sentence","exampleTranslation":"Chinese translation of example"}
 
 Word:''';
 
@@ -104,6 +104,7 @@ Word:''';
       return DictionaryResult.fromLlmJson({
         'word': clean,
         'phonetic': json['phonetic'],
+        'partOfSpeech': json['partOfSpeech'],
         'definition': json['definition'],
         'example': json['example'],
         'exampleTranslation': json['exampleTranslation'],

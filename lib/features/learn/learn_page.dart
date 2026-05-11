@@ -448,12 +448,19 @@ class _DailyWordCard extends ConsumerWidget {
           if (word.definitions.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                (word.partOfSpeech != null && word.partOfSpeech!.isNotEmpty)
-                    ? '${word.partOfSpeech}  ${word.definitions.first}'
-                    : word.definitions.first,
-                style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
+              child: RichText(
                 textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: const TextStyle(fontSize: 13, color: AppColors.inkBlack, height: 1.5),
+                  children: [
+                    if (word.partOfSpeech != null && word.partOfSpeech!.isNotEmpty)
+                      TextSpan(
+                        text: '${word.partOfSpeech} ',
+                        style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.signalBlue),
+                      ),
+                    TextSpan(text: word.definitions.first),
+                  ],
+                ),
               ),
             ),
           if (word.exampleSentence != null && word.exampleSentence!.isNotEmpty) ...[
