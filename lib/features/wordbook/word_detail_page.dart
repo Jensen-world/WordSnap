@@ -207,48 +207,50 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
           const SizedBox(height: 16),
           _Section(
             title: '例句',
-            child: Column(
-              children: word.examples.asMap().entries.map((e) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
+            child: word.examples.isEmpty
+                ? const Text('暂无例句', style: TextStyle(fontSize: 13, color: Color(0xFF999999)))
+                : Column(
+                    children: word.examples.asMap().entries.map((e) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              e.value,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.inkBlack,
-                                fontStyle: FontStyle.italic,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    e.value,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.inkBlack,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                  if (word.exampleTranslation != null && word.exampleTranslation!.isNotEmpty) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      word.exampleTranslation!,
+                                      style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            if (word.exampleTranslation != null && word.exampleTranslation!.isNotEmpty) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                word.exampleTranslation!,
-                                style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
-                              ),
-                            ],
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.volume_up_outlined, size: 18, color: Color(0xFF999999)),
+                              onPressed: () => ref.read(ttsServiceProvider).speak(e.value),
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
                           ],
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.volume_up_outlined, size: 18, color: Color(0xFF999999)),
-                        onPressed: () => ref.read(ttsServiceProvider).speak(e.value),
-                        visualDensity: VisualDensity.compact,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
-            ),
           ),
           const SizedBox(height: 16),
           _Section(

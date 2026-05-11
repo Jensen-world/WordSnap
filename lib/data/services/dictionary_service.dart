@@ -6,12 +6,14 @@ import 'package:sqflite/sqflite.dart';
 import '../../core/database/database_helper.dart';
 import 'dictionary_result.dart';
 import 'llm_dictionary_service.dart';
+import 'tatoeba_service.dart';
 import '../repositories/config_repository.dart';
 
 class DictionaryService {
   static const _assetPath = 'assets/ecdict_slim.db';
   Database? _db;
   final _llm = LlmDictionaryService();
+  final _tatoeba = TatoebaService();
   final _config = ConfigRepository();
 
   Future<Database> _getDb() async {
@@ -34,20 +36,60 @@ class DictionaryService {
     final cached = await _getCached(clean);
     if (cached != null) return cached;
 
-    // 2. Try LLM
+    // 2. ECDICT first — always returns definitions
+    final ecdictResult = await _lookupEcdict(clean);
+
+    // 3. Try LLM enrichment
     final apiKey = await _config.get('llm_api_key');
     if (apiKey != null && apiKey.isNotEmpty) {
       final baseUrl = await _config.get('llm_base_url') ?? ConfigRepository.defaultBaseUrl;
       final model = await _config.get('llm_model') ?? ConfigRepository.defaultModel;
-      final result = await _llm.lookup(clean, baseUrl: baseUrl, apiKey: apiKey, model: model);
-      if (result != null) {
-        await _putCache(result);
-        return result;
+
+      // Full LLM lookup (definitions + examples)
+      final llmResult = await _llm.lookup(clean, baseUrl: baseUrl, apiKey: apiKey, model: model);
+      if (llmResult != null) {
+        await _putCache(llmResult);
+        return llmResult;
+      }
+
+      // LLM main lookup failed — if ECDICT has no examples, try a lightweight call just for the example
+      if (ecdictResult != null &&
+          (ecdictResult.exampleSentence == null || ecdictResult.exampleSentence!.isEmpty)) {
+        final example = await _llm.lookupExample(clean, baseUrl: baseUrl, apiKey: apiKey, model: model);
+        if (example != null) {
+          return DictionaryResult(
+            word: ecdictResult.word,
+            phonetic: ecdictResult.phonetic,
+            translation: ecdictResult.translation,
+            meanings: ecdictResult.meanings,
+            exchange: ecdictResult.exchange,
+            tag: ecdictResult.tag,
+            exampleSentence: example['sentence'],
+            exampleTranslation: example['translation'],
+          );
+        }
       }
     }
 
-    // 3. Fallback to ECDICT (not cached — so LLM gets another chance later)
-    return _lookupEcdict(clean);
+    // 4. Tatoeba offline fallback — if still no examples
+    if (ecdictResult != null &&
+        (ecdictResult.exampleSentence == null || ecdictResult.exampleSentence!.isEmpty)) {
+      final tatoebaExample = await _tatoeba.lookup(clean);
+      if (tatoebaExample != null) {
+        return DictionaryResult(
+          word: ecdictResult.word,
+          phonetic: ecdictResult.phonetic,
+          translation: ecdictResult.translation,
+          meanings: ecdictResult.meanings,
+          exchange: ecdictResult.exchange,
+          tag: ecdictResult.tag,
+          exampleSentence: tatoebaExample['sentence'],
+          exampleTranslation: tatoebaExample['translation'],
+        );
+      }
+    }
+
+    return ecdictResult;
   }
 
   Future<DictionaryResult?> _lookupEcdict(String word) async {

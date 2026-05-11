@@ -84,6 +84,7 @@ flutter:
     - assets/tessdata_config.json
     - assets/tessdata/
     - assets/ecdict_slim.db
+    - assets/tatoeba_slim.db
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

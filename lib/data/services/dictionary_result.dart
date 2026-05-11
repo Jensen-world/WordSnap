@@ -82,7 +82,6 @@ class DictionaryResult {
     'word': word,
     'phonetic': phonetic,
     'definition': translation,
-    'partOfSpeech': meanings.isNotEmpty ? meanings.first.partOfSpeech : null,
     'exampleSentence': exampleSentence,
     'exampleTranslation': exampleTranslation,
     'source': 'llm',

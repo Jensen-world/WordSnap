@@ -48,6 +48,57 @@ Word:''';
     }
   }
 
+  /// Lightweight call that only asks for an example sentence.
+  /// Returns {'sentence': '...', 'translation': '...'} or null.
+  Future<Map<String, String>?> lookupExample(
+    String word, {
+    required String baseUrl,
+    required String apiKey,
+    required String model,
+  }) async {
+    final clean = word.trim().toLowerCase();
+    if (clean.isEmpty) return null;
+
+    final url = '${baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl}/chat/completions';
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey',
+        },
+        body: jsonEncode({
+          'model': model,
+          'messages': [
+            {'role': 'user', 'content': 'Give a short natural English example sentence using the word "$clean" and its Chinese translation. Reply ONLY with JSON: {"sentence":"...","translation":"..."}'},
+          ],
+          'max_tokens': 256,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) return null;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final choices = data['choices'] as List<dynamic>?;
+      if (choices == null || choices.isEmpty) return null;
+      final content = choices.first['message']?['content'] as String?;
+      if (content == null) return null;
+
+      final start = content.indexOf('{');
+      final end = content.lastIndexOf('}');
+      if (start == -1 || end == -1) return null;
+
+      final json = jsonDecode(content.substring(start, end + 1)) as Map<String, dynamic>;
+      final sentence = json['sentence'] as String?;
+      final translation = json['translation'] as String?;
+      if (sentence == null || sentence.isEmpty || translation == null || translation.isEmpty) {
+        return null;
+      }
+      return {'sentence': sentence, 'translation': translation};
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<DictionaryResult?> lookup(
     String word, {
     required String baseUrl,

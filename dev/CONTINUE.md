@@ -1,6 +1,6 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-11（Session 34：输入查词交互重构 + 例句强制 + 卡片交互增强）
+> 最后更新：2026-05-11（Session 35：例句三层数据源 — ECDICT + LLM + Tatoeba 离线）
 
 ## 一、现在到哪了
 
@@ -10,6 +10,50 @@
 - 真机验证：输入查词新流程 / LLM 连接 / 例句 / 空状态 / 每日一词格式
 - 开源仓库（WordSnap-github/）关联远程并 push
 - `scripts/`、`images/`（设计素材）工作树未提交文件
+
+---
+
+## Session 35 — 例句三层数据源（2026-05-11）
+
+### 根因
+1. **ECDICT 无例句**：表结构确认只有 `word/phonetic/definition/translation/pos/tag/exchange`，无 example 列
+2. **LLM 可能静默失败**：`print()` 在 release APK 不可见，失败时回退 ECDICT → 无例句
+3. **toCacheMap bug**：包含 `partOfSpeech` 列但 `dictionary_cache` 表没有这列 → insert 抛异常被 `catch (_) {}` 吞掉 → 缓存永远写不进去
+
+### 修复：三层例句数据源
+
+**新查词链路：** 缓存 → ECDICT(释义) → LLM完整 → LLM轻量例句 → Tatoeba离线 → 返回
+
+1. **`dictionary_result.dart`** — `toCacheMap` 移除 `partOfSpeech`
+2. **`dictionary_service.dart`** — 重写 lookup()：ECDICT 先查(100%有释义) → LLM full → LLM example-only → Tatoeba fallback
+3. **`llm_dictionary_service.dart`** — 新增 `lookupExample()`，极简 prompt 只请求 `{"sentence":"...","translation":"..."}`
+4. **`tatoeba_service.dart`**（新）— Tatoeba 离线句子库查询，与 ECDICT 同架构（assets → app doc dir → read-only SQLite）
+5. **`scripts/build_tatoeba_db.py`**（新）— 自动下载 Tatoeba sentences.csv + links.csv → 过滤 eng→cmn 句对 → 按 ECDICT 词表筛选 → 构建 word 索引 SQLite
+6. **`word_detail_page.dart`** — 例句为空显示"暂无例句"
+7. **`pubspec.yaml`** — 新增 `assets/tatoeba_slim.db`
+
+### Tatoeba 数据
+- 来源：tatoeba.org 每周导出
+- 201 万英句 × 8.5 万中句 → 7.6 万 eng→cmn 句对
+- 按 ECDICT 词表过滤后：69,378 句对 / 160,859 条词索引
+- 数据库大小：18.1 MB
+
+### APK
+`build/dist/wordsnap-v1.0.0-20260511-1940.apk`（94MB）
+
+### 涉及文件
+```
+新增:
+lib/data/services/tatoeba_service.dart
+scripts/build_tatoeba_db.py
+
+修改:
+lib/data/services/dictionary_result.dart       — toCacheMap 移除 partOfSpeech
+lib/data/services/dictionary_service.dart       — ECDICT→LLM→Tatoeba 三层链
+lib/data/services/llm_dictionary_service.dart    — 新增 lookupExample()
+lib/features/wordbook/word_detail_page.dart      — 空例句提示
+pubspec.yaml                                     — tatoeba_slim.db 资产
+```
 
 ---
 
