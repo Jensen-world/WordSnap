@@ -1,15 +1,63 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-11（Session 35：例句三层数据源 — ECDICT + LLM + Tatoeba 离线）
+> 最后更新：2026-05-11（Session 36：WordChat 功能完成 — 本地查词 + AI 对话 + 全入口接入）
 
 ## 一、现在到哪了
 
-**阶段：LLM 查词已完成 + APK 构建成功 + 横板 Logo 定稿 + 输入查词交互重构。待真机验证。**
+**阶段：WordChat 全部实现完成。LLM 查词 + Tatoeba 离线例句 + AI 对话助手三个功能联动。待真机验证。**
 
 ### 待处理
-- 真机验证：输入查词新流程 / LLM 连接 / 例句 / 空状态 / 每日一词格式
+- 真机验证：WordChat 本地/AI 模式 / 例句三层数据源 / 新入口点
 - 开源仓库（WordSnap-github/）关联远程并 push
 - `scripts/`、`images/`（设计素材）工作树未提交文件
+
+---
+
+## Session 36 — WordChat 功能完成（2026-05-11）
+
+### 需求
+用户确认 WordChat 设计方案后实施：底部 Pill 三按钮、本地查词+AI 辅助双模式、设置独立开关、全入口接入。
+
+### 已完成（3 个任务）
+
+#### 1. Bottom Pill 添加 Chat 按钮
+- `bottom_pill.dart`：StatelessWidget→ConsumerWidget，拍照/记录右侧新增聊天气泡图标
+- 按钮受 WordChat 开关控制（`wordChatEnabledProvider`），关闭时隐藏
+- 点击跳转 `/chat` 路由
+
+#### 2. 全应用入口接入
+- `app_router.dart`：新增 `/chat` 路由，支持 `?word=` 查询参数 → WordChatPage
+- `word_detail_page.dart`：AppBar 右侧新增聊天气泡按钮，传入当前单词
+- `learn_page.dart`：每日一词卡片音标行右侧新增聊天气泡按钮
+- `capture_result_page.dart`：保存按钮上方新增「AI 聊这个词」outline 按钮
+
+#### 3. Settings WordChat 开关
+- `api_config_provider.dart`：新增 `wordChatEnabledProvider` + `WordChatToggleNotifier`，默认开启，持久化到 config 表（key: `wordchat_enabled`）
+- `settings_page.dart`：「AI 查词」区域新增 WordChat 开关行，显示当前状态文字
+
+### 涉及文件
+```
+新增:
+lib/features/chat/word_chat_page.dart           — 完整聊天 UI（Session 35 完成）
+lib/features/chat/word_chat_provider.dart        — 状态管理（Session 35 完成）
+
+修改:
+lib/core/database/database_helper.dart           — v4 迁移 word_chat 表
+lib/data/services/llm_dictionary_service.dart     — chatStream() SSE 流式对话
+lib/core/router/app_router.dart                  — /chat 路由
+lib/widgets/bottom_pill.dart                     — Chat 按钮
+lib/features/wordbook/word_detail_page.dart       — AppBar 聊天气泡
+lib/features/learn/learn_page.dart               — 每日一词聊天气泡
+lib/features/capture/capture_result_page.dart     — AI 聊这个词按钮
+lib/features/settings/api_config_provider.dart    — WordChat 开关 provider
+lib/features/settings/settings_page.dart          — WordChat 开关 UI
+```
+
+### WordChat 架构
+- **数据库**：`word_chat` 表（v4 迁移），存储对话历史
+- **双模式**：local（ECDICT+Tatoeba 离线查词 + 收录）+ AI（LLM SSE 流式对话）
+- **快速提问**：AI 模式提供 5 个快捷 chips（造个句子/近义词辨析/常见搭配/语法要点/词根词缀）
+- **状态管理**：`WordChatNotifier` 管理 messages/mode/isStreaming/localResult/anchoredWord
 
 ---
 

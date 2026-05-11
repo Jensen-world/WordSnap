@@ -33,6 +33,29 @@ class ApiConfig {
   );
 }
 
+final wordChatEnabledProvider = StateNotifierProvider<WordChatToggleNotifier, bool>((ref) {
+  return WordChatToggleNotifier();
+});
+
+class WordChatToggleNotifier extends StateNotifier<bool> {
+  final _repo = ConfigRepository();
+
+  WordChatToggleNotifier() : super(true) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final value = await _repo.get('wordchat_enabled');
+    state = value != 'false'; // default true (enabled)
+  }
+
+  Future<void> toggle() async {
+    final newValue = !state;
+    await _repo.set('wordchat_enabled', newValue.toString());
+    state = newValue;
+  }
+}
+
 class ApiConfigNotifier extends StateNotifier<ApiConfig> {
   final _repo = ConfigRepository();
 

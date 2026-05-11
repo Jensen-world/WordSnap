@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/capture/capture_sheet.dart';
+import '../features/settings/api_config_provider.dart';
 
-class BottomPill extends StatelessWidget {
+class BottomPill extends ConsumerWidget {
   const BottomPill({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bottom = MediaQuery.of(context).padding.bottom;
+    final chatEnabled = ref.watch(wordChatEnabledProvider);
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: BackdropFilter(
@@ -50,6 +52,12 @@ class BottomPill extends StatelessWidget {
                     );
                   },
                 ),
+                if (chatEnabled)
+                  _IconPillButton(
+                    outlinedIcon: Icons.chat_bubble_outline,
+                    filledIcon: Icons.chat_bubble,
+                    onTap: () => context.push('/chat'),
+                  ),
               ],
             ),
           ),

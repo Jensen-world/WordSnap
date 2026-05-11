@@ -324,6 +324,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           const SizedBox(height: 16),
           _SectionHeader(title: 'AI 查词'),
+          _WordChatToggle(),
           _ApiConfigTile(),
           const SizedBox(height: 16),
           _SectionHeader(title: '其他'),
@@ -583,6 +584,45 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E2EA))),
       ),
       style: const TextStyle(fontSize: 13, fontFamily: 'JetBrains Mono'),
+    );
+  }
+}
+
+class _WordChatToggle extends ConsumerWidget {
+  const _WordChatToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final enabled = ref.watch(wordChatEnabledProvider);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('WordChat 功能', style: TextStyle(fontSize: 14, color: AppColors.inkBlack)),
+                const SizedBox(height: 2),
+                Text(
+                  enabled ? '底部 AI 对话入口已开启' : '关闭后隐藏底部对话入口',
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: enabled,
+            onChanged: (_) => ref.read(wordChatEnabledProvider.notifier).toggle(),
+            activeThumbColor: AppColors.signalBlue,
+          ),
+        ],
+      ),
     );
   }
 }

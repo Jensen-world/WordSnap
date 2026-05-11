@@ -136,6 +136,18 @@ class _CaptureResultPageState extends ConsumerState<CaptureResultPage> {
               onSelected: (id) => ref.read(captureStateProvider.notifier).setNotebook(id),
             ),
             const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: () => context.push('/chat?word=${Uri.encodeComponent(state.result!.word)}'),
+              icon: const Icon(Icons.chat_bubble_outline, size: 16),
+              label: const Text('AI 聊这个词', style: TextStyle(fontSize: 13)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFE2E2EA)),
+                foregroundColor: AppColors.signalBlue,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+              ),
+            ),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -215,6 +227,15 @@ class _ResultCard extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 10),
+          if (result.meanings.isNotEmpty && result.meanings.first.partOfSpeech.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Text(
+                result.meanings.first.partOfSpeech,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.signalBlue),
+                textAlign: TextAlign.center,
+              ),
+            ),
           if (result.primaryDefinition.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 6),

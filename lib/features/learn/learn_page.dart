@@ -446,33 +446,51 @@ class _DailyWordCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F0F5),
-              borderRadius: BorderRadius.circular(100),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('美', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
-                const SizedBox(width: 6),
-                Text(word.phonetic ?? '', style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
-                const SizedBox(width: 6),
-                GestureDetector(
-                  onTap: () => ref.read(ttsServiceProvider).speak(word.text),
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEEF0FF),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.volume_up_outlined, size: 16, color: AppColors.signalBlue),
-                  ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F0F5),
+                  borderRadius: BorderRadius.circular(100),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('美', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+                    const SizedBox(width: 6),
+                    Text(word.phonetic ?? '', style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () => ref.read(ttsServiceProvider).speak(word.text),
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEEF0FF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.volume_up_outlined, size: 16, color: AppColors.signalBlue),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => context.push('/chat?word=${Uri.encodeComponent(word.text)}'),
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEEF0FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.chat_bubble_outline, size: 14, color: AppColors.signalBlue),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           if (word.definitions.isNotEmpty)

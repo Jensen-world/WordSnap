@@ -99,6 +99,70 @@ Word:''';
     }
   }
 
+  static const _chatSystemPrompt =
+      'You are a friendly English vocabulary tutor helping a learner master words. '
+      'When asked about a specific word, provide: pronunciation, part of speech, '
+      'Chinese definition, and example sentences. Be encouraging and concise. '
+      'Always respond in Chinese unless the user asks for English. '
+      'Keep answers focused on vocabulary learning — etymology, collocations, '
+      'synonyms, antonyms, usage tips, and grammar points.';
+
+  /// Streams AI chat response chunks. Returns a stream of delta text.
+  Stream<String> chatStream({
+    required String baseUrl,
+    required String apiKey,
+    required String model,
+    required List<Map<String, String>> messages,
+  }) async* {
+    final url = '${baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl}/chat/completions';
+    final client = http.Client();
+    try {
+      final request = http.Request('POST', Uri.parse(url))
+        ..headers.addAll({
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey',
+        })
+        ..body = jsonEncode({
+          'model': model,
+          'messages': [
+            {'role': 'system', 'content': _chatSystemPrompt},
+            ...messages,
+          ],
+          'stream': true,
+          'max_tokens': 1024,
+        });
+
+      final response = await client.send(request).timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) {
+        throw Exception('HTTP ${response.statusCode}');
+      }
+
+      await for (final chunk in response.stream.transform(utf8.decoder)) {
+        for (final line in chunk.split('\n')) {
+          if (line.startsWith('data: ') && !line.startsWith('data: [DONE]')) {
+            try {
+              final json = jsonDecode(line.substring(6)) as Map<String, dynamic>;
+              final choices = json['choices'] as List<dynamic>?;
+              if (choices != null && choices.isNotEmpty) {
+                final delta = choices.first['delta'] as Map<String, dynamic>?;
+                if (delta != null) {
+                  final content = delta['content'] as String?;
+                  if (content != null && content.isNotEmpty) {
+                    yield content;
+                  }
+                }
+              }
+            } catch (_) {
+              // Skip malformed SSE lines
+            }
+          }
+        }
+      }
+    } finally {
+      client.close();
+    }
+  }
+
   Future<DictionaryResult?> lookup(
     String word, {
     required String baseUrl,

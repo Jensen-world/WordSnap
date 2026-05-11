@@ -3,7 +3,7 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   static const _dbName = 'wordsnap.db';
-  static const _dbVersion = 3;
+  static const _dbVersion = 4;
 
   static final DatabaseHelper instance = DatabaseHelper._();
   DatabaseHelper._();
@@ -92,10 +92,23 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE word_chat (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wordId INTEGER,
+        word TEXT NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (wordId) REFERENCES words(id) ON DELETE SET NULL
+      )
+    ''');
+
     await db.execute('CREATE INDEX idx_words_notebook ON words(notebookId)');
     await db.execute('CREATE INDEX idx_words_isNew ON words(isNew)');
     await db.execute('CREATE INDEX idx_words_isMastered ON words(isMastered)');
     await db.execute('CREATE INDEX idx_words_learnedAt ON words(learnedAt)');
+    await db.execute('CREATE INDEX idx_word_chat_word ON word_chat(word)');
 
     final now = DateTime.now().toIso8601String();
     await db.insert('notebooks', {
@@ -127,6 +140,20 @@ class DatabaseHelper {
           value TEXT NOT NULL
         )
       ''');
+    }
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS word_chat (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          wordId INTEGER,
+          word TEXT NOT NULL,
+          role TEXT NOT NULL,
+          content TEXT NOT NULL,
+          createdAt TEXT NOT NULL,
+          FOREIGN KEY (wordId) REFERENCES words(id) ON DELETE SET NULL
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_word_chat_word ON word_chat(word)');
     }
   }
 }

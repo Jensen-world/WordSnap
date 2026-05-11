@@ -8,6 +8,7 @@ import '../../features/archive/archive_page.dart';
 import '../../features/settings/settings_page.dart';
 import '../../features/capture/photo_capture_page.dart';
 import '../../features/capture/capture_result_page.dart';
+import '../../features/chat/word_chat_page.dart';
 import '../../widgets/navigation_shell.dart';
 
 final appRouter = GoRouter(
@@ -65,6 +66,13 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/capture/result',
       builder: (context, state) => const CaptureResultPage(),
+    ),
+    GoRoute(
+      path: '/chat',
+      builder: (context, state) {
+        final word = state.uri.queryParameters['word'];
+        return WordChatPage(initialWord: word);
+      },
     ),
   ],
 );

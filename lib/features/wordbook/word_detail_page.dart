@@ -160,6 +160,10 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
         title: const Text('单词详情'),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline, size: 20),
+            onPressed: () => context.push('/chat?word=${Uri.encodeComponent(word.text)}'),
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, size: 20),
             onSelected: (action) {
@@ -303,6 +307,8 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
                   onPressed: _showAddTagDialog,
                   backgroundColor: const Color(0xFFF0F0F5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                 ),
               ],
             ),
