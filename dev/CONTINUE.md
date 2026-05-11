@@ -1,15 +1,49 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-11（Session 36：WordChat 功能完成 — 本地查词 + AI 对话 + 全入口接入）
+> 最后更新：2026-05-11（Session 37：拍照涂抹选词 — 拍照后手指涂抹选中单词区域，裁剪 OCR 查词）
 
 ## 一、现在到哪了
 
-**阶段：WordChat 全部实现完成。LLM 查词 + Tatoeba 离线例句 + AI 对话助手三个功能联动。待真机验证。**
+**阶段：拍照查词从全图 OCR chip 选词改为涂抹选中区域 OCR。待真机验证。**
 
 ### 待处理
-- 真机验证：WordChat 本地/AI 模式 / 例句三层数据源 / 新入口点
+- 真机验证：拍照涂抹选词 / WordChat / 例句三层数据源
 - 开源仓库（WordSnap-github/）关联远程并 push
 - `scripts/`、`images/`（设计素材）工作树未提交文件
+
+---
+
+## Session 37 — 拍照涂抹选词（2026-05-11）
+
+### 需求
+拍照查词交互优化：拍照 → 手指涂抹选中单词区域 → 裁剪区域 OCR → 结果页。替代原来的全图 OCR + word chip 列表。
+
+### 改动
+
+#### 1. OcrService 新增区域裁剪 OCR
+- `processCroppedRegion()`：根据显示坐标 + 原图尺寸比例缩放 → 裁剪 + padding → 灰度化 → Tesseract → 返回第一个英文单词
+
+#### 2. PhotoCaptureProvider 新增 selecting 步骤
+- `PhotoStep` 枚举新增 `selecting`
+- `processImage()`：跳过全图 OCR，拍照后直接进入 selecting
+- `confirmSelection()`：裁剪原图 → 调用 `processCroppedRegion` → 查词
+- `backToWords()`：回到 selecting 而非 ready
+
+#### 3. PhotoCapturePage 涂抹选择 UI
+- `_buildSelectingView()`：Stack（原图 + GestureDetector + CustomPaint 高亮笔触）
+- 笔触效果：品牌蓝 30% 透明度、36px 圆头描边
+- `_HighlighterPainter`：绘制所有笔触路径
+- `_confirmCrop()`：计算所有笔触的 bounding rect → 缩放裁剪 OCR
+- 底部按钮：撤销（清除最后一笔）+ 确认
+- 移除 `_WordChip` 类
+- 重拍/再拍一张按钮修复：重置 `_cameraOpened` 标志并重新打开相机
+
+### 涉及文件
+```
+lib/data/services/ocr_service.dart                   — 新增 processCroppedRegion()
+lib/features/capture/photo_capture_provider.dart      — 新增 selecting 步骤 + confirmSelection
+lib/features/capture/photo_capture_page.dart          — 涂抹选择 UI + HighlighterPainter
+```
 
 ---
 

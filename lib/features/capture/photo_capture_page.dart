@@ -18,6 +18,9 @@ class PhotoCapturePage extends ConsumerStatefulWidget {
 class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
   final _picker = ImagePicker();
   bool _cameraOpened = false;
+  final _imageKey = GlobalKey();
+  final List<List<Offset>> _strokes = [];
+  List<Offset>? _currentStroke;
 
   @override
   void initState() {
@@ -54,9 +57,14 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
-          if (state.step == PhotoStep.ready || state.step == PhotoStep.result)
+          if (state.step == PhotoStep.selecting || state.step == PhotoStep.result)
             TextButton(
-              onPressed: () => ref.read(photoCaptureProvider.notifier).retake(),
+              onPressed: () {
+                setState(() { _strokes.clear(); _currentStroke = null; });
+                _cameraOpened = false;
+                ref.read(photoCaptureProvider.notifier).retake();
+                WidgetsBinding.instance.addPostFrameCallback((_) => _openCamera());
+              },
               child: const Text('重拍', style: TextStyle(color: AppColors.signalBlue)),
             ),
         ],
@@ -75,14 +83,14 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
             children: [
               CircularProgressIndicator(color: AppColors.signalBlue),
               SizedBox(height: 16),
-              Text('正在识别文字...', style: TextStyle(fontSize: 14, color: Color(0xFF999999))),
+              Text('正在打开相机...', style: TextStyle(fontSize: 14, color: Color(0xFF999999))),
             ],
           ),
         );
-      case PhotoStep.ready:
-        return _readyView(state);
+      case PhotoStep.selecting:
+        return _buildSelectingView(state);
       case PhotoStep.lookingUp:
-        return _readyView(state, showLookupSpinner: true);
+        return _buildSelectingView(state, showLookupSpinner: true);
       case PhotoStep.result:
         return _resultView(state);
       case PhotoStep.saving:
@@ -92,65 +100,122 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
     }
   }
 
-  Widget _readyView(PhotoCaptureState state, {bool showLookupSpinner = false}) {
+  Widget _buildSelectingView(PhotoCaptureState state, {bool showLookupSpinner = false}) {
     final bottomPad = 20 + MediaQuery.of(context).padding.bottom;
-    return ListView(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, bottomPad),
+    return Column(
       children: [
-        if (state.imagePath != null)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.file(File(state.imagePath!), height: 200, width: double.infinity, fit: BoxFit.cover),
-          ),
-        if (state.imagePath != null) const SizedBox(height: 16),
-        if (state.fullText.isNotEmpty) ...[
-          const Text('识别全文', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF999999))),
-          const SizedBox(height: 6),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE2E2EA)),
-            ),
-            child: Text(state.fullText, style: const TextStyle(fontSize: 13, color: AppColors.inkBlack)),
-          ),
-          const SizedBox(height: 16),
-        ],
-        if (showLookupSpinner)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 16),
-            child: Center(child: CircularProgressIndicator(color: AppColors.signalBlue)),
-          ),
         if (state.errorMessage != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text(
-              state.errorMessage!,
-              style: const TextStyle(fontSize: 13, color: Color(0xFFFF5252)),
-              textAlign: TextAlign.center,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: Text(state.errorMessage!, style: const TextStyle(fontSize: 13, color: Color(0xFFFF5252)), textAlign: TextAlign.center),
+          ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+          child: Text('涂抹选中要查的单词', style: TextStyle(fontSize: 13, color: Color(0xFF999999))),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.file(File(state.imagePath!), key: _imageKey, fit: BoxFit.contain),
+                  if (showLookupSpinner)
+                    Container(color: const Color(0x80FFFFFF), child: const Center(child: CircularProgressIndicator(color: AppColors.signalBlue)))
+                  else
+                    GestureDetector(
+                      onPanStart: (d) {
+                        setState(() {
+                          _currentStroke = [d.localPosition];
+                          _strokes.add(_currentStroke!);
+                        });
+                      },
+                      onPanUpdate: (d) {
+                        setState(() => _currentStroke?.add(d.localPosition));
+                      },
+                      onPanEnd: (_) => setState(() => _currentStroke = null),
+                    ),
+                  RepaintBoundary(
+                    child: CustomPaint(
+                      painter: _HighlighterPainter(strokes: _strokes),
+                      size: Size.infinite,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        const Text('识别到的单词', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF999999))),
-        const SizedBox(height: 8),
-        if (state.words.isEmpty)
-          const Text('未识别到英文单词', style: TextStyle(fontSize: 14, color: Color(0xFF999999)))
-        else
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: state.words.map((w) => _WordChip(
-              word: w,
-              selected: w == state.selectedWord,
-              onTap: () {
-                ref.read(photoCaptureProvider.notifier).loadNotebooks();
-                ref.read(photoCaptureProvider.notifier).lookup(w);
-              },
-            )).toList(),
+        ),
+        SizedBox(height: bottomPad < 80 ? 8 : 16),
+        Padding(
+          padding: EdgeInsets.fromLTRB(20, 0, 20, bottomPad),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _strokes.isNotEmpty ? () => setState(() => _strokes.removeLast()) : null,
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFE2E2EA)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  ),
+                  child: const Text('撤销', style: TextStyle(color: Color(0xFF999999))),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: _strokes.isEmpty ? null : () => _confirmCrop(state),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.signalBlue,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  ),
+                  child: const Text('确认', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
           ),
+        ),
       ],
     );
+  }
+
+  void _confirmCrop(PhotoCaptureState state) {
+    if (_strokes.isEmpty || state.imagePath == null) return;
+
+    // Calculate bounding rect of all stroke points
+    double minX = double.infinity, minY = double.infinity, maxX = 0, maxY = 0;
+    for (final stroke in _strokes) {
+      for (final point in stroke) {
+        if (point.dx < minX) minX = point.dx;
+        if (point.dy < minY) minY = point.dy;
+        if (point.dx > maxX) maxX = point.dx;
+        if (point.dy > maxY) maxY = point.dy;
+      }
+    }
+
+    // Get the image widget's display size
+    final renderBox = _imageKey.currentContext?.findRenderObject() as RenderBox?;
+    final displayWidth = renderBox?.size.width ?? 300.0;
+    final displayHeight = renderBox?.size.height ?? 300.0;
+
+    ref.read(photoCaptureProvider.notifier).loadNotebooks();
+    ref.read(photoCaptureProvider.notifier).confirmSelection(
+      displayWidth: displayWidth,
+      displayHeight: displayHeight,
+      cropX: minX,
+      cropY: minY,
+      cropW: maxX - minX,
+      cropH: maxY - minY,
+    );
+
+    setState(() {
+      _strokes.clear();
+      _currentStroke = null;
+    });
   }
 
   Widget _resultView(PhotoCaptureState state, {bool showSaveSpinner = false}) {
@@ -174,7 +239,7 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
             Expanded(
               child: TextButton(
                 onPressed: () => ref.read(photoCaptureProvider.notifier).backToWords(),
-                child: const Text('返回选词', style: TextStyle(color: Color(0xFF999999))),
+                child: const Text('返回涂抹', style: TextStyle(color: Color(0xFF999999))),
               ),
             ),
             const SizedBox(width: 12),
@@ -215,7 +280,11 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               OutlinedButton(
-                onPressed: () => ref.read(photoCaptureProvider.notifier).retake(),
+                onPressed: () {
+                  _cameraOpened = false;
+                  ref.read(photoCaptureProvider.notifier).retake();
+                  WidgetsBinding.instance.addPostFrameCallback((_) => _openCamera());
+                },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFFE2E2EA)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -257,35 +326,32 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
   }
 }
 
-class _WordChip extends StatelessWidget {
-  final String word;
-  final bool selected;
-  final VoidCallback onTap;
+class _HighlighterPainter extends CustomPainter {
+  final List<List<Offset>> strokes;
 
-  const _WordChip({required this.word, required this.selected, required this.onTap});
+  const _HighlighterPainter({required this.strokes});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.signalBlue : Colors.white,
-          borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: selected ? AppColors.signalBlue : const Color(0xFFE2E2EA)),
-        ),
-        child: Text(
-          word,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: selected ? Colors.white : AppColors.inkBlack,
-          ),
-        ),
-      ),
-    );
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0x4D2F5CFF)
+      ..strokeWidth = 36
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    for (final stroke in strokes) {
+      if (stroke.length < 2) continue;
+      final path = Path();
+      path.moveTo(stroke.first.dx, stroke.first.dy);
+      for (int i = 1; i < stroke.length; i++) {
+        path.lineTo(stroke[i].dx, stroke[i].dy);
+      }
+      canvas.drawPath(path, paint);
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant _HighlighterPainter old) => old.strokes != strokes;
 }
 
 class _ResultCard extends StatelessWidget {

@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image/image.dart' as img;
 import '../../data/models/notebook.dart';
 import '../../data/models/word.dart';
 import '../../data/services/dictionary_result.dart';
@@ -10,7 +12,7 @@ final photoCaptureProvider = StateNotifierProvider<PhotoCaptureNotifier, PhotoCa
   return PhotoCaptureNotifier(ref);
 });
 
-enum PhotoStep { initial, processing, ready, lookingUp, result, saving, done }
+enum PhotoStep { initial, processing, selecting, lookingUp, result, saving, done }
 
 class PhotoCaptureState {
   final PhotoStep step;
@@ -70,22 +72,7 @@ class PhotoCaptureNotifier extends StateNotifier<PhotoCaptureState> {
   PhotoCaptureNotifier(this._ref) : super(const PhotoCaptureState());
 
   Future<void> processImage(String path) async {
-    state = state.copyWith(step: PhotoStep.processing, imagePath: path);
-    try {
-      final result = await _ocr.processImage(path);
-      state = state.copyWith(
-        step: PhotoStep.ready,
-        fullText: result.fullText,
-        words: result.words,
-      );
-    } catch (_) {
-      state = state.copyWith(
-        step: PhotoStep.ready,
-        fullText: '',
-        words: [],
-        errorMessage: '文字识别失败，请重试或确认图片清晰',
-      );
-    }
+    state = state.copyWith(step: PhotoStep.selecting, imagePath: path, clearError: true);
   }
 
   Future<void> loadNotebooks() async {
@@ -104,7 +91,7 @@ class PhotoCaptureNotifier extends StateNotifier<PhotoCaptureState> {
       state = state.copyWith(step: PhotoStep.result, lookupResult: result);
     } else {
       state = state.copyWith(
-        step: PhotoStep.ready,
+        step: PhotoStep.selecting,
         errorMessage: '查不到 $word，请检查拼写',
         clearSelectedWord: true,
       );
@@ -115,8 +102,53 @@ class PhotoCaptureNotifier extends StateNotifier<PhotoCaptureState> {
     state = state.copyWith(selectedNotebookId: id);
   }
 
+  Future<void> confirmSelection({
+    required double displayWidth,
+    required double displayHeight,
+    required double cropX,
+    required double cropY,
+    required double cropW,
+    required double cropH,
+  }) async {
+    final path = state.imagePath;
+    if (path == null) return;
+
+    // Get original image dimensions
+    final bytes = await File(path).readAsBytes();
+    final decoded = img.decodeImage(bytes);
+    if (decoded == null) {
+      state = state.copyWith(errorMessage: '无法读取照片');
+      return;
+    }
+    final imageWidth = decoded.width;
+    final imageHeight = decoded.height;
+
+    state = state.copyWith(step: PhotoStep.lookingUp, clearError: true);
+
+    final word = await _ocr.processCroppedRegion(
+      path,
+      imageWidth: imageWidth,
+      imageHeight: imageHeight,
+      displayWidth: displayWidth,
+      displayHeight: displayHeight,
+      cropX: cropX,
+      cropY: cropY,
+      cropW: cropW,
+      cropH: cropH,
+    );
+
+    if (word != null) {
+      await lookup(word);
+    } else {
+      state = state.copyWith(
+        step: PhotoStep.selecting,
+        errorMessage: '未识别到英文单词，请重试',
+      );
+    }
+  }
+
   void backToWords() {
-    state = state.copyWith(step: PhotoStep.ready, clearSelectedWord: true, clearLookupResult: true);
+    state = state.copyWith(step: PhotoStep.selecting, clearSelectedWord: true, clearLookupResult: true);
   }
 
   Future<Word> save() async {

@@ -56,5 +56,55 @@ class OcrService {
         .toList();
   }
 
+  /// Crop the image to a region defined in display coordinates, OCR the cropped
+  /// area, and return the first English word found.
+  Future<String?> processCroppedRegion(
+    String imagePath, {
+    required int imageWidth,
+    required int imageHeight,
+    required double displayWidth,
+    required double displayHeight,
+    required double cropX,
+    required double cropY,
+    required double cropW,
+    required double cropH,
+  }) async {
+    try {
+      final bytes = await File(imagePath).readAsBytes();
+      final decoded = img.decodeImage(bytes);
+      if (decoded == null) return null;
+
+      final scaleX = imageWidth / displayWidth;
+      final scaleY = imageHeight / displayHeight;
+      const padding = 20.0;
+
+      final x = ((cropX - padding) * scaleX).clamp(0, imageWidth).toInt();
+      final y = ((cropY - padding) * scaleY).clamp(0, imageHeight).toInt();
+      final w = ((cropW + padding * 2) * scaleX).clamp(0, imageWidth - x).toInt();
+      final h = ((cropH + padding * 2) * scaleY).clamp(0, imageHeight - y).toInt();
+
+      if (w <= 0 || h <= 0) return null;
+
+      final cropped = img.copyCrop(decoded, x: x, y: y, width: w, height: h);
+      final grayscale = img.grayscale(cropped);
+      final preprocessed = img.encodePng(grayscale);
+
+      final tmp = File('${imagePath}_crop.png');
+      await tmp.writeAsBytes(preprocessed);
+      try {
+        final text = await TesseractOcr.extractText(
+          tmp.path,
+          config: const OCRConfig(language: 'eng'),
+        );
+        final words = _extractEnglishWords(text);
+        return words.isNotEmpty ? words.first : null;
+      } finally {
+        try { tmp.deleteSync(); } catch (_) {}
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
   void dispose() {}
 }
