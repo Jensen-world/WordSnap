@@ -75,6 +75,42 @@ lib/widgets/bottom_pill.dart                       — 上传按钮 + 拍照涂�
 lib/features/capture/photo_capture_page.dart       — 拍照涂抹修复2（GestureDetector 外移）
 ```
 
+### 拍照涂抹：BoxFit.contain 坐标映射修复
+
+**问题：** 涂抹生效后，OCR 识别不到单词或识别错误单词。
+
+**根因：** `BoxFit.contain` 下图片居中缩放会留黑边，原代码直接用控件尺寸映射到原图，未考虑 letterbox 偏移。
+
+**修复：** `confirmSelection()` 中计算 fitted 区域 + offset，涂抹坐标减去 offset 后按 fitted 尺寸缩放映射。
+
+### 文件导入修复：中文过滤 + 滑动删除 + 键盘适配
+
+**问题：** TXT 文件中英文/中文混排，中文被解析为单词；预览列表不能编辑删除；输入法遮挡标题输入框。
+
+**修复：**
+- TXT 解析改用 `[a-zA-Z]+` 提取英文单词，中文行自动跳过
+- 预览列表项支持左滑删除（Dismissible）
+- 底部留白适配 `viewInsets.bottom`，键盘弹起时自动撑高
+
+### 学习页修复：每日一词刷新 + 标题英文对称
+
+**问题：** 清空单词本后每日一词不消失；"正在学习的单词本""今日学习计划"右侧空白不对称。
+
+**修复：**
+- `ref.listen` 从 build 移到 initState，去掉 `prev!=null` 守卫
+- 正在学习的单词本 → 右侧加 `Active Notebook`
+- 今日学习计划 → 右侧加 `Today's Plan · May 12`
+
+### 本次涉及文件
+```
+lib/features/capture/photo_capture_page.dart       — GestureDetector 移出 Stack 外包裹
+lib/features/capture/photo_capture_provider.dart    — BoxFit.contain 坐标映射
+lib/data/repositories/word_repository.dart          — insertBatch()
+lib/features/wordbook/import_wordlist_sheet.dart     — 文件导入完整流程
+lib/widgets/bottom_pill.dart                        — 上传按钮
+lib/features/learn/learn_page.dart                  — 每日一词刷新 + 英文标题
+```
+
 ---
 
 ## Session 38 — UI 打磨：底部渐变 + 卡片阴影 + Pill 全宽（2026-05-11）
