@@ -73,10 +73,11 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
         }
       }
     } else {
+      final wordRe = RegExp(r'[a-zA-Z]+');
       for (final line in lines) {
-        final word = line.trim();
-        if (word.isNotEmpty) {
-          entries.add(_ParsedEntry(word));
+        final match = wordRe.firstMatch(line);
+        if (match != null) {
+          entries.add(_ParsedEntry(match.group(0)!));
         }
       }
     }
@@ -129,7 +130,8 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPad = MediaQuery.of(context).padding.bottom + 24;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPad = (bottomInset > 0 ? bottomInset : MediaQuery.of(context).padding.bottom) + 24;
 
     if (_fileName == null) {
       return Padding(
@@ -199,25 +201,37 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFE2E2EA)),
               ),
-              child: ListView.separated(
+              child: ListView.builder(
                 shrinkWrap: true,
                 itemCount: _entries.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF0F0F5)),
                 itemBuilder: (_, i) {
                   final e = _entries[i];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            e.word,
-                            style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
+                  return Dismissible(
+                    key: ValueKey('${e.word}_$i'),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 16),
+                      color: const Color(0xFFFF5252),
+                      child: const Icon(Icons.delete_outline, color: Colors.white, size: 20),
+                    ),
+                    onDismissed: (_) {
+                      setState(() => _entries.removeAt(i));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              e.word,
+                              style: const TextStyle(fontSize: 14, color: AppColors.inkBlack),
+                            ),
                           ),
-                        ),
-                        if (e.definition.isNotEmpty)
-                          Text(e.definition, style: const TextStyle(fontSize: 13, color: Color(0xFF999999))),
-                      ],
+                          if (e.definition.isNotEmpty)
+                            Text(e.definition, style: const TextStyle(fontSize: 13, color: Color(0xFF999999))),
+                        ],
+                      ),
                     ),
                   );
                 },
