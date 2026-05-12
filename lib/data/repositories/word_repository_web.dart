@@ -23,6 +23,15 @@ class WordRepository {
     return word.copyWith(id: id);
   }
 
+  Future<int> insertBatch(List<Word> words) async {
+    var count = 0;
+    for (final word in words) {
+      _store.insertWord(word.toMap());
+      count++;
+    }
+    return count;
+  }
+
   Future<void> update(Word word) async {
     _store.updateWord(word.toMap());
   }

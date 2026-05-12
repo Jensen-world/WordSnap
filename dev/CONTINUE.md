@@ -1,15 +1,65 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-12（Session 39 — Bug 修复 + 文件导入单词本）
+> 最后更新：2026-05-12（Session 39 — 图标替换 + WordChat 多会话改造）
 
 ## 一、现在到哪了
 
-**阶段：昨天功能完成的 Bug 修复。待真机验证。**
+**阶段：图标替换 + WordChat 多会话改造。待真机验证。**
 
 ### 待处理
-- 真机验证：整体视觉效果 / 拍照涂抹选词 / WordChat / 例句
+- 真机验证：WordChat 4按钮工具栏 + 多会话 + 历史抽屉
+- 真机验证：自定义图标（设置/编辑/上传）
 - 开源仓库（WordSnap-github/）关联远程并 push
 - `scripts/`、`images/`（设计素材）工作树未提交文件
+
+---
+
+## Session 39 part 2 — 图标替换 + WordChat 多会话（2026-05-12）
+
+### 1. 图标整理 + 替换
+- `icon/` 目录下 5 个自定义 PNG → `assets/icons/`（settings/edit_outlined/edit_filled/upload_outlined/upload_filled）
+- pubspec.yaml 注册 `assets/icons/`
+- navigation_shell.dart：`Icons.menu` → `Image.asset('assets/icons/settings.png')`
+- bottom_pill.dart：编辑/上传按钮改用 PNG 资源，`_IconPillButton` 扩展支持 `outlinedAsset`/`filledAsset`
+- 新增 `lucide_icons_flutter` 包（v3.1.13），4 个 WordChat 按钮图标：
+  - `LucideIcons.bookMarked` — 本地查词
+  - `LucideIcons.bot` — AI辅助
+  - `LucideIcons.history` — 聊天记录
+  - `LucideIcons.messageSquarePlus` — 新对话
+
+### 2. WordChat 多会话架构
+- **DB v5 migration**：新增 `chat_sessions` 表（id/mode/anchored_word/created_at/updated_at），`word_chat` 表新增 `session_id` 列 + FK
+- **_onCreate** 也创建 chat_sessions 表，全新安装可用
+- **Provider 重写**：
+  - 新增 `ChatSession` 模型
+  - `WordChatState` 新增 `sessions`/`currentSessionId`
+  - `init()` — 加载/创建会话列表
+  - `newSession()` — 创建空会话并切换
+  - `switchSession(id)` — 切换到指定会话并加载消息
+  - `deleteSession(id)` — 删除会话及消息
+  - `_saveMessage()` 记录 session_id
+- **UI 重写**：
+  - 移除 AppBar 模式切换按钮
+  - 4 按钮工具栏（`_ToolButton`）：本地查词/AI辅助/聊天记录/新对话
+  - 活跃模式按钮品牌蓝高亮
+  - 历史抽屉（`endDrawer`）：左侧滑出会话列表，点击切换/左滑删除
+  - AI 图标统一改为 `LucideIcons.bot`
+
+### 3. Web 构建修复
+- `word_repository_web.dart` 缺少 `insertBatch()` → 添加
+
+### 涉及文件
+```
+assets/icons/                                      — 5 个自定义 PNG
+pubspec.yaml                                       — lucide_icons_flutter + assets/icons/
+lib/core/database/database_helper.dart             — v5 migration
+lib/features/chat/word_chat_provider.dart          — 多会话重写
+lib/features/chat/word_chat_page.dart              — 4按钮工具栏 + 历史抽屉
+lib/widgets/navigation_shell.dart                  — 设置图标
+lib/widgets/bottom_pill.dart                       — 编辑/上传 PNG 图标
+lib/data/repositories/word_repository_web.dart     — 补充 insertBatch
+test/services/review_service_test.dart             — FakeWordRepository.insertBatch
+```
 
 ---
 

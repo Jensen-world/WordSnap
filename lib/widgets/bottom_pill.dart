@@ -38,8 +38,8 @@ class BottomPill extends ConsumerWidget {
                   onTap: () => context.push('/capture/photo'),
                 ),
                 _IconPillButton(
-                  outlinedIcon: Icons.edit_note_outlined,
-                  filledIcon: Icons.edit_note,
+                  outlinedAsset: 'assets/icons/edit_outlined.png',
+                  filledAsset: 'assets/icons/edit_filled.png',
                   onTap: () {
                     showModalBottomSheet(
                       context: context,
@@ -54,8 +54,8 @@ class BottomPill extends ConsumerWidget {
                   },
                 ),
                 _IconPillButton(
-                  outlinedIcon: Icons.upload_file_outlined,
-                  filledIcon: Icons.upload_file,
+                  outlinedAsset: 'assets/icons/upload_outlined.png',
+                  filledAsset: 'assets/icons/upload_filled.png',
                   onTap: () {
                     showModalBottomSheet(
                       context: context,
@@ -87,11 +87,15 @@ class BottomPill extends ConsumerWidget {
 class _IconPillButton extends StatefulWidget {
   final IconData outlinedIcon;
   final IconData filledIcon;
+  final String? outlinedAsset;
+  final String? filledAsset;
   final VoidCallback onTap;
 
   const _IconPillButton({
-    required this.outlinedIcon,
-    required this.filledIcon,
+    this.outlinedIcon = Icons.circle,
+    this.filledIcon = Icons.circle,
+    this.outlinedAsset,
+    this.filledAsset,
     required this.onTap,
   });
 
@@ -104,6 +108,7 @@ class _IconPillButtonState extends State<_IconPillButton> {
 
   @override
   Widget build(BuildContext context) {
+    final useAsset = widget.outlinedAsset != null && widget.filledAsset != null;
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) {
@@ -113,11 +118,18 @@ class _IconPillButtonState extends State<_IconPillButton> {
       onTapCancel: () => setState(() => _pressed = false),
       child: Padding(
         padding: const EdgeInsets.all(6),
-        child: Icon(
-          _pressed ? widget.filledIcon : widget.outlinedIcon,
-          size: 24,
-          color: Colors.white,
-        ),
+        child: useAsset
+            ? Image.asset(
+                _pressed ? widget.filledAsset! : widget.outlinedAsset!,
+                width: 24,
+                height: 24,
+                color: Colors.white,
+              )
+            : Icon(
+                _pressed ? widget.filledIcon : widget.outlinedIcon,
+                size: 24,
+                color: Colors.white,
+              ),
       ),
     );
   }

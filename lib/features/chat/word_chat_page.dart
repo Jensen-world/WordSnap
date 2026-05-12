@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/colors.dart';
-import '../../data/models/notebook.dart';
 import '../../data/models/word.dart';
 import '../settings/api_config_provider.dart';
 import '../wordbook/wordbook_provider.dart';
@@ -23,6 +23,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   final _inputCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
   final _focusNode = FocusNode();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   bool get _aiAvailable {
     final config = ref.read(apiConfigProvider);
@@ -32,10 +33,13 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialWord != null) {
-      ref.read(wordChatProvider.notifier).setAnchoredWord(widget.initialWord!);
-      ref.read(wordChatProvider.notifier).loadHistory(widget.initialWord!);
-    }
+    Future.microtask(() async {
+      await ref.read(wordChatProvider.notifier).init();
+      if (widget.initialWord != null) {
+        ref.read(wordChatProvider.notifier).setAnchoredWord(widget.initialWord!);
+        ref.read(wordChatProvider.notifier).localLookup(widget.initialWord!);
+      }
+    });
   }
 
   @override
@@ -58,7 +62,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     }
   }
 
-  void _onModeChanged(ChatMode mode) {
+  void _setMode(ChatMode mode) {
     if (mode == ChatMode.ai && !_aiAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请先在设置中配置大模型 API 并开启 WordChat')),
@@ -121,10 +125,12 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.canvasWhite,
+      endDrawer: _buildHistoryDrawer(state),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(state.anchoredWord != null ? '与 AI 聊「${state.anchoredWord}」' : 'AI 单词助手'),
+        title: Text(state.anchoredWord != null ? '与 ${state.anchoredWord} 聊' : 'WordChat'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -132,11 +138,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       ),
       body: Column(
         children: [
-          _ModeToggle(
-            current: state.mode,
-            aiAvailable: _aiAvailable,
-            onChanged: _onModeChanged,
-          ),
+          _buildToolbar(state),
           Expanded(
             child: state.mode == ChatMode.local
                 ? _buildLocalMode(state)
@@ -144,6 +146,94 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
           ),
           _buildInputBar(state, bottomPad),
         ],
+      ),
+    );
+  }
+
+  Widget _buildToolbar(WordChatState state) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _ToolButton(
+            icon: LucideIcons.bookMarked,
+            label: '本地查词',
+            active: state.mode == ChatMode.local,
+            onTap: () => _setMode(ChatMode.local),
+          ),
+          _ToolButton(
+            icon: LucideIcons.bot,
+            label: 'AI辅助',
+            active: state.mode == ChatMode.ai,
+            onTap: () => _setMode(ChatMode.ai),
+          ),
+          _ToolButton(
+            icon: LucideIcons.history,
+            label: '聊天记录',
+            active: false,
+            onTap: () => _scaffoldKey.currentState?.openEndDrawer(),
+          ),
+          _ToolButton(
+            icon: LucideIcons.messageSquarePlus,
+            label: '新对话',
+            active: false,
+            onTap: () => ref.read(wordChatProvider.notifier).newSession(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryDrawer(WordChatState state) {
+    return Drawer(
+      width: MediaQuery.of(context).size.width * 0.78,
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 12, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('聊天记录', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20, color: Color(0xFF999999)),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: state.sessions.isEmpty
+                  ? const Center(
+                      child: Text('暂无聊天记录', style: TextStyle(fontSize: 13, color: Color(0xFF999999))),
+                    )
+                  : ListView.separated(
+                      itemCount: state.sessions.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1, indent: 16),
+                      itemBuilder: (_, i) {
+                        final session = state.sessions[i];
+                        final isActive = session.id == state.currentSessionId;
+                        return _SessionTile(
+                          session: session,
+                          isActive: isActive,
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            ref.read(wordChatProvider.notifier).switchSession(session.id!);
+                          },
+                          onDelete: () {
+                            ref.read(wordChatProvider.notifier).deleteSession(session.id!);
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -206,7 +296,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.chat_bubble_outline_rounded, size: 48, color: Color(0xFFDDDDDD)),
+              const Icon(LucideIcons.bot, size: 48, color: Color(0xFFDDDDDD)),
               const SizedBox(height: 16),
               Text(
                 state.anchoredWord != null ? '向 AI 提问关于「${state.anchoredWord}」的任何问题' : '输入单词或问题，AI 帮你学习',
@@ -320,90 +410,45 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   }
 }
 
-// ── Mode Toggle ──
-
-class _ModeToggle extends StatelessWidget {
-  final ChatMode current;
-  final bool aiAvailable;
-  final ValueChanged<ChatMode> onChanged;
-
-  const _ModeToggle({
-    required this.current,
-    required this.aiAvailable,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
-      ),
-      child: Row(
-        children: [
-          _Tab(
-            label: '本地查词',
-            active: current == ChatMode.local,
-            onTap: () => onChanged(ChatMode.local),
-          ),
-          const SizedBox(width: 6),
-          _Tab(
-            label: 'AI 辅助',
-            active: current == ChatMode.ai,
-            enabled: aiAvailable,
-            onTap: () => onChanged(ChatMode.ai),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Tab extends StatelessWidget {
+class _ToolButton extends StatelessWidget {
+  final IconData icon;
   final String label;
   final bool active;
-  final bool enabled;
   final VoidCallback onTap;
 
-  const _Tab({
+  const _ToolButton({
+    required this.icon,
     required this.label,
     required this.active,
-    this.enabled = true,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: enabled ? onTap : () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请先在设置中配置大模型 API')),
-        );
-      },
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? AppColors.signalBlue : const Color(0xFFF0F0F5),
-          borderRadius: BorderRadius.circular(100),
+          color: active ? AppColors.signalBlue : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Icon(
+              icon,
+              size: 20,
+              color: active ? Colors.white : const Color(0xFF999999),
+            ),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: active ? Colors.white : (enabled ? const Color(0xFF666666) : const Color(0xFFBBBBBB)),
+                fontSize: 10,
+                color: active ? Colors.white : const Color(0xFF999999),
               ),
             ),
-            if (!enabled) ...[
-              const SizedBox(width: 4),
-              const Icon(Icons.lock, size: 12, color: Color(0xFFBBBBBB)),
-            ],
           ],
         ),
       ),
@@ -411,30 +456,50 @@ class _Tab extends StatelessWidget {
   }
 }
 
-// ── Quick Prompt Chip ──
-
-class _QuickChip extends StatelessWidget {
-  final String label;
+class _SessionTile extends StatelessWidget {
+  final ChatSession session;
+  final bool isActive;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
-  const _QuickChip({required this.label, required this.onTap});
+  const _SessionTile({
+    required this.session,
+    required this.isActive,
+    required this.onTap,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final title = session.anchoredWord ?? '新对话';
+    final modeLabel = session.mode == ChatMode.ai ? 'AI' : '本地';
+    final dateStr = _formatDate(session.updatedAt);
+
+    return ListTile(
+      selected: isActive,
+      selectedTileColor: AppColors.signalBlue.withValues(alpha: 0.06),
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF0F0F5),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 11, color: Color(0xFF666666)),
-        ),
+      title: Text(
+        title,
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: isActive ? AppColors.signalBlue : AppColors.inkBlack),
+      ),
+      subtitle: Text(
+        '$modeLabel · $dateStr · ${session.messageCount} 条消息',
+        style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),
+      ),
+      trailing: GestureDetector(
+        onTap: onDelete,
+        child: const Icon(Icons.delete_outline, size: 16, color: Color(0xFFBBBBBB)),
       ),
     );
+  }
+
+  String _formatDate(DateTime dt) {
+    final now = DateTime.now();
+    if (dt.year == now.year && dt.month == now.month && dt.day == now.day) {
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    }
+    return '${dt.month}/${dt.day}';
   }
 }
 
@@ -467,7 +532,7 @@ class _ChatBubble extends StatelessWidget {
                 color: AppColors.signalBlue.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.auto_awesome, size: 15, color: AppColors.signalBlue),
+              child: const Icon(LucideIcons.bot, size: 15, color: AppColors.signalBlue),
             ),
             const SizedBox(width: 8),
           ],
@@ -509,6 +574,33 @@ class _ChatBubble extends StatelessWidget {
           ),
           if (isUser) const SizedBox(width: 8),
         ],
+      ),
+    );
+  }
+}
+
+// ── Quick Prompt Chip ──
+
+class _QuickChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _QuickChip({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F0F5),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Color(0xFF666666)),
+        ),
       ),
     );
   }

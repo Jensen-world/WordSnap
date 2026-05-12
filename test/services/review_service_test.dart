@@ -43,6 +43,16 @@ class FakeWordRepository implements WordRepository {
   }
 
   @override
+  Future<int> insertBatch(List<Word> words) async {
+    var count = 0;
+    for (final word in words) {
+      _words.add(word.copyWith(id: _nextId++));
+      count++;
+    }
+    return count;
+  }
+
+  @override
   Future<void> update(Word word) async {
     final idx = _words.indexWhere((w) => w.id == word.id);
     if (idx != -1) _words[idx] = word;

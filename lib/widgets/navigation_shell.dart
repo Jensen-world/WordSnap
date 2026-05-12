@@ -96,7 +96,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.menu, size: 20, color: Color(0xFFBBBBBB)),
+              icon: Image.asset('assets/icons/settings.png', width: 20, height: 20, color: const Color(0xFFBBBBBB)),
               onPressed: () => context.push('/settings'),
             ),
           ],
@@ -122,12 +122,12 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
               left: 0, right: 0, bottom: 0,
               child: IgnorePointer(
                 child: Container(
-                  height: MediaQuery.of(context).size.height * 0.3,
+                  height: MediaQuery.of(context).size.height * 0.42,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [Color(0xFFE8ECFC), Color(0x00E8ECFC)],
+                      colors: [Color(0x4D2F5CFF), Color(0x002F5CFF)],
                     ),
                   ),
                 ),

@@ -3,7 +3,7 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   static const _dbName = 'wordsnap.db';
-  static const _dbVersion = 4;
+  static const _dbVersion = 5;
 
   static final DatabaseHelper instance = DatabaseHelper._();
   DatabaseHelper._();
@@ -93,14 +93,26 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
+      CREATE TABLE chat_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mode TEXT NOT NULL DEFAULT 'local',
+        anchored_word TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE word_chat (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         wordId INTEGER,
         word TEXT NOT NULL,
         role TEXT NOT NULL,
         content TEXT NOT NULL,
+        session_id INTEGER,
         createdAt TEXT NOT NULL,
-        FOREIGN KEY (wordId) REFERENCES words(id) ON DELETE SET NULL
+        FOREIGN KEY (wordId) REFERENCES words(id) ON DELETE SET NULL,
+        FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
       )
     ''');
 
@@ -109,6 +121,7 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX idx_words_isMastered ON words(isMastered)');
     await db.execute('CREATE INDEX idx_words_learnedAt ON words(learnedAt)');
     await db.execute('CREATE INDEX idx_word_chat_word ON word_chat(word)');
+    await db.execute('CREATE INDEX idx_word_chat_session ON word_chat(session_id)');
 
     final now = DateTime.now().toIso8601String();
     await db.insert('notebooks', {
@@ -141,19 +154,18 @@ class DatabaseHelper {
         )
       ''');
     }
-    if (oldVersion < 4) {
+    if (oldVersion < 5) {
       await db.execute('''
-        CREATE TABLE IF NOT EXISTS word_chat (
+        CREATE TABLE IF NOT EXISTS chat_sessions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          wordId INTEGER,
-          word TEXT NOT NULL,
-          role TEXT NOT NULL,
-          content TEXT NOT NULL,
-          createdAt TEXT NOT NULL,
-          FOREIGN KEY (wordId) REFERENCES words(id) ON DELETE SET NULL
+          mode TEXT NOT NULL DEFAULT 'local',
+          anchored_word TEXT,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
         )
       ''');
-      await db.execute('CREATE INDEX IF NOT EXISTS idx_word_chat_word ON word_chat(word)');
+      await db.execute('ALTER TABLE word_chat ADD COLUMN session_id INTEGER');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_word_chat_session ON word_chat(session_id)');
     }
   }
 }
