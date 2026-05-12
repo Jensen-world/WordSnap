@@ -19,9 +19,6 @@ class _LearnPageState extends ConsumerState<LearnPage> {
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(learnStateProvider.notifier).load());
-    ref.listen(dataRefreshTrigger, (_, __) {
-      ref.read(learnStateProvider.notifier).load();
-    });
   }
 
   void _showSettings() {
@@ -39,6 +36,9 @@ class _LearnPageState extends ConsumerState<LearnPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(dataRefreshTrigger, (_, __) {
+      ref.read(learnStateProvider.notifier).load();
+    });
     final state = ref.watch(learnStateProvider);
 
     if (state.loading) {
