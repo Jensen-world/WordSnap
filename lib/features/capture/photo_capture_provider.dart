@@ -76,12 +76,14 @@ class PhotoCaptureNotifier extends StateNotifier<PhotoCaptureState> {
   }
 
   Future<void> loadNotebooks() async {
-    final repo = _ref.read(notebookRepoProvider);
-    final notebooks = await repo.getAll();
-    state = state.copyWith(
-      notebooks: notebooks,
-      selectedNotebookId: notebooks.isNotEmpty ? notebooks.first.id : null,
-    );
+    try {
+      final repo = _ref.read(notebookRepoProvider);
+      final notebooks = await repo.getAll();
+      state = state.copyWith(
+        notebooks: notebooks,
+        selectedNotebookId: notebooks.isNotEmpty ? notebooks.first.id : null,
+      );
+    } catch (_) {}
   }
 
   Future<void> lookup(String word) async {
@@ -123,16 +125,35 @@ class PhotoCaptureNotifier extends StateNotifier<PhotoCaptureState> {
     final imageWidth = decoded.width;
     final imageHeight = decoded.height;
 
+    // BoxFit.contain: image is centered and scaled to fit, may be letterboxed
+    final widgetAspect = displayWidth / displayHeight;
+    final imageAspect = imageWidth / imageHeight;
+    double fittedW, fittedH, offsetX, offsetY;
+    if (imageAspect > widgetAspect) {
+      fittedW = displayWidth;
+      fittedH = displayWidth / imageAspect;
+      offsetX = 0;
+      offsetY = (displayHeight - fittedH) / 2;
+    } else {
+      fittedW = displayHeight * imageAspect;
+      fittedH = displayHeight;
+      offsetX = (displayWidth - fittedW) / 2;
+      offsetY = 0;
+    }
+
+    final adjustedX = cropX - offsetX;
+    final adjustedY = cropY - offsetY;
+
     state = state.copyWith(step: PhotoStep.lookingUp, clearError: true);
 
     final word = await _ocr.processCroppedRegion(
       path,
       imageWidth: imageWidth,
       imageHeight: imageHeight,
-      displayWidth: displayWidth,
-      displayHeight: displayHeight,
-      cropX: cropX,
-      cropY: cropY,
+      displayWidth: fittedW,
+      displayHeight: fittedH,
+      cropX: adjustedX,
+      cropY: adjustedY,
       cropW: cropW,
       cropH: cropH,
     );
