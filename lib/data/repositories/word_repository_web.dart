@@ -40,6 +40,11 @@ class WordRepository {
     _store.deleteWord(id);
   }
 
+  Future<bool> existsByText(String text) async {
+    final all = _store.queryWords();
+    return all.any((w) => (w['text'] as String).toLowerCase().trim() == text.toLowerCase().trim());
+  }
+
   Future<int> getCount({int? notebookId, bool? isNew, bool? isMastered}) async {
     return _store.countWords(notebookId: notebookId, isNew: isNew, isMastered: isMastered);
   }

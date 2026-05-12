@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -14,8 +15,9 @@ import 'word_chat_provider.dart';
 
 class WordChatPage extends ConsumerStatefulWidget {
   final String? initialWord;
+  final String? initialMode;
 
-  const WordChatPage({super.key, this.initialWord});
+  const WordChatPage({super.key, this.initialWord, this.initialMode});
 
   @override
   ConsumerState<WordChatPage> createState() => _WordChatPageState();
@@ -32,6 +34,16 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   final _baseUrlCtrl = TextEditingController();
   final _modelCtrl = TextEditingController();
   bool _testing = false;
+  bool _obscureApiKey = true;
+  int _selectedProviderIdx = -1;
+
+  static const _providers = [
+    ('DeepSeek', 'https://api.deepseek.com/v1', 'deepseek-chat'),
+    ('智谱 (ChatGLM)', 'https://open.bigmodel.cn/api/paas/v4', 'glm-4-flash'),
+    ('火山方舟 (豆包)', 'https://ark.cn-beijing.volces.com/api/v3', 'doubao-pro-32k'),
+    ('阿里云百炼 (通义)', 'https://dashscope.aliyuncs.com/compatible-mode/v1', 'qwen-plus'),
+    ('自定义', '', ''),
+  ];
 
   bool get _aiAvailable {
     final config = ref.read(apiConfigProvider);
@@ -44,8 +56,14 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     Future.microtask(() async {
       await ref.read(wordChatProvider.notifier).init();
       if (widget.initialWord != null) {
-        ref.read(wordChatProvider.notifier).setAnchoredWord(widget.initialWord!);
-        ref.read(wordChatProvider.notifier).localLookup(widget.initialWord!);
+        final notifier = ref.read(wordChatProvider.notifier);
+        notifier.setAnchoredWord(widget.initialWord!);
+        if (widget.initialMode == 'ai' && _aiAvailable) {
+          notifier.setMode(ChatMode.ai);
+          notifier.sendMessage('介绍一下「${widget.initialWord}」这个词');
+        } else {
+          notifier.localLookup(widget.initialWord!);
+        }
       }
     });
   }
@@ -150,7 +168,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: Text(state.anchoredWord != null ? '与 ${state.anchoredWord} 聊' : 'WordChat'),
+        title: Text(state.anchoredWord != null ? '与AI聊${state.anchoredWord}' : 'WordChat'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -162,6 +180,24 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       body: Column(
         children: [
           _buildToolbar(state),
+          if (state.mode == ChatMode.local)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Text(
+                '基于ECDICT+Tatoeba离线数据',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 11, color: Color(0xFFBBBBBB)),
+              ),
+            ),
+          if (state.mode == ChatMode.ai)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Text(
+                '内容由AI生成 仅供参考',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 11, color: Color(0xFFBBBBBB)),
+              ),
+            ),
           Expanded(
             child: state.mode == ChatMode.local
                 ? _buildLocalMode(state)
@@ -214,11 +250,15 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
 
   Widget _buildSettingsDrawer() {
     final config = ref.watch(apiConfigProvider);
+    final chatEnabled = ref.watch(wordChatEnabledProvider);
 
     if (_baseUrlCtrl.text.isEmpty && !config.loading) {
       _baseUrlCtrl.text = config.baseUrl;
       _apiKeyCtrl.text = config.apiKey;
       _modelCtrl.text = config.model;
+      if (_selectedProviderIdx < 0) {
+        _selectedProviderIdx = _matchProvider(config.baseUrl, config.model);
+      }
     }
 
     return Drawer(
@@ -245,12 +285,55 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  _buildField('API Key', _apiKeyCtrl, hint: 'sk-...'),
-                  const SizedBox(height: 14),
-                  _buildField('Base URL', _baseUrlCtrl, hint: ConfigRepository.defaultBaseUrl),
-                  const SizedBox(height: 14),
-                  _buildField('Model', _modelCtrl, hint: ConfigRepository.defaultModel),
+                  // ── WordChat 开关 ──
+                  _buildSwitchTile('WordChat', chatEnabled, (v) {
+                    ref.read(wordChatEnabledProvider.notifier).toggle();
+                  }),
                   const SizedBox(height: 20),
+                  // ── LLM 模型配置分区 ──
+                  const Text('LLM 模型配置', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+                  const SizedBox(height: 4),
+                  const Text('兼容 OpenAI 协议，支持多家供应商切换', style: TextStyle(fontSize: 11, color: Color(0xFF999999))),
+                  const SizedBox(height: 14),
+                  // ── 供应商 ──
+                  _buildProviderDropdown(),
+                  const SizedBox(height: 14),
+                  // ── API 密钥 ──
+                  _buildField(
+                    'API 密钥',
+                    _apiKeyCtrl,
+                    hint: 'sk-...',
+                    obscure: _obscureApiKey,
+                    suffix: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _SuffixIcon(
+                          icon: _obscureApiKey ? Icons.visibility_off : Icons.visibility,
+                          onTap: () => setState(() => _obscureApiKey = !_obscureApiKey),
+                        ),
+                        const SizedBox(width: 2),
+                        _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_apiKeyCtrl)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // ── 接口地址 ──
+                  _buildField(
+                    '接口地址',
+                    _baseUrlCtrl,
+                    hint: ConfigRepository.defaultBaseUrl,
+                    suffix: _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_baseUrlCtrl)),
+                  ),
+                  const SizedBox(height: 14),
+                  // ── 模型 ──
+                  _buildField(
+                    '模型',
+                    _modelCtrl,
+                    hint: ConfigRepository.defaultModel,
+                    suffix: _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_modelCtrl)),
+                  ),
+                  const SizedBox(height: 20),
+                  // ── 测试连接 ──
                   FilledButton(
                     onPressed: _testing ? null : _testConnection,
                     style: FilledButton.styleFrom(
@@ -271,7 +354,83 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController ctrl, {String? hint}) {
+  int _matchProvider(String baseUrl, String model) {
+    for (var i = 0; i < _providers.length - 1; i++) {
+      final p = _providers[i];
+      if (p.$2 == baseUrl && p.$3 == model) return i;
+    }
+    return _providers.length - 1; // 自定义
+  }
+
+  Widget _buildSwitchTile(String label, bool value, ValueChanged<bool> onChanged) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.inkBlack)),
+        SizedBox(
+          height: 28,
+          child: Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.signalBlue,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProviderDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('供应商', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF999999))),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<int>(
+          initialValue: _selectedProviderIdx < 0 ? null : _selectedProviderIdx,
+          hint: const Text('请选择供应商', style: TextStyle(fontSize: 13, color: Color(0xFFBBBBBB))),
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE2E2EA)),
+            ),
+          ),
+          items: List.generate(_providers.length, (i) {
+            return DropdownMenuItem(value: i, child: Text(_providers[i].$1, style: const TextStyle(fontSize: 14)));
+          }),
+          onChanged: (i) {
+            if (i == null) return;
+            _onProviderSelected(i);
+          },
+        ),
+      ],
+    );
+  }
+
+  void _onProviderSelected(int index) {
+    setState(() => _selectedProviderIdx = index);
+    final p = _providers[index];
+    _baseUrlCtrl.text = p.$2;
+    _modelCtrl.text = p.$3;
+    // 保存到 config
+    final notifier = ref.read(apiConfigProvider.notifier);
+    notifier.setBaseUrl(p.$2);
+    notifier.setModel(p.$3);
+    ref.read(configRepoProvider).set('llm_provider', index.toString());
+  }
+
+  void _pasteToField(TextEditingController ctrl) async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (data?.text != null && data!.text!.isNotEmpty) {
+      ctrl.text = data.text!;
+      // 同步保存：追一下当前字段到 config
+      if (ctrl == _apiKeyCtrl) ref.read(apiConfigProvider.notifier).setApiKey(data.text!);
+      if (ctrl == _baseUrlCtrl) ref.read(apiConfigProvider.notifier).setBaseUrl(data.text!);
+      if (ctrl == _modelCtrl) ref.read(apiConfigProvider.notifier).setModel(data.text!);
+    }
+  }
+
+  Widget _buildField(String label, TextEditingController ctrl, {String? hint, bool obscure = false, Widget? suffix}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -279,6 +438,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
         const SizedBox(height: 6),
         TextField(
           controller: ctrl,
+          obscureText: obscure,
           style: const TextStyle(fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
@@ -288,7 +448,14 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Color(0xFFE2E2EA)),
             ),
+            suffixIcon: suffix,
+            suffixIconConstraints: const BoxConstraints(maxHeight: 36),
           ),
+          onChanged: (v) {
+            if (ctrl == _apiKeyCtrl) ref.read(apiConfigProvider.notifier).setApiKey(v);
+            if (ctrl == _baseUrlCtrl) ref.read(apiConfigProvider.notifier).setBaseUrl(v);
+            if (ctrl == _modelCtrl) ref.read(apiConfigProvider.notifier).setModel(v);
+          },
         ),
       ],
     );
@@ -387,17 +554,12 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.search_rounded, size: 48, color: Color(0xFFDDDDDD)),
+              const Icon(Icons.search_rounded, size: 64, color: AppColors.signalBlue),
               const SizedBox(height: 16),
               Text(
                 widget.initialWord != null ? '正在查询「${widget.initialWord}」...' : '输入单词开始本地查词',
-                style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+                style: const TextStyle(fontSize: 15, color: Color(0xFF666666)),
                 textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                '基于 ECDICT + Tatoeba 离线数据',
-                style: TextStyle(fontSize: 11, color: Color(0xFFBBBBBB)),
               ),
             ],
           ),
@@ -410,15 +572,22 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       children: [
         _LocalResultCard(result: result),
         const SizedBox(height: 16),
-        FilledButton.icon(
-          onPressed: _saveWord,
-          icon: const Icon(Icons.add, size: 18),
-          label: const Text('收录到单词本'),
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.signalBlue,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-          ),
+        FutureBuilder<bool>(
+          future: ref.read(wordRepoProvider).existsByText(result.word),
+          builder: (_, snap) {
+            final exists = snap.data ?? false;
+            if (exists) return const SizedBox.shrink();
+            return FilledButton.icon(
+              onPressed: _saveWord,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('收录到单词本'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.signalBlue,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -432,11 +601,11 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(LucideIcons.bot, size: 48, color: Color(0xFFDDDDDD)),
+              const Icon(LucideIcons.bot, size: 64, color: AppColors.signalBlue),
               const SizedBox(height: 16),
               Text(
                 state.anchoredWord != null ? '向 AI 提问关于「${state.anchoredWord}」的任何问题' : '输入单词或问题，AI 帮你学习',
-                style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+                style: const TextStyle(fontSize: 15, color: Color(0xFF666666)),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -466,7 +635,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     final isAiMode = state.mode == ChatMode.ai;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, 8 + bottomPad),
+      padding: EdgeInsets.fromLTRB(16, 8, 16, 14 + bottomPad),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE2E2EA))),
@@ -496,6 +665,28 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
           ],
           Row(
             children: [
+              GestureDetector(
+                onTap: () async {
+                  final word = await context.push<String>('/capture/photo?source=chat');
+                  if (word != null && word.isNotEmpty && mounted) {
+                    if (state.mode == ChatMode.local) {
+                      ref.read(wordChatProvider.notifier).localLookup(word);
+                    } else {
+                      ref.read(wordChatProvider.notifier).sendMessage(word);
+                    }
+                  }
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF0F0F5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.camera_alt_outlined, size: 20, color: AppColors.signalBlue),
+                ),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: SizedBox(
                   height: 40,
@@ -505,12 +696,22 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
                     textInputAction: TextInputAction.send,
                     onSubmitted: (_) => _submit(),
                     decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0F0F5),
                       hintText: state.mode == ChatMode.local ? '输入单词查词...' : '输入单词或问题...',
                       hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Color(0xFFE2E2EA)),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
                       ),
                     ),
                     style: const TextStyle(fontSize: 14),
@@ -569,9 +770,10 @@ class _AppBarSettingsButtonState extends State<_AppBarSettingsButton> {
       onTapCancel: () => setState(() => _pressed = false),
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Icon(
-          Icons.menu,
-          size: 22,
+        child: Image.asset(
+          'assets/icons/wordchat_config.png',
+          width: 22,
+          height: 22,
           color: _pressed ? AppColors.signalBlue : const Color(0xFFBBBBBB),
         ),
       ),
@@ -781,7 +983,9 @@ class _QuickChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        height: 28,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: const Color(0xFFF0F0F5),
           borderRadius: BorderRadius.circular(100),
@@ -890,6 +1094,26 @@ class _LocalResultCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SuffixIcon extends StatelessWidget {
+  final IconData? icon;
+  final String? asset;
+  final VoidCallback onTap;
+  const _SuffixIcon({this.icon, this.asset, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: asset != null
+            ? Image.asset(asset!, width: 18, height: 18, color: const Color(0xFF999999))
+            : Icon(icon, size: 18, color: const Color(0xFF999999)),
       ),
     );
   }

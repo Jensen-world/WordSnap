@@ -9,7 +9,9 @@ import '../learn/learn_provider.dart';
 import 'photo_capture_provider.dart';
 
 class PhotoCapturePage extends ConsumerStatefulWidget {
-  const PhotoCapturePage({super.key});
+  final String? source;
+
+  const PhotoCapturePage({super.key, this.source});
 
   @override
   ConsumerState<PhotoCapturePage> createState() => _PhotoCapturePageState();
@@ -92,10 +94,12 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
       case PhotoStep.lookingUp:
         return _buildSelectingView(state, showLookupSpinner: true);
       case PhotoStep.result:
+        if (widget.source == 'chat') return _chatConfirmView(state);
         return _resultView(state);
       case PhotoStep.saving:
         return _resultView(state, showSaveSpinner: true);
       case PhotoStep.done:
+        if (widget.source == 'chat') return const SizedBox.shrink();
         return _doneView();
     }
   }
@@ -258,6 +262,49 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _chatConfirmView(PhotoCaptureState state) {
+    final result = state.lookupResult!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              result.word,
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                OutlinedButton(
+                  onPressed: () {
+                    ref.read(photoCaptureProvider.notifier).backToWords();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFE2E2EA)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  ),
+                  child: const Text('重试', style: TextStyle(color: Color(0xFF999999))),
+                ),
+                const SizedBox(width: 16),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(result.word),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.signalBlue,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  ),
+                  child: const Text('确认'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

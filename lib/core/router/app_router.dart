@@ -61,7 +61,10 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/capture/photo',
-      builder: (context, state) => const PhotoCapturePage(),
+      builder: (context, state) {
+        final source = state.uri.queryParameters['source'];
+        return PhotoCapturePage(source: source);
+      },
     ),
     GoRoute(
       path: '/capture/result',
@@ -71,7 +74,8 @@ final appRouter = GoRouter(
       path: '/chat',
       builder: (context, state) {
         final word = state.uri.queryParameters['word'];
-        return WordChatPage(initialWord: word);
+        final mode = state.uri.queryParameters['mode'];
+        return WordChatPage(initialWord: word, initialMode: mode);
       },
     ),
   ],

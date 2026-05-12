@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/config_repository.dart';
 
+final configRepoProvider = Provider<ConfigRepository>((ref) => ConfigRepository());
+
 final apiConfigProvider = StateNotifierProvider<ApiConfigNotifier, ApiConfig>((ref) {
   return ApiConfigNotifier();
 });

@@ -459,13 +459,33 @@ class _DailyWordCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 8),
-          GestureDetector(
-            onTap: () {
-              if (word.id != null) context.push('/word/${word.id}');
-            },
-            child: Text(
-              word.text,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    if (word.id != null) context.push('/word/${word.id}');
+                  },
+                  child: Text(
+                    word.text,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => context.push('/chat?word=${Uri.encodeComponent(word.text)}&mode=ai'),
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEEF0FF),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.chat_bubble_outline, size: 14, color: AppColors.signalBlue),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 8),
@@ -498,19 +518,6 @@ class _DailyWordCard extends ConsumerWidget {
                       ),
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => context.push('/chat?word=${Uri.encodeComponent(word.text)}'),
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEEF0FF),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.chat_bubble_outline, size: 14, color: AppColors.signalBlue),
                 ),
               ),
             ],

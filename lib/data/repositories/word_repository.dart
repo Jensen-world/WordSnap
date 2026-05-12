@@ -68,6 +68,14 @@ class WordRepository {
     await db.delete('words', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<bool> existsByText(String text) async {
+    final db = await _db;
+    final count = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM words WHERE LOWER(text) = ?', [text.toLowerCase().trim()]),
+    ) ?? 0;
+    return count > 0;
+  }
+
   Future<int> getCount({int? notebookId, bool? isNew, bool? isMastered}) async {
     final db = await _db;
     final conditions = <String>[];

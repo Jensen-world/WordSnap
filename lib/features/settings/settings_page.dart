@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/theme/colors.dart';
@@ -323,7 +324,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onTap: _importing ? null : _handleImport,
           ),
           const SizedBox(height: 16),
-          _SectionHeader(title: 'AI 查词'),
+          _SectionHeader(title: 'AI 配置'),
           _WordChatToggle(),
           _ApiConfigTile(),
           const SizedBox(height: 16),
@@ -429,6 +430,16 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
   final _apiKeyCtrl = TextEditingController();
   final _modelCtrl = TextEditingController();
   bool _testing = false;
+  bool _obscureApiKey = true;
+  int _selectedProviderIdx = -1;
+
+  static const _providers = [
+    ('DeepSeek', 'https://api.deepseek.com/v1', 'deepseek-chat'),
+    ('智谱 (ChatGLM)', 'https://open.bigmodel.cn/api/paas/v4', 'glm-4-flash'),
+    ('火山方舟 (豆包)', 'https://ark.cn-beijing.volces.com/api/v3', 'doubao-pro-32k'),
+    ('阿里云百炼 (通义)', 'https://dashscope.aliyuncs.com/compatible-mode/v1', 'qwen-plus'),
+    ('自定义', '', ''),
+  ];
 
   @override
   void dispose() {
@@ -436,6 +447,34 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
     _apiKeyCtrl.dispose();
     _modelCtrl.dispose();
     super.dispose();
+  }
+
+  int _matchProvider(String baseUrl, String model) {
+    for (var i = 0; i < _providers.length - 1; i++) {
+      final p = _providers[i];
+      if (p.$2 == baseUrl && p.$3 == model) return i;
+    }
+    return _providers.length - 1;
+  }
+
+  void _onProviderSelected(int index) {
+    setState(() => _selectedProviderIdx = index);
+    final p = _providers[index];
+    _baseUrlCtrl.text = p.$2;
+    _modelCtrl.text = p.$3;
+    ref.read(apiConfigProvider.notifier).setBaseUrl(p.$2);
+    ref.read(apiConfigProvider.notifier).setModel(p.$3);
+    ref.read(configRepoProvider).set('llm_provider', index.toString());
+  }
+
+  void _pasteToField(TextEditingController ctrl) async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (data?.text != null && data!.text!.isNotEmpty) {
+      ctrl.text = data.text!;
+      if (ctrl == _apiKeyCtrl) ref.read(apiConfigProvider.notifier).setApiKey(data.text!);
+      if (ctrl == _baseUrlCtrl) ref.read(apiConfigProvider.notifier).setBaseUrl(data.text!);
+      if (ctrl == _modelCtrl) ref.read(apiConfigProvider.notifier).setModel(data.text!);
+    }
   }
 
   Future<void> _test() async {
@@ -481,11 +520,13 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
       );
     }
 
-    // Init controllers once
     if (_baseUrlCtrl.text.isEmpty && config.baseUrl.isNotEmpty) {
       _baseUrlCtrl.text = config.baseUrl;
       _apiKeyCtrl.text = config.apiKey;
       _modelCtrl.text = config.model;
+      if (_selectedProviderIdx < 0) {
+        _selectedProviderIdx = _matchProvider(config.baseUrl, config.model);
+      }
     }
 
     if (!_expanded) {
@@ -503,11 +544,12 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('大模型 API', style: TextStyle(fontSize: 14, color: AppColors.inkBlack)),
+                    const Text('LLM 模型配置', style: TextStyle(fontSize: 14, color: AppColors.inkBlack)),
                     const SizedBox(height: 2),
                     Text(
                       config.isConfigured ? '已配置 · ${config.model}' : '未配置 · 点击设置',
-                      style: TextStyle(fontSize: 12, color: config.isConfigured ? AppColors.mint : const Color(0xFF999999))),
+                      style: TextStyle(fontSize: 12, color: config.isConfigured ? AppColors.mint : const Color(0xFF999999)),
+                    ),
                   ],
                 ),
               ),
@@ -530,7 +572,7 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
           Row(
             children: [
               const Expanded(
-                child: Text('大模型 API', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+                child: Text('LLM 模型配置', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
               ),
               GestureDetector(
                 onTap: () async {
@@ -543,15 +585,68 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
               ),
             ],
           ),
+          const SizedBox(height: 4),
+          const Text('兼容 OpenAI 协议，支持多家供应商切换', style: TextStyle(fontSize: 11, color: Color(0xFF999999))),
           const SizedBox(height: 12),
-          _buildField('Base URL', _baseUrlCtrl, hint: ConfigRepository.defaultBaseUrl,
-            onChanged: (v) => ref.read(apiConfigProvider.notifier).setBaseUrl(v)),
+          // ── 供应商 ──
+          _buildLabel('供应商'),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<int>(
+            initialValue: _selectedProviderIdx < 0 ? null : _selectedProviderIdx,
+            hint: const Text('请选择供应商', style: TextStyle(fontSize: 13, color: Color(0xFFBBBBBB))),
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFFE2E2EA)),
+              ),
+            ),
+            items: List.generate(_providers.length, (i) {
+              return DropdownMenuItem(value: i, child: Text(_providers[i].$1, style: const TextStyle(fontSize: 14)));
+            }),
+            onChanged: (i) {
+              if (i == null) return;
+              _onProviderSelected(i);
+            },
+          ),
+          const SizedBox(height: 10),
+          // ── API 密钥 ──
+          _buildField(
+            'API 密钥',
+            _apiKeyCtrl,
+            hint: 'sk-...',
+            obscure: _obscureApiKey,
+            onChanged: (v) => ref.read(apiConfigProvider.notifier).setApiKey(v),
+            suffix: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _SuffixIcon(
+                  icon: _obscureApiKey ? Icons.visibility_off : Icons.visibility,
+                  onTap: () => setState(() => _obscureApiKey = !_obscureApiKey),
+                ),
+                const SizedBox(width: 2),
+                _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_apiKeyCtrl)),
+              ],
+            ),
+          ),
           const SizedBox(height: 8),
-          _buildField('API Key', _apiKeyCtrl, obscure: true, hint: 'sk-...',
-            onChanged: (v) => ref.read(apiConfigProvider.notifier).setApiKey(v)),
+          // ── 接口地址 ──
+          _buildField(
+            '接口地址',
+            _baseUrlCtrl,
+            hint: ConfigRepository.defaultBaseUrl,
+            onChanged: (v) => ref.read(apiConfigProvider.notifier).setBaseUrl(v),
+            suffix: _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_baseUrlCtrl)),
+          ),
           const SizedBox(height: 8),
-          _buildField('Model', _modelCtrl, hint: ConfigRepository.defaultModel,
-            onChanged: (v) => ref.read(apiConfigProvider.notifier).setModel(v)),
+          // ── 模型 ──
+          _buildField(
+            '模型',
+            _modelCtrl,
+            hint: ConfigRepository.defaultModel,
+            onChanged: (v) => ref.read(apiConfigProvider.notifier).setModel(v),
+            suffix: _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_modelCtrl)),
+          ),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -571,7 +666,11 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController ctrl, {bool obscure = false, String hint = '', ValueChanged<String>? onChanged}) {
+  Widget _buildLabel(String label) {
+    return Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF999999)));
+  }
+
+  Widget _buildField(String label, TextEditingController ctrl, {bool obscure = false, String hint = '', ValueChanged<String>? onChanged, Widget? suffix}) {
     return TextField(
       controller: ctrl,
       obscureText: obscure,
@@ -582,8 +681,30 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E2EA))),
+        suffixIcon: suffix,
+        suffixIconConstraints: const BoxConstraints(maxHeight: 36),
       ),
       style: const TextStyle(fontSize: 13, fontFamily: 'JetBrains Mono'),
+    );
+  }
+}
+
+class _SuffixIcon extends StatelessWidget {
+  final IconData? icon;
+  final String? asset;
+  final VoidCallback onTap;
+  const _SuffixIcon({this.icon, this.asset, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: asset != null
+            ? Image.asset(asset!, width: 18, height: 18, color: const Color(0xFF999999))
+            : Icon(icon, size: 18, color: const Color(0xFF999999)),
+      ),
     );
   }
 }

@@ -1,15 +1,38 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-12（Session 39 — UI 细节打磨 + 按压反馈）
+> 最后更新：2026-05-12（Session 41 — WordChat 交互打磨 + 拍照直传聊天）
 
 ## 一、现在到哪了
 
-**阶段：图标按压反馈 + WordChat 设置抽屉 + 细节打磨。待真机验证。**
+**阶段：AI 配置完成 + WordChat 交互打磨。待真机验证。**
+
+### 本轮改动（Session 41）
+1. **已收录单词隐藏按钮**：`WordRepository` 双端加 `existsByText`，WordChat 本地查词结果用 `FutureBuilder<bool>` 判断，已收录则不显示"收录到单词本"
+2. **每日一词居中**：单词+聊天图标用 `Center`+`mainAxisSize.min` 居中，单词在前图标在后
+3. **WordChat 提示文本**：工具栏下方根据模式显示灰色小字 — 本地→"基于ECDICT+Tatoeba离线数据"，AI→"内容由AI生成 仅供参考"
+4. **空状态图标**：本地查词搜索图标/AI 机器人图标，灰色→`signalBlue`，48→64px，文字 14→15px/`#999`→`#666`
+5. **QuickChip 垂直居中**：`_QuickChip` Container 加 `height:28`+`alignment:center`，文字在胶囊内上下居中
+6. **输入栏抬高**：底部 padding `8`→`14`（远离导航键）
+7. **输入框去线框**：`OutlineInputBorder`+`BorderSide` → `BorderSide.none`+`filled:true`+`#F0F0F5` 浅灰底
+8. **相机按钮**：输入栏左侧加相机按钮→拍照→涂抹OCR→单词确认→自动丢回聊天查词（`source=chat` 参数跳过结果页/保存页）
+9. **APK**：`build/dist/WordSnap-v1.0.0-debug-20260512.apk`
+
+### 本轮涉及文件
+```
+lib/features/chat/word_chat_page.dart              — 图标/文字/胶囊/输入栏/相机按钮
+lib/features/capture/photo_capture_page.dart       — source=chat 简化确认页 + pop(word)
+lib/core/router/app_router.dart                    — source 参数传递
+lib/features/learn/learn_page.dart                 — 每日一词居中
+lib/data/repositories/word_repository.dart          — existsByText (SQLite)
+lib/data/repositories/word_repository_web.dart      — existsByText (Web)
+test/services/review_service_test.dart              — FakeWordRepository.existsByText
+```
 
 ### 待处理
-- 真机验证：Pill 图标 outline/filled 切换 / 设置图标按压蓝 / WordChat 全流程
-- 开源仓库（WordSnap-github/）关联远程并 push
-- `scripts/`、`images/`（设计素材）工作树未提交文件
+- **问题1**：WordChat 本地查词释义与每日一词/单词详情不一致（ECDICT `definition`=英文, `translation`=中文，需真机验证）
+- 真机验证全流程
+- git commit
+- `scripts/`、`images/` 设计素材整理
 
 ---
 

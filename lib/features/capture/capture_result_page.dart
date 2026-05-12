@@ -137,9 +137,9 @@ class _CaptureResultPageState extends ConsumerState<CaptureResultPage> {
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
-              onPressed: () => context.push('/chat?word=${Uri.encodeComponent(state.result!.word)}'),
+              onPressed: () => context.push('/chat?word=${Uri.encodeComponent(state.result!.word)}&mode=ai'),
               icon: const Icon(Icons.chat_bubble_outline, size: 16),
-              label: const Text('AI 聊这个词', style: TextStyle(fontSize: 13)),
+              label: const Text('和AI聊这个词', style: TextStyle(fontSize: 13)),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFFE2E2EA)),
                 foregroundColor: AppColors.signalBlue,
