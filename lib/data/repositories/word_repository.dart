@@ -53,6 +53,16 @@ class WordRepository {
     await db.update('words', word.toMap(), where: 'id = ?', whereArgs: [word.id]);
   }
 
+  Future<int> insertBatch(List<Word> words) async {
+    final db = await _db;
+    final batch = db.batch();
+    for (final word in words) {
+      batch.insert('words', word.toMap());
+    }
+    final results = await batch.commit(noResult: false);
+    return results.where((r) => r != null).length;
+  }
+
   Future<void> delete(int id) async {
     final db = await _db;
     await db.delete('words', where: 'id = ?', whereArgs: [id]);

@@ -116,34 +116,33 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.file(File(state.imagePath!), key: _imageKey, fit: BoxFit.contain),
-                  if (showLookupSpinner)
-                    Container(color: const Color(0x80FFFFFF), child: const Center(child: CircularProgressIndicator(color: AppColors.signalBlue)))
-                  else
-                    GestureDetector(
-                      onPanStart: (d) {
-                        setState(() {
-                          _currentStroke = [d.localPosition];
-                          _strokes.add(_currentStroke!);
-                        });
-                      },
-                      onPanUpdate: (d) {
-                        setState(() => _currentStroke?.add(d.localPosition));
-                      },
-                      onPanEnd: (_) => setState(() => _currentStroke = null),
+            child: GestureDetector(
+              onPanStart: (d) {
+                setState(() {
+                  _currentStroke = [d.localPosition];
+                  _strokes.add(_currentStroke!);
+                });
+              },
+              onPanUpdate: (d) {
+                setState(() => _currentStroke?.add(d.localPosition));
+              },
+              onPanEnd: (_) => setState(() => _currentStroke = null),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.file(File(state.imagePath!), key: _imageKey, fit: BoxFit.contain),
+                    if (showLookupSpinner)
+                      Container(color: const Color(0x80FFFFFF), child: const Center(child: CircularProgressIndicator(color: AppColors.signalBlue))),
+                    RepaintBoundary(
+                      child: CustomPaint(
+                        painter: _HighlighterPainter(strokes: _strokes),
+                        size: Size.infinite,
+                      ),
                     ),
-                  RepaintBoundary(
-                    child: CustomPaint(
-                      painter: _HighlighterPainter(strokes: _strokes),
-                      size: Size.infinite,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -351,7 +350,7 @@ class _HighlighterPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _HighlighterPainter old) => old.strokes != strokes;
+  bool shouldRepaint(covariant _HighlighterPainter old) => true;
 }
 
 class _ResultCard extends StatelessWidget {

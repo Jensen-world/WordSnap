@@ -1,15 +1,79 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-11（Session 38：UI 打磨 — 底部渐变背景 + 卡片阴影 + Pill 全宽）
+> 最后更新：2026-05-12（Session 39 — Bug 修复 + 文件导入单词本）
 
 ## 一、现在到哪了
 
-**阶段：底部渐变过渡、卡片阴影代替边框、Pill 全宽等 UI 打磨完成。待真机验证。**
+**阶段：昨天功能完成的 Bug 修复。待真机验证。**
 
 ### 待处理
 - 真机验证：整体视觉效果 / 拍照涂抹选词 / WordChat / 例句
 - 开源仓库（WordSnap-github/）关联远程并 push
 - `scripts/`、`images/`（设计素材）工作树未提交文件
+
+---
+
+## Session 39 — 5 项 Bug 修复（2026-05-12）
+
+### 1. WordChat 入口红屏修复 + UI 调整
+
+**问题：** 每日一词卡片和单词详情页 Chat 入口显示红屏；底部 Pill 入口标题显示 "AI 单词助手"；本地/AI 模式切换在页面顶部占用空间；退出后再进入状态残留。
+
+**修复：**
+- 标题：`AI 单词助手` → `WordChat`；有单词时 `与 $word 聊`
+- 模式切换：从页面顶部 tab 改为 AppBar 右侧图标按钮（`menu_book_outlined` / `auto_awesome`）
+- 状态重置：从 Pill 进入（无 initialWord）时调用 `WordChatNotifier.reset()`
+- 移除未使用的 `Notebook` import
+
+### 2. 拍照涂抹选词修复
+
+**问题：** 涂抹手势不响应，无法在照片上涂抹选中单词。
+
+**根因：** `GestureDetector` 在 Stack 中无 child，`deferToChild` 行为不会接收事件。
+
+**修复：** `GestureDetector` 包裹 `Positioned.fill` + `behavior: HitTestBehavior.opaque`
+
+### 3. 底部渐变背景不生效
+
+**问题：** 底部渐变完全看不见，背景仍是纯白。
+
+**根因：** 原渐变颜色 `#E8ECFC`（极浅淡紫）与背景 `#F9F9FB`（画布白）几乎同色。
+
+**修复：**
+- 渐变颜色改为品牌蓝 30% 透明度 → 全透明
+- 覆盖高度 30% → 42% 屏幕高度
+- 颜色使用 `Color(0x4D2F5CFF)` → `Color(0x002F5CFF)`
+
+### 4. 底部 Pill 变细
+
+**修复：** 外容器 padding top 8→6, bottom 24→18; 内容器 vertical 14→10
+
+### 5. 文件导入生成单词本（新增功能）
+
+**需求：** Pill 加文件上传入口，上传单词表文件自动生成单词本。
+
+**实现：**
+- `WordRepository.insertBatch()`：批量插入，使用 batch 事务
+- `ImportWordlistSheet`：选择文件 → 解析预览 → 命名单词本 → 批量入库 → 完成
+  - 支持纯文本（每行一个单词）和两列 CSV（word,definition）
+  - 底部弹窗，与 CaptureSheet 一致
+- `BottomPill`：新增 `upload_file` 图标按钮（第4个）
+
+### 拍照涂抹选词修复（第二轮）
+
+**问题：** 第一轮修复（Positioned.fill + HitTestBehavior.opaque）未生效。
+
+**根因推测：** GestureDetector 在 Stack 内部与 Image/CustomPaint 层叠，Android hit testing 行为不可预期。
+
+**修复：** GestureDetector 移到 ClipRRect 外层包裹，Stack 内只保留 Image + CustomPaint。
+
+### 涉及文件
+```
+lib/data/repositories/word_repository.dart         — insertBatch()
+lib/features/wordbook/import_wordlist_sheet.dart    — 新建
+lib/widgets/bottom_pill.dart                       — 上传按钮 + 拍照涂抹修复2
+lib/features/capture/photo_capture_page.dart       — 拍照涂抹修复2（GestureDetector 外移）
+```
 
 ---
 
@@ -35,6 +99,10 @@ lib/widgets/navigation_shell.dart           — 底部渐变 Stack 叠加
 lib/widgets/bottom_pill.dart               — 全宽 padding
 lib/features/learn/learn_page.dart          — 4 处卡片 border → boxShadow
 ```
+
+#### 4. APK 构建
+- Debug APK 构建成功：`build/app/outputs/flutter-apk/app-debug.apk` (208MB)
+- 包含 Session 36-38 全部改动（WordChat + 涂抹选词 + UI 打磨）
 
 ---
 

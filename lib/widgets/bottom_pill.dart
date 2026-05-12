@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/capture/capture_sheet.dart';
 import '../features/settings/api_config_provider.dart';
+import '../features/wordbook/import_wordlist_sheet.dart';
 
 class BottomPill extends ConsumerWidget {
   const BottomPill({super.key});
@@ -21,9 +22,9 @@ class BottomPill extends ConsumerWidget {
             color: Color(0x05FFFFFF),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          padding: EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 24 + bottom),
+          padding: EdgeInsets.only(left: 20, right: 20, top: 6, bottom: 18 + bottom),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: const Color(0xCC2F5CFF),
               borderRadius: BorderRadius.circular(100),
@@ -49,6 +50,22 @@ class BottomPill extends ConsumerWidget {
                         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                       ),
                       builder: (_) => const ProviderScope(child: CaptureSheet()),
+                    );
+                  },
+                ),
+                _IconPillButton(
+                  outlinedIcon: Icons.upload_file_outlined,
+                  filledIcon: Icons.upload_file,
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      useRootNavigator: true,
+                      backgroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      builder: (_) => const ProviderScope(child: ImportWordlistSheet()),
                     );
                   },
                 ),
