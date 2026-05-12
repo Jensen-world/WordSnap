@@ -19,6 +19,9 @@ class _LearnPageState extends ConsumerState<LearnPage> {
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(learnStateProvider.notifier).load());
+    ref.listen(dataRefreshTrigger, (_, __) {
+      ref.read(learnStateProvider.notifier).load();
+    });
   }
 
   void _showSettings() {
@@ -36,9 +39,6 @@ class _LearnPageState extends ConsumerState<LearnPage> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(dataRefreshTrigger, (prev, next) {
-      if (prev != null) ref.read(learnStateProvider.notifier).load();
-    });
     final state = ref.watch(learnStateProvider);
 
     if (state.loading) {
@@ -139,9 +139,18 @@ class _NotebookCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '正在学习的单词本',
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF999999), letterSpacing: 0.6),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '正在学习的单词本',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF999999), letterSpacing: 0.6),
+              ),
+              Text(
+                'Active Notebook',
+                style: TextStyle(fontSize: 10, color: Color(0xFFBBBBBB)),
+              ),
+            ],
           ),
           const SizedBox(height: 14),
           Row(
@@ -241,8 +250,13 @@ class _StudyPlanCard extends StatelessWidget {
     required this.onStart,
   });
 
+  static const _months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final dateStr = '${_months[now.month]} ${now.day}';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -254,9 +268,18 @@ class _StudyPlanCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            '今日学习计划',
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF999999), letterSpacing: 0.6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '今日学习计划',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF999999), letterSpacing: 0.6),
+              ),
+              Text(
+                "Today's Plan · $dateStr",
+                style: const TextStyle(fontSize: 10, color: Color(0xFFBBBBBB)),
+              ),
+            ],
           ),
           const SizedBox(height: 14),
           Row(
