@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../core/theme/colors.dart';
 import '../features/capture/share_receipt_sheet.dart';
 import 'capsule_tab_bar.dart';
 import 'bottom_pill.dart';
@@ -95,10 +96,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
             height: 44,
           ),
           actions: [
-            IconButton(
-              icon: Image.asset('assets/icons/settings.png', width: 20, height: 20, color: const Color(0xFFBBBBBB)),
-              onPressed: () => context.push('/settings'),
-            ),
+            _SettingsIconButton(onTap: () => context.push('/settings')),
           ],
         ),
         body: Stack(
@@ -136,6 +134,40 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           ],
         ),
         bottomNavigationBar: const BottomPill(),
+      ),
+    );
+  }
+}
+
+class _SettingsIconButton extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const _SettingsIconButton({required this.onTap});
+
+  @override
+  State<_SettingsIconButton> createState() => _SettingsIconButtonState();
+}
+
+class _SettingsIconButtonState extends State<_SettingsIconButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Image.asset(
+          'assets/icons/settings.png',
+          width: 24,
+          height: 24,
+          color: _pressed ? AppColors.signalBlue : const Color(0xFFBBBBBB),
+        ),
       ),
     );
   }

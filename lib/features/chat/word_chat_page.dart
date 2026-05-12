@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/word.dart';
+import '../../data/services/llm_dictionary_service.dart';
+import '../../data/repositories/config_repository.dart';
 import '../settings/api_config_provider.dart';
 import '../wordbook/wordbook_provider.dart';
 import '../learn/learn_provider.dart';
@@ -24,6 +26,12 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   final _scrollCtrl = ScrollController();
   final _focusNode = FocusNode();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  String? _drawerType;
+
+  final _apiKeyCtrl = TextEditingController();
+  final _baseUrlCtrl = TextEditingController();
+  final _modelCtrl = TextEditingController();
+  bool _testing = false;
 
   bool get _aiAvailable {
     final config = ref.read(apiConfigProvider);
@@ -47,7 +55,15 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     _inputCtrl.dispose();
     _scrollCtrl.dispose();
     _focusNode.dispose();
+    _apiKeyCtrl.dispose();
+    _baseUrlCtrl.dispose();
+    _modelCtrl.dispose();
     super.dispose();
+  }
+
+  void _openDrawer(String type) {
+    setState(() => _drawerType = type);
+    _scaffoldKey.currentState?.openEndDrawer();
   }
 
   void _submit() {
@@ -127,14 +143,21 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.canvasWhite,
-      endDrawer: _buildHistoryDrawer(state),
+      endDrawer: _drawerType == 'settings' ? _buildSettingsDrawer() : _buildHistoryDrawer(state),
+      onEndDrawerChanged: (open) {
+        if (!open) setState(() => _drawerType = null);
+      },
       appBar: AppBar(
         backgroundColor: Colors.white,
+        centerTitle: true,
         title: Text(state.anchoredWord != null ? '与 ${state.anchoredWord} 聊' : 'WordChat'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          _AppBarSettingsButton(onTap: () => _openDrawer('settings')),
+        ],
       ),
       body: Column(
         children: [
@@ -151,6 +174,8 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   }
 
   Widget _buildToolbar(WordChatState state) {
+    final sessionEmpty = state.messages.isEmpty;
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -173,17 +198,128 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
             icon: LucideIcons.history,
             label: '聊天记录',
             active: false,
-            onTap: () => _scaffoldKey.currentState?.openEndDrawer(),
+            onTap: () => _openDrawer('history'),
           ),
           _ToolButton(
             icon: LucideIcons.messageSquarePlus,
             label: '新对话',
             active: false,
-            onTap: () => ref.read(wordChatProvider.notifier).newSession(),
+            disabled: sessionEmpty,
+            onTap: sessionEmpty ? null : () => ref.read(wordChatProvider.notifier).newSession(),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildSettingsDrawer() {
+    final config = ref.watch(apiConfigProvider);
+
+    if (_baseUrlCtrl.text.isEmpty && !config.loading) {
+      _baseUrlCtrl.text = config.baseUrl;
+      _apiKeyCtrl.text = config.apiKey;
+      _modelCtrl.text = config.model;
+    }
+
+    return Drawer(
+      width: MediaQuery.of(context).size.width * 0.82,
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 12, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('AI 配置', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20, color: Color(0xFF999999)),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  _buildField('API Key', _apiKeyCtrl, hint: 'sk-...'),
+                  const SizedBox(height: 14),
+                  _buildField('Base URL', _baseUrlCtrl, hint: ConfigRepository.defaultBaseUrl),
+                  const SizedBox(height: 14),
+                  _buildField('Model', _modelCtrl, hint: ConfigRepository.defaultModel),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    onPressed: _testing ? null : _testConnection,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.signalBlue,
+                      minimumSize: const Size(double.infinity, 44),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    ),
+                    child: _testing
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('测试连接', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildField(String label, TextEditingController ctrl, {String? hint}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF999999))),
+        const SizedBox(height: 6),
+        TextField(
+          controller: ctrl,
+          style: const TextStyle(fontSize: 14),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE2E2EA)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _testConnection() async {
+    final apiKey = _apiKeyCtrl.text.trim();
+    if (apiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请先填写 API Key')),
+      );
+      return;
+    }
+
+    setState(() => _testing = true);
+
+    final llm = LlmDictionaryService();
+    final baseUrl = _baseUrlCtrl.text.trim();
+    final model = _modelCtrl.text.trim();
+    final error = await llm.testConnection(
+      baseUrl: baseUrl.isNotEmpty ? baseUrl : ConfigRepository.defaultBaseUrl,
+      apiKey: apiKey,
+      model: model.isNotEmpty ? model : ConfigRepository.defaultModel,
+    );
+
+    if (mounted) {
+      setState(() => _testing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error == null ? '连接成功' : '连接失败: $error')),
+      );
+    }
   }
 
   Widget _buildHistoryDrawer(WordChatState state) {
@@ -410,46 +546,99 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   }
 }
 
-class _ToolButton extends StatelessWidget {
+class _AppBarSettingsButton extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const _AppBarSettingsButton({required this.onTap});
+
+  @override
+  State<_AppBarSettingsButton> createState() => _AppBarSettingsButtonState();
+}
+
+class _AppBarSettingsButtonState extends State<_AppBarSettingsButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Icon(
+          Icons.menu,
+          size: 22,
+          color: _pressed ? AppColors.signalBlue : const Color(0xFFBBBBBB),
+        ),
+      ),
+    );
+  }
+}
+
+class _ToolButton extends StatefulWidget {
   final IconData icon;
   final String label;
   final bool active;
-  final VoidCallback onTap;
+  final bool disabled;
+  final VoidCallback? onTap;
 
   const _ToolButton({
     required this.icon,
     required this.label,
     required this.active,
+    this.disabled = false,
     required this.onTap,
   });
 
   @override
+  State<_ToolButton> createState() => _ToolButtonState();
+}
+
+class _ToolButtonState extends State<_ToolButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
+    final disabled = widget.disabled;
+    final pressed = !disabled && _pressed;
+
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: active ? AppColors.signalBlue : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: active ? Colors.white : const Color(0xFF999999),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: active ? Colors.white : const Color(0xFF999999),
+      onTapDown: disabled ? null : (_) => setState(() => _pressed = true),
+      onTapUp: disabled ? null : (_) {
+        setState(() => _pressed = false);
+        widget.onTap?.call();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: Opacity(
+        opacity: disabled ? 0.3 : 1.0,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: pressed || widget.active ? AppColors.signalBlue : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                widget.icon,
+                size: 20,
+                color: (pressed || widget.active) ? Colors.white : const Color(0xFF999999),
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                widget.label,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: (pressed || widget.active) ? Colors.white : const Color(0xFF999999),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

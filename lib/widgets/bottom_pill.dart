@@ -123,7 +123,6 @@ class _IconPillButtonState extends State<_IconPillButton> {
                 _pressed ? widget.filledAsset! : widget.outlinedAsset!,
                 width: 24,
                 height: 24,
-                color: Colors.white,
               )
             : Icon(
                 _pressed ? widget.filledIcon : widget.outlinedIcon,

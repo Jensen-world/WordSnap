@@ -1,16 +1,36 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-12（Session 39 — 图标替换 + WordChat 多会话改造）
+> 最后更新：2026-05-12（Session 39 — UI 细节打磨 + 按压反馈）
 
 ## 一、现在到哪了
 
-**阶段：图标替换 + WordChat 多会话改造。待真机验证。**
+**阶段：图标按压反馈 + WordChat 设置抽屉 + 细节打磨。待真机验证。**
 
 ### 待处理
-- 真机验证：WordChat 4按钮工具栏 + 多会话 + 历史抽屉
-- 真机验证：自定义图标（设置/编辑/上传）
+- 真机验证：Pill 图标 outline/filled 切换 / 设置图标按压蓝 / WordChat 全流程
 - 开源仓库（WordSnap-github/）关联远程并 push
 - `scripts/`、`images/`（设计素材）工作树未提交文件
+
+---
+
+## Session 39 part 3 — UI 细节打磨 + 按压反馈（2026-05-12）
+
+### 改动
+
+1. **Pill 图标**：去掉 `color: Colors.white` 着色，PNG 原生颜色显示，outline↔filled 按压切换可见
+2. **导航栏设置图标**：20→24px，新增按压态（品牌蓝↔灰），`_SettingsIconButton` StatefulWidget
+3. **WordChat 标题**：`centerTitle: true`
+4. **AppBar ☰**：从聊天记录改为打开设置抽屉（AI Key / Base URL / Model / 测试连接）
+5. **工具栏 4 按钮**：全部`_ToolButton` 改为 StatefulWidget，按压态品牌蓝高亮
+6. **"新对话"按钮**：当前会话无消息时禁用（Opacity 0.3，不响应点击）
+7. **双抽屉架构**：`_drawerType` 切换 settings / history，一个 Scaffold.endDrawer 两种内容
+
+### 涉及文件
+```
+lib/widgets/bottom_pill.dart                       — 去掉 color: Colors.white
+lib/widgets/navigation_shell.dart                  — 设置图标 24px + 按压态 + AppColors import
+lib/features/chat/word_chat_page.dart              — centerTitle / settings drawer / press feedback / 新对话禁用
+```
 
 ---
 
