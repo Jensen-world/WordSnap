@@ -133,9 +133,12 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
     ref.read(dataRefreshTrigger.notifier).state++;
     ref.read(learnStateProvider.notifier).load();
 
+    // Fetch words from DB to get their IDs for enrichment
+    final wordsWithIds = await wordRepo.getByNotebook(notebookId);
+
     if (mounted) {
       Navigator.of(context).pop();
-      _enrichWords(words, dictService, wordRepo);
+      _enrichWords(wordsWithIds, dictService, wordRepo);
     }
   }
 

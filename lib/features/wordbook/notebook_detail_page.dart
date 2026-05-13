@@ -26,6 +26,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
   void initState() {
     super.initState();
     _loadWords();
+    ref.listen(dataRefreshTrigger, (_, __) => _loadWords());
   }
 
   Future<void> _loadWords() async {
