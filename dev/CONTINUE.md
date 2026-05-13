@@ -1,6 +1,62 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-12（Session 41 — WordChat 交互打磨 + 拍照直传聊天）
+> 最后更新：2026-05-13（Session 42 — 4 项 Bug 修复：词典富化 + 红屏崩溃）
+
+## Session 42 — 词典富化修复 + 三个红屏崩溃修复（2026-05-13）
+
+### 1. AI 聊天长按收录回调未连接
+
+**问题：** `_ChatBubble` 的 `onLongPress` 参数未传递，长按气泡无法收录单词。
+
+**修复：** `word_chat_page.dart` 中 `_ChatBubble(...)` 增加 `onLongPress: () => _onAiBubbleLongPress(msg)`，并移除未使用的 `dictionary_result.dart` import。
+
+### 2. 文件导入词典富化修复（两轮）
+
+**问题：** 文件导入单词后音标/词性/释义/例句全部缺失。
+
+**根因：** `insertBatch`（sqflite batch insert）不返回 ID 到原 Word 对象 → `_enrichWords` 中 `update(updated)` 时 `word.id` 为 null → `toMap()` 省略 id → SQL `WHERE id=NULL` 匹配不到任何行 → 所有更新静默失败。
+
+**修复（第一轮）：** `_enrichWords` 改为先通过 `getByNotebook()` 从数据库取回带 ID 的单词再富化。
+
+**修复（第二轮）：** 将富化逻辑内联到 `_confirm()` 中，在 `Navigator.pop()` 之前同步完成。原 fire-and-forget 方式在 widget dispose 后 `ref` 可能失效。
+
+涉及文件：`lib/features/wordbook/import_wordlist_sheet.dart`
+
+### 3. 三个红屏崩溃修复
+
+**崩溃 1：点击输入按钮**
+- **根因：** `capture_sheet.dart` 中 `Navigator.of(context).pop()` 后立即 `context.push()`，context 可能已失效。
+- **修复：** 在 pop 前捕获 `GoRouter.of(context)`，pop 后再调用 `router.push()`。
+
+**崩溃 2：导入时删除单词（尤其是首词或重复词）**
+- **根因：** `Dismissible` key 使用 `ValueKey('${e.word}_$i')`，删除后索引偏移导致 key 冲突，Flutter 元素协调失败。
+- **修复：** `_ParsedEntry` 新增稳定唯一 `_id`（静态计数器），key 改为 `ValueKey(e._id)`。
+
+**崩溃 3：拍照保存或确认时空值断言**
+- **根因：** `photo_capture_page.dart` 中 `state.lookupResult!` 空断言无 guard；`_save()` 失败后 step 停在 `PhotoStep.saving`，spinner 永久卡死。
+- **修复：** 添加 null guard 提前 return；`_save()` catch 中调用 `backToWords()` 重置状态。
+
+涉及文件：
+```
+lib/features/capture/capture_sheet.dart        — 崩溃1：捕获 router 再 pop
+lib/features/wordbook/import_wordlist_sheet.dart — 崩溃2：稳定 _id + ValueKey
+lib/features/capture/photo_capture_page.dart    — 崩溃3：null guard + backToWords
+```
+
+### 本轮涉及文件
+```
+lib/features/chat/word_chat_page.dart              — onLongPress 接线 + 清理死代码
+lib/features/wordbook/import_wordlist_sheet.dart     — 词典富化重写 + key 稳定性
+lib/features/capture/capture_sheet.dart             — router 捕获防崩溃
+lib/features/capture/photo_capture_page.dart         — null guard + 保存失败恢复
+lib/features/wordbook/notebook_detail_page.dart      — dataRefreshTrigger 监听
+```
+
+### 待处理
+- 真机验证所有修复
+- `scripts/`、`images/` 设计素材整理
+
+---
 
 ## 一、现在到哪了
 
