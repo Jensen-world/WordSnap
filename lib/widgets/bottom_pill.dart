@@ -116,21 +116,24 @@ class _IconPillButtonState extends State<_IconPillButton> {
         widget.onTap();
       },
       onTapCancel: () => setState(() => _pressed = false),
-      child: SizedBox(
-        width: 40,
-        height: 40,
-        child: useAsset
-            ? Image.asset(
-                _pressed ? widget.filledAsset! : widget.outlinedAsset!,
-                width: 24,
-                height: 24,
-                color: Colors.white,
-              )
-            : Icon(
-                _pressed ? widget.filledIcon : widget.outlinedIcon,
-                size: 24,
-                color: Colors.white,
-              ),
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: useAsset
+              ? Image.asset(
+                  _pressed ? widget.filledAsset! : widget.outlinedAsset!,
+                  width: 20,
+                  height: 20,
+                  color: Colors.white,
+                )
+              : Icon(
+                  _pressed ? widget.filledIcon : widget.outlinedIcon,
+                  size: 24,
+                  color: Colors.white,
+                ),
+        ),
       ),
     );
   }

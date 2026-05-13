@@ -129,52 +129,14 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
       ));
     }
 
-    final count = await wordRepo.insertBatch(words);
+    await wordRepo.insertBatch(words);
     ref.read(dataRefreshTrigger.notifier).state++;
     ref.read(learnStateProvider.notifier).load();
 
     if (mounted) {
       Navigator.of(context).pop();
-      _showImportDoneDialog(count);
       _enrichWords(words, dictService, wordRepo);
     }
-  }
-
-  void _showImportDoneDialog(int count) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 64, height: 64,
-              decoration: const BoxDecoration(color: AppColors.mint, shape: BoxShape.circle),
-              child: const Icon(Icons.check, color: Colors.white, size: 36),
-            ),
-            const SizedBox(height: 20),
-            const Text('导入完成', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
-            const SizedBox(height: 8),
-            Text('已导入 $count 个单词', style: const TextStyle(fontSize: 14, color: Color(0xFF999999))),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.signalBlue,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                ),
-                child: const Text('完成'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> _enrichWords(List<Word> words, DictionaryService dictService, WordRepository wordRepo) async {

@@ -31,6 +31,7 @@ class NotebookStats {
 class NotebooksNotifier extends AsyncNotifier<List<Notebook>> {
   @override
   Future<List<Notebook>> build() async {
+    ref.watch(dataRefreshTrigger);
     final repo = ref.read(notebookRepoProvider);
     return repo.getAll();
   }

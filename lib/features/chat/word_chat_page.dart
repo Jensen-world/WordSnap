@@ -6,7 +6,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/word.dart';
 import '../../data/models/word_context.dart';
-import '../../data/services/dictionary_result.dart';
 import '../../data/services/llm_dictionary_service.dart';
 import '../../data/repositories/config_repository.dart';
 import '../settings/api_config_provider.dart';
@@ -108,18 +107,9 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     ref.read(wordChatProvider.notifier).setMode(mode);
   }
 
-  Future<void> _saveWord({String? wordText}) async {
-    final state = ref.read(wordChatProvider);
-    final result = state.localResult;
-    final targetWord = wordText ?? state.anchoredWord;
-
-    // If no direct result, do a lookup for the word
-    DictionaryResult? lookupResult = result;
-    if (lookupResult == null && targetWord != null && targetWord.isNotEmpty) {
-      final service = ref.read(dictionaryServiceProvider);
-      lookupResult = await service.lookup(targetWord);
-    }
-    if (lookupResult == null) return;
+  Future<void> _saveWord() async {
+    final result = ref.read(wordChatProvider).localResult;
+    if (result == null) return;
 
     final capture = ref.read(captureStateProvider);
     if (capture.notebooks.isEmpty) {
@@ -132,31 +122,29 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     final notebookId = notebooks.first.id!;
     final notebookName = notebooks.first.name;
 
-    // Check duplicate in same notebook
-    final exists = await ref.read(wordRepoProvider).existsByTextInNotebook(lookupResult.word, notebookId);
+    final exists = await ref.read(wordRepoProvider).existsByTextInNotebook(result.word, notebookId);
     if (exists) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('「${lookupResult.word}」已在本单词本中')),
+          SnackBar(content: Text('「${result.word}」已在本单词本中')),
         );
       }
       return;
     }
 
     final now = DateTime.now();
-    final defs = lookupResult.primaryDefinitions;
-    final contextType = state.mode == ChatMode.ai ? ContextType.chat : ContextType.manual;
+    final defs = result.primaryDefinitions;
     final word = Word(
       notebookId: notebookId,
-      text: lookupResult.word,
-      phonetic: lookupResult.phonetic,
-      partOfSpeech: lookupResult.meanings.isNotEmpty ? lookupResult.meanings.first.partOfSpeech : null,
+      text: result.word,
+      phonetic: result.phonetic,
+      partOfSpeech: result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : null,
       definitions: defs,
-      exampleSentence: lookupResult.exampleSentence,
-      exampleTranslation: lookupResult.exampleTranslation,
-      examples: lookupResult.exampleSentence != null ? [lookupResult.exampleSentence!] : [],
-      tags: lookupResult.tag != null ? lookupResult.tag!.split(' ') : [],
-      contexts: [WordContext(type: contextType, source: notebookName, timestamp: now)],
+      exampleSentence: result.exampleSentence,
+      exampleTranslation: result.exampleTranslation,
+      examples: result.exampleSentence != null ? [result.exampleSentence!] : [],
+      tags: result.tag != null ? result.tag!.split(' ') : [],
+      contexts: [WordContext(type: ContextType.manual, source: notebookName, timestamp: now)],
       learnedAt: now,
       createdAt: now,
       updatedAt: now,
@@ -168,7 +156,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       ref.read(learnStateProvider.notifier).load();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('「${lookupResult.word}」已收录')),
+          SnackBar(content: Text('「${result.word}」已收录')),
         );
       }
     } catch (_) {
@@ -178,6 +166,124 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
         );
       }
     }
+  }
+
+  Future<void> _saveWordDirect(String wordText) async {
+    if (wordText.isEmpty) return;
+
+    final capture = ref.read(captureStateProvider);
+    if (capture.notebooks.isEmpty) {
+      await ref.read(captureStateProvider.notifier).loadNotebooks();
+    }
+
+    final notebooks = ref.read(captureStateProvider).notebooks;
+    if (notebooks.isEmpty) return;
+
+    final notebookId = notebooks.first.id!;
+    final notebookName = notebooks.first.name;
+
+    final exists = await ref.read(wordRepoProvider).existsByTextInNotebook(wordText, notebookId);
+    if (exists) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('「$wordText」已在本单词本中')),
+        );
+      }
+      return;
+    }
+
+    final now = DateTime.now();
+    final word = Word(
+      notebookId: notebookId,
+      text: wordText,
+      contexts: [WordContext(type: ContextType.chat, source: notebookName, timestamp: now)],
+      learnedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    try {
+      await ref.read(wordRepoProvider).insert(word);
+      ref.read(dataRefreshTrigger.notifier).state++;
+      ref.read(learnStateProvider.notifier).load();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('「$wordText」已收录')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('保存失败')),
+        );
+      }
+    }
+  }
+
+  void _onAiBubbleLongPress(ChatMessage msg) {
+    final englishRe = RegExp(r'[a-zA-Z]{2,}');
+    final words = englishRe.allMatches(msg.content)
+        .map((m) => m.group(0)!)
+        .toSet()
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final bottomPad = MediaQuery.of(ctx).padding.bottom;
+        return Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomPad),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (words.isNotEmpty) ...[
+                const Text('收录', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF999999))),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: words.map((w) => ChoiceChip(
+                    label: Text(w, style: const TextStyle(fontSize: 14)),
+                    selected: false,
+                    onSelected: (_) {
+                      Navigator.pop(ctx);
+                      _saveWordDirect(w);
+                    },
+                    backgroundColor: const Color(0xFFF0F0F5),
+                    selectedColor: AppColors.signalBlue,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  )).toList(),
+                ),
+                const SizedBox(height: 20),
+              ],
+              ListTile(
+                leading: const Icon(Icons.copy, size: 20, color: Color(0xFF999999)),
+                title: const Text('复制', style: TextStyle(fontSize: 14)),
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: msg.content));
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('已复制')),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, size: 20, color: Color(0xFFFF5252)),
+                title: const Text('删除', style: TextStyle(fontSize: 14, color: Color(0xFFFF5252))),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ref.read(wordChatProvider.notifier).deleteMessage(msg);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -230,23 +336,6 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
                 ? _buildLocalMode(state)
                 : _buildAiMode(state),
           ),
-          if (state.mode == ChatMode.ai && state.anchoredWord != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _saveWord,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('收录到单词本'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.signalBlue,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                  ),
-                ),
-              ),
-            ),
           _buildInputBar(state, bottomPad),
         ],
       ),
@@ -670,6 +759,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
           message: msg,
           isUser: isUser,
           isStreaming: isLast && state.isStreaming && !isUser,
+          onLongPress: () => _onAiBubbleLongPress(msg),
         );
       },
     );
@@ -943,16 +1033,18 @@ class _ChatBubble extends StatelessWidget {
   final ChatMessage message;
   final bool isUser;
   final bool isStreaming;
+  final VoidCallback? onLongPress;
 
   const _ChatBubble({
     required this.message,
     required this.isUser,
     this.isStreaming = false,
+    this.onLongPress,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final bubble = Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -981,7 +1073,6 @@ class _ChatBubble extends StatelessWidget {
                   bottomLeft: Radius.circular(isUser ? 16 : 4),
                   bottomRight: Radius.circular(isUser ? 4 : 16),
                 ),
-                border: null,
               ),
               child: isUser
                   ? Text(
@@ -1010,6 +1101,14 @@ class _ChatBubble extends StatelessWidget {
         ],
       ),
     );
+
+    if (!isUser && onLongPress != null) {
+      return GestureDetector(
+        onLongPress: onLongPress,
+        child: bubble,
+      );
+    }
+    return bubble;
   }
 }
 

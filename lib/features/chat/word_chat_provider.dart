@@ -238,6 +238,18 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
     } catch (_) {}
   }
 
+  Future<void> deleteMessage(ChatMessage msg) async {
+    if (msg.id == null) return;
+    try {
+      final db = await DatabaseHelper.instance.db;
+      await db.delete('word_chat', where: 'id = ?', whereArgs: [msg.id]);
+      state = state.copyWith(
+        messages: state.messages.where((m) => m.id != msg.id).toList(),
+      );
+      _updateSession();
+    } catch (_) {}
+  }
+
   void setAnchoredWord(String word) {
     state = state.copyWith(anchoredWord: word);
     _updateSession();
