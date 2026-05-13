@@ -1,6 +1,51 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-13（Session 42 — 4 项 Bug 修复：词典富化 + 红屏崩溃）
+> 最后更新：2026-05-13（Session 43 — 每日一词切换规则修正 + 单词本红屏修复）
+
+## Session 43 — 每日一词切换规则修正 + 单词本详情红屏修复（2026-05-13）
+
+### 1. 单词本详情页红屏修复
+
+**问题：** 点击单词本进入单词列表显示红屏。
+
+**根因：**
+1. `_loadWords()` 无 try-catch，数据库查询失败或 `Word.fromMap` 解析异常时未捕获
+2. `Word.fromMap` 对四个 JSON 字段（contexts/definitions/examples/tags）直接用 `as String` 强转，若 DB 中意外为 null 则抛 TypeError
+
+**修复：**
+- `_loadWords()` 包裹 try-catch，异常时显示空列表
+- `Word.fromMap` 四个 JSON 字段改为 `as String? ?? '[]'`，null 安全兜底
+
+涉及文件：`lib/features/wordbook/notebook_detail_page.dart`、`lib/data/models/word.dart`
+
+### 2. 每日一词切换规则修正
+
+**问题：** `dailyWord` 在以下场景行为不合理：
+- App 重启 → `dailyWordIndex` 归零，又回到今天第一个词
+- 新增/删除/移动单词 → `load()` 保留旧 index 但词表变了 → 跳到无关词
+- 只是数据管理操作，不应触发每日一词切换
+
+**修复：**
+- `dailyWordIndex` 持久化到 config 表（key: `daily_word_index_YYYY_M_D`），跨天自动失效
+- `load()` 只在三种情况更新 dailyWord：首次加载、跨天（无今日 key）、当前词被删除
+- `nextDailyWord()` 换完后 persist 新 index
+- 新增 `_pickDailyWord()` 封装跨单词本 fallback 逻辑
+- Web repository 补上缺失的 `existsByTextInNotebook`
+
+涉及文件：
+```
+lib/features/learn/learn_provider.dart                  — 核心逻辑重写
+lib/data/repositories/word_repository_web.dart           — 补 existsByTextInNotebook
+```
+
+### APK
+`build/dist/WordSnap-v1.0.0-debug-20260513.apk`
+
+### 待处理
+- 真机验证所有修复
+- `scripts/`、`images/` 设计素材整理
+
+---
 
 ## Session 42 — 词典富化修复 + 三个红屏崩溃修复（2026-05-13）
 
