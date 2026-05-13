@@ -109,10 +109,10 @@ class Word {
   };
 
   factory Word.fromMap(Map<String, dynamic> map) {
-    final contextsJson = jsonDecode(map['contexts'] as String) as List<dynamic>;
-    final definitionsJson = jsonDecode(map['definitions'] as String) as List<dynamic>;
-    final examplesJson = jsonDecode(map['examples'] as String) as List<dynamic>;
-    final tagsJson = jsonDecode(map['tags'] as String) as List<dynamic>;
+    final contextsJson = jsonDecode(map['contexts'] as String? ?? '[]') as List<dynamic>;
+    final definitionsJson = jsonDecode(map['definitions'] as String? ?? '[]') as List<dynamic>;
+    final examplesJson = jsonDecode(map['examples'] as String? ?? '[]') as List<dynamic>;
+    final tagsJson = jsonDecode(map['tags'] as String? ?? '[]') as List<dynamic>;
     return Word(
       id: map['id'] as int,
       notebookId: map['notebookId'] as int,

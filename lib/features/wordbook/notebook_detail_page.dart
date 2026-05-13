@@ -31,21 +31,30 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
 
   Future<void> _loadWords() async {
     setState(() => _loading = true);
-    final repo = ref.read(wordRepoProvider);
-    List<Word> words;
-    switch (_filter) {
-      case WordFilter.all:
-        words = await repo.getByNotebook(widget.id);
-      case WordFilter.newWords:
-        words = await repo.getByNotebookAndStatus(widget.id, isNew: true);
-      case WordFilter.mastered:
-        words = await repo.getByNotebookAndStatus(widget.id, isMastered: true);
-    }
-    if (mounted) {
-      setState(() {
-        _words = words;
-        _loading = false;
-      });
+    try {
+      final repo = ref.read(wordRepoProvider);
+      List<Word> words;
+      switch (_filter) {
+        case WordFilter.all:
+          words = await repo.getByNotebook(widget.id);
+        case WordFilter.newWords:
+          words = await repo.getByNotebookAndStatus(widget.id, isNew: true);
+        case WordFilter.mastered:
+          words = await repo.getByNotebookAndStatus(widget.id, isMastered: true);
+      }
+      if (mounted) {
+        setState(() {
+          _words = words;
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _words = [];
+          _loading = false;
+        });
+      }
     }
   }
 
