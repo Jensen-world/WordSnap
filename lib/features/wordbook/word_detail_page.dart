@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/word.dart';
+import '../../data/models/word_context.dart';
 import 'wordbook_provider.dart';
 
 class WordDetailPage extends ConsumerStatefulWidget {
@@ -15,6 +16,7 @@ class WordDetailPage extends ConsumerStatefulWidget {
 
 class _WordDetailPageState extends ConsumerState<WordDetailPage> {
   Word? _word;
+  String _notebookName = '';
   bool _loading = true;
 
   @override
@@ -26,16 +28,21 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
   Future<void> _loadWord() async {
     try {
       final word = await ref.read(wordRepoProvider).getById(widget.id);
-      if (mounted) {
-        setState(() {
-          _word = word;
-          _loading = false;
-        });
+      if (word != null) {
+        final notebooks = await ref.read(notebookRepoProvider).getAll();
+        final nb = notebooks.where((n) => n.id == word.notebookId).firstOrNull;
+        if (mounted) {
+          setState(() {
+            _word = word;
+            _notebookName = nb?.name ?? '';
+            _loading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _loading = false);
       }
     } catch (_) {
-      if (mounted) {
-        setState(() => _loading = false);
-      }
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -134,6 +141,47 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
       await ref.read(wordRepoProvider).delete(_word!.id!);
       ref.read(dataRefreshTrigger.notifier).state++;
       if (mounted) context.pop();
+    }
+  }
+
+  Widget _buildSourceInfo(Word word) {
+    final ctx = word.contexts.isNotEmpty ? word.contexts.first : null;
+    final (icon, label) = _contextDisplay(ctx);
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: const Color(0xFF999999)),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(fontSize: 13, color: AppColors.inkBlack)),
+        const SizedBox(width: 8),
+        if (ctx != null)
+          Text(
+            '${ctx.timestamp.year}/${ctx.timestamp.month}/${ctx.timestamp.day}',
+            style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+          ),
+        if (_notebookName.isNotEmpty) ...[
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F0F5),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(_notebookName, style: const TextStyle(fontSize: 11, color: Color(0xFF666666))),
+          ),
+        ],
+      ],
+    );
+  }
+
+  (IconData, String) _contextDisplay(WordContext? ctx) {
+    switch (ctx?.type) {
+      case ContextType.photo: return (Icons.camera_alt_outlined, '拍照识别');
+      case ContextType.clipboard: return (Icons.content_copy_outlined, '剪贴板');
+      case ContextType.manual: return (Icons.edit_outlined, '手动输入');
+      case ContextType.chat: return (Icons.chat_bubble_outline, 'WordChat');
+      case ContextType.fileImport: return (Icons.upload_file_outlined, '文件导入');
+      case ContextType.web: return (Icons.language, '网页');
+      default: return (Icons.content_copy_outlined, '未知来源');
     }
   }
 
@@ -316,18 +364,7 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
           const SizedBox(height: 16),
           _Section(
             title: '录入来源',
-            child: Row(
-              children: [
-                const Icon(Icons.content_copy_outlined, size: 16, color: Color(0xFF999999)),
-                const SizedBox(width: 8),
-                const Text('剪贴板', style: TextStyle(fontSize: 13, color: AppColors.inkBlack)),
-                const SizedBox(width: 8),
-                Text(
-                  '${word.createdAt.year}/${word.createdAt.month}/${word.createdAt.day}',
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
-                ),
-              ],
-            ),
+            child: _buildSourceInfo(word),
           ),
           const SizedBox(height: 40),
         ],

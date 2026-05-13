@@ -76,6 +76,17 @@ class WordRepository {
     return count > 0;
   }
 
+  Future<bool> existsByTextInNotebook(String text, int notebookId) async {
+    final db = await _db;
+    final count = Sqflite.firstIntValue(
+      await db.rawQuery(
+        'SELECT COUNT(*) FROM words WHERE LOWER(text) = ? AND notebookId = ?',
+        [text.toLowerCase().trim(), notebookId],
+      ),
+    ) ?? 0;
+    return count > 0;
+  }
+
   Future<int> getCount({int? notebookId, bool? isNew, bool? isMastered}) async {
     final db = await _db;
     final conditions = <String>[];

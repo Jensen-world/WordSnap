@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/notebook.dart';
 import '../../data/models/word.dart';
+import '../../data/models/word_context.dart';
 import '../wordbook/wordbook_provider.dart';
 import '../../data/services/dictionary_result.dart';
 import '../../data/services/dictionary_service.dart';
@@ -87,15 +88,29 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
     state = state.copyWith(selectedNotebookId: id);
   }
 
-  Future<Word> save() async {
+  Future<Word?> save() async {
     final result = state.result;
     if (result == null || state.selectedNotebookId == null) {
       throw StateError('Missing result or notebook');
     }
+    final notebookId = state.selectedNotebookId!;
+    final repo = _ref.read(wordRepoProvider);
+
+    // Check duplicate in same notebook
+    final exists = await repo.existsByTextInNotebook(result.word, notebookId);
+    if (exists) {
+      throw Exception('「${result.word}」已在本单词本中');
+    }
+
+    final notebookName = state.notebooks
+        .where((n) => n.id == notebookId)
+        .firstOrNull
+        ?.name ?? '';
+
     final now = DateTime.now();
     final defs = result.primaryDefinitions;
     final word = Word(
-      notebookId: state.selectedNotebookId!,
+      notebookId: notebookId,
       text: result.word,
       phonetic: result.phonetic,
       partOfSpeech: result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : null,
@@ -104,11 +119,11 @@ class CaptureNotifier extends StateNotifier<CaptureState> {
       exampleTranslation: result.exampleTranslation,
       examples: result.exampleSentence != null ? [result.exampleSentence!] : [],
       tags: result.tag != null ? result.tag!.split(' ') : [],
+      contexts: [WordContext(type: ContextType.manual, source: notebookName, timestamp: now)],
       learnedAt: now,
       createdAt: now,
       updatedAt: now,
     );
-    final repo = _ref.read(wordRepoProvider);
     return repo.insert(word);
   }
 }

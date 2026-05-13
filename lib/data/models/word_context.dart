@@ -1,4 +1,4 @@
-enum ContextType { photo, clipboard, manual, web }
+enum ContextType { photo, clipboard, manual, web, chat, fileImport }
 
 class WordContext {
   final ContextType type;

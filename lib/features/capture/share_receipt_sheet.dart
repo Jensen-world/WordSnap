@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/notebook.dart';
 import '../../data/models/word.dart';
+import '../../data/models/word_context.dart';
 import '../../data/services/dictionary_result.dart';
 import '../wordbook/wordbook_provider.dart';
 import 'capture_provider.dart';
@@ -58,11 +59,31 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
     if (_result == null || _selectedNotebookId == null) return;
     setState(() => _saving = true);
     try {
+      final notebookId = _selectedNotebookId!;
+      final repo = ref.read(wordRepoProvider);
+
+      // Check duplicate in same notebook
+      final exists = await repo.existsByTextInNotebook(_result!.word, notebookId);
+      if (exists) {
+        if (mounted) {
+          setState(() => _saving = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('「${_result!.word}」已在本单词本中')),
+          );
+        }
+        return;
+      }
+
+      final notebookName = _notebooks
+          .where((n) => n.id == notebookId)
+          .firstOrNull
+          ?.name ?? '';
+
       final now = DateTime.now();
       final r = _result!;
       final defs = r.primaryDefinitions;
       final word = Word(
-        notebookId: _selectedNotebookId!,
+        notebookId: notebookId,
         text: r.word,
         phonetic: r.phonetic,
         partOfSpeech: r.meanings.isNotEmpty ? r.meanings.first.partOfSpeech : null,
@@ -71,11 +92,12 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
         exampleTranslation: r.exampleTranslation,
         examples: r.exampleSentence != null ? [r.exampleSentence!] : [],
         tags: r.tag != null ? r.tag!.split(' ') : [],
+        contexts: [WordContext(type: ContextType.clipboard, source: notebookName, timestamp: now)],
         learnedAt: now,
         createdAt: now,
         updatedAt: now,
       );
-      await ref.read(wordRepoProvider).insert(word);
+      await repo.insert(word);
       ref.read(dataRefreshTrigger.notifier).state++;
       if (mounted) Navigator.of(context).pop(true);
     } catch (_) {

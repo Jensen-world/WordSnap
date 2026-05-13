@@ -362,10 +362,10 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
       await ref.read(photoCaptureProvider.notifier).save();
       ref.read(dataRefreshTrigger.notifier).state++;
       ref.read(learnStateProvider.notifier).load();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('保存失败')),
+          SnackBar(content: Text(e is Exception ? e.toString().replaceFirst('Exception: ', '') : '保存失败')),
         );
       }
     }

@@ -69,6 +69,13 @@ class FakeWordRepository implements WordRepository {
   }
 
   @override
+  Future<bool> existsByTextInNotebook(String text, int notebookId) async {
+    return _words.any((w) =>
+        w.text.toLowerCase().trim() == text.toLowerCase().trim() &&
+        w.notebookId == notebookId);
+  }
+
+  @override
   Future<int> getCount({int? notebookId, bool? isNew, bool? isMastered}) async {
     var filtered = _words.where((_) => true);
     if (notebookId != null) filtered = filtered.where((w) => w.notebookId == notebookId);

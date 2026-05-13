@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/word.dart';
+import '../../data/models/word_context.dart';
+import '../../data/services/dictionary_result.dart';
 import '../../data/services/llm_dictionary_service.dart';
 import '../../data/repositories/config_repository.dart';
 import '../settings/api_config_provider.dart';
@@ -106,9 +108,18 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     ref.read(wordChatProvider.notifier).setMode(mode);
   }
 
-  Future<void> _saveWord() async {
-    final result = ref.read(wordChatProvider).localResult;
-    if (result == null) return;
+  Future<void> _saveWord({String? wordText}) async {
+    final state = ref.read(wordChatProvider);
+    final result = state.localResult;
+    final targetWord = wordText ?? state.anchoredWord;
+
+    // If no direct result, do a lookup for the word
+    DictionaryResult? lookupResult = result;
+    if (lookupResult == null && targetWord != null && targetWord.isNotEmpty) {
+      final service = ref.read(dictionaryServiceProvider);
+      lookupResult = await service.lookup(targetWord);
+    }
+    if (lookupResult == null) return;
 
     final capture = ref.read(captureStateProvider);
     if (capture.notebooks.isEmpty) {
@@ -118,18 +129,34 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     final notebooks = ref.read(captureStateProvider).notebooks;
     if (notebooks.isEmpty) return;
 
+    final notebookId = notebooks.first.id!;
+    final notebookName = notebooks.first.name;
+
+    // Check duplicate in same notebook
+    final exists = await ref.read(wordRepoProvider).existsByTextInNotebook(lookupResult.word, notebookId);
+    if (exists) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('「${lookupResult.word}」已在本单词本中')),
+        );
+      }
+      return;
+    }
+
     final now = DateTime.now();
-    final defs = result.primaryDefinitions;
+    final defs = lookupResult.primaryDefinitions;
+    final contextType = state.mode == ChatMode.ai ? ContextType.chat : ContextType.manual;
     final word = Word(
-      notebookId: notebooks.first.id!,
-      text: result.word,
-      phonetic: result.phonetic,
-      partOfSpeech: result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : null,
+      notebookId: notebookId,
+      text: lookupResult.word,
+      phonetic: lookupResult.phonetic,
+      partOfSpeech: lookupResult.meanings.isNotEmpty ? lookupResult.meanings.first.partOfSpeech : null,
       definitions: defs,
-      exampleSentence: result.exampleSentence,
-      exampleTranslation: result.exampleTranslation,
-      examples: result.exampleSentence != null ? [result.exampleSentence!] : [],
-      tags: result.tag != null ? result.tag!.split(' ') : [],
+      exampleSentence: lookupResult.exampleSentence,
+      exampleTranslation: lookupResult.exampleTranslation,
+      examples: lookupResult.exampleSentence != null ? [lookupResult.exampleSentence!] : [],
+      tags: lookupResult.tag != null ? lookupResult.tag!.split(' ') : [],
+      contexts: [WordContext(type: contextType, source: notebookName, timestamp: now)],
       learnedAt: now,
       createdAt: now,
       updatedAt: now,
@@ -141,7 +168,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       ref.read(learnStateProvider.notifier).load();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('「${result.word}」已收录')),
+          SnackBar(content: Text('「${lookupResult.word}」已收录')),
         );
       }
     } catch (_) {
@@ -182,7 +209,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
           _buildToolbar(state),
           if (state.mode == ChatMode.local)
             const Padding(
-              padding: EdgeInsets.only(bottom: 4),
+              padding: EdgeInsets.only(top: 6, bottom: 6),
               child: Text(
                 '基于ECDICT+Tatoeba离线数据',
                 textAlign: TextAlign.center,
@@ -191,7 +218,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
             ),
           if (state.mode == ChatMode.ai)
             const Padding(
-              padding: EdgeInsets.only(bottom: 4),
+              padding: EdgeInsets.only(top: 6, bottom: 6),
               child: Text(
                 '内容由AI生成 仅供参考',
                 textAlign: TextAlign.center,
@@ -203,6 +230,23 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
                 ? _buildLocalMode(state)
                 : _buildAiMode(state),
           ),
+          if (state.mode == ChatMode.ai && state.anchoredWord != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _saveWord,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('收录到单词本'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.signalBlue,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  ),
+                ),
+              ),
+            ),
           _buildInputBar(state, bottomPad),
         ],
       ),
@@ -638,7 +682,6 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       padding: EdgeInsets.fromLTRB(16, 8, 16, 14 + bottomPad),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFE2E2EA))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -938,7 +981,7 @@ class _ChatBubble extends StatelessWidget {
                   bottomLeft: Radius.circular(isUser ? 16 : 4),
                   bottomRight: Radius.circular(isUser ? 4 : 16),
                 ),
-                border: isUser ? null : Border.all(color: const Color(0xFFE2E2EA)),
+                border: null,
               ),
               child: isUser
                   ? Text(

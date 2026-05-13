@@ -4,6 +4,9 @@ import 'package:file_picker/file_picker.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/word.dart';
 import '../../data/models/notebook.dart';
+import '../../data/repositories/word_repository.dart';
+import '../../data/models/word_context.dart';
+import '../../data/services/dictionary_service.dart';
 import '../../data/services/file_io.dart'
   if (dart.library.js_interop) '../../data/services/file_web.dart';
 import '../learn/learn_provider.dart';
@@ -28,7 +31,6 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
   List<_ParsedEntry> _entries = [];
   late TextEditingController _nameCtrl;
   bool _importing = false;
-  int _importedCount = 0;
 
   @override
   void initState() {
@@ -103,29 +105,99 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
 
     final notebookRepo = ref.read(notebookRepoProvider);
     final wordRepo = ref.read(wordRepoProvider);
+    final dictService = DictionaryService();
     final notebook = Notebook(name: name, createdAt: DateTime.now());
     final created = await notebookRepo.insert(notebook);
     final now = DateTime.now();
+    final notebookId = created.id!;
 
-    final words = _entries.map((e) => Word(
-      notebookId: created.id!,
-      text: e.word,
-      definitions: e.definition.isNotEmpty ? [e.definition] : [],
-      learnedAt: now,
-      createdAt: now,
-      updatedAt: now,
-    )).toList();
+    // Dedup within batch
+    final seen = <String>{};
+    final words = <Word>[];
+    for (final e in _entries) {
+      final lower = e.word.toLowerCase().trim();
+      if (seen.contains(lower)) continue;
+      seen.add(lower);
+      words.add(Word(
+        notebookId: notebookId,
+        text: e.word,
+        definitions: e.definition.isNotEmpty ? [e.definition] : [],
+        contexts: [WordContext(type: ContextType.fileImport, source: name, timestamp: now)],
+        learnedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      ));
+    }
 
     final count = await wordRepo.insertBatch(words);
     ref.read(dataRefreshTrigger.notifier).state++;
     ref.read(learnStateProvider.notifier).load();
 
     if (mounted) {
-      setState(() {
-        _importing = false;
-        _importedCount = count;
-      });
+      Navigator.of(context).pop();
+      _showImportDoneDialog(count);
+      _enrichWords(words, dictService, wordRepo);
     }
+  }
+
+  void _showImportDoneDialog(int count) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64, height: 64,
+              decoration: const BoxDecoration(color: AppColors.mint, shape: BoxShape.circle),
+              child: const Icon(Icons.check, color: Colors.white, size: 36),
+            ),
+            const SizedBox(height: 20),
+            const Text('导入完成', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
+            const SizedBox(height: 8),
+            Text('已导入 $count 个单词', style: const TextStyle(fontSize: 14, color: Color(0xFF999999))),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.signalBlue,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                ),
+                child: const Text('完成'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _enrichWords(List<Word> words, DictionaryService dictService, WordRepository wordRepo) async {
+    for (final word in words) {
+      try {
+        final result = await dictService.lookup(word.text);
+        if (result == null) continue;
+        final updated = word.copyWith(
+          phonetic: result.phonetic,
+          partOfSpeech: result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : null,
+          definitions: result.primaryDefinitions,
+          exampleSentence: result.exampleSentence,
+          exampleTranslation: result.exampleTranslation,
+          examples: result.exampleSentence != null ? [result.exampleSentence!] : [],
+          tags: result.tag != null ? result.tag!.split(' ') : [],
+          updatedAt: DateTime.now(),
+        );
+        await wordRepo.update(updated);
+      } catch (_) {
+        // Skip enrichment failures silently
+      }
+    }
+    ref.read(dataRefreshTrigger.notifier).state++;
   }
 
   @override
@@ -137,35 +209,6 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
       return Padding(
         padding: EdgeInsets.only(bottom: bottomPad + 40),
         child: const Center(child: CircularProgressIndicator(color: AppColors.signalBlue)),
-      );
-    }
-
-    if (_importedCount > 0) {
-      return Padding(
-        padding: EdgeInsets.fromLTRB(20, 40, 20, bottomPad),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 64, height: 64,
-              decoration: const BoxDecoration(color: AppColors.mint, shape: BoxShape.circle),
-              child: const Icon(Icons.check, color: Colors.white, size: 36),
-            ),
-            const SizedBox(height: 20),
-            const Text('导入完成', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
-            const SizedBox(height: 8),
-            Text('已导入 $_importedCount 个单词', style: const TextStyle(fontSize: 14, color: Color(0xFF999999))),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.signalBlue,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-              ),
-              child: const Text('完成'),
-            ),
-          ],
-        ),
       );
     }
 

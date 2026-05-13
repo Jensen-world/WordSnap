@@ -45,10 +45,10 @@ class _CaptureResultPageState extends ConsumerState<CaptureResultPage> {
       ref.read(dataRefreshTrigger.notifier).state++;
       ref.read(learnStateProvider.notifier).load();
       if (mounted) context.pop();
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('保存失败')),
+          SnackBar(content: Text(e is Exception ? e.toString().replaceFirst('Exception: ', '') : '保存失败')),
         );
       }
     }
