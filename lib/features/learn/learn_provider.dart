@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/notebook.dart';
 import '../../data/models/word.dart';
+import '../../data/repositories/config_repository.dart';
 import '../wordbook/wordbook_provider.dart';
 
 final learnStateProvider = StateNotifierProvider<LearnNotifier, LearnState>((ref) {
@@ -85,12 +86,44 @@ class LearnNotifier extends StateNotifier<LearnState> {
 
   LearnNotifier(this._ref) : super(const LearnState());
 
+  String _dailyWordConfigKey() {
+    final now = DateTime.now();
+    return 'daily_word_index_${now.year}_${now.month}_${now.day}';
+  }
+
+  /// Pick a word from [nbId] at the given offset. Returns null if notebook is empty.
+  Future<Word?> _pickFromNotebook(int nbId, int index) async {
+    final wordRepo = _ref.read(wordRepoProvider);
+    final words = await wordRepo.getByNotebook(nbId);
+    if (words.isEmpty) return null;
+    final now = DateTime.now();
+    final seed = now.year * 400 + now.month * 40 + now.day;
+    return words[(seed + index) % words.length];
+  }
+
+  /// Pick daily word from current notebook, falling back to other notebooks.
+  Future<Word?> _pickDailyWord(int currentNbId, int index) async {
+    final nbRepo = _ref.read(notebookRepoProvider);
+    final notebooks = await nbRepo.getAll();
+
+    Word? word = await _pickFromNotebook(currentNbId, index);
+    if (word != null) return word;
+
+    for (final nb in notebooks) {
+      if (nb.id == currentNbId) continue;
+      word = await _pickFromNotebook(nb.id!, index);
+      if (word != null) return word;
+    }
+    return null;
+  }
+
   Future<void> load() async {
     state = state.copyWith(loading: true, errorMessage: null);
     try {
       final nbRepo = _ref.read(notebookRepoProvider);
       final wordRepo = _ref.read(wordRepoProvider);
       final reviewRepo = _ref.read(reviewRepoProvider);
+      final configRepo = ConfigRepository();
       final notebooks = await nbRepo.getAll();
       final currentId = state.currentNotebookId ?? notebooks.firstOrNull?.id;
       final currentNb = notebooks.where((n) => n.id == currentId).firstOrNull ?? notebooks.firstOrNull;
@@ -111,7 +144,6 @@ class LearnNotifier extends StateNotifier<LearnState> {
       final learnedReview = (today?.reviewWordsCorrect ?? 0) + (today?.reviewWordsWrong ?? 0);
 
       // Today's remaining quota: new words + review words per 10:1 ratio
-      // Cap to actual available words in DB (handles empty notebooks)
       final todayNewWords = totalWords == 0
           ? 0
           : (dailyLimit - learnedNew).clamp(0, dailyLimit).clamp(0, dbNewCount);
@@ -124,23 +156,24 @@ class LearnNotifier extends StateNotifier<LearnState> {
       final remaining = totalWords - masteredWords;
       final estimatedDays = dailyLimit > 0 ? (remaining / dailyLimit).ceil() : 0;
 
-      // Daily word: pick from current notebook first, fall back to any notebook
-      Word? dailyWord;
-      final now = DateTime.now();
-      final seed = now.year * 400 + now.month * 40 + now.day;
+      // --- Daily word: only update on first load, date change, or current word deleted ---
+      Word? dailyWord = state.dailyWord;
+      int dailyWordIndex = state.dailyWordIndex;
 
-      Future<Word?> pickDaily(int nbId) async {
-        final words = await wordRepo.getByNotebook(nbId);
-        if (words.isNotEmpty) return words[(seed + state.dailyWordIndex) % words.length];
-        return null;
-      }
+      final storedIndexStr = await configRepo.get(_dailyWordConfigKey());
+      final persistedIndex = storedIndexStr != null ? int.tryParse(storedIndexStr) ?? 0 : 0;
 
-      dailyWord = await pickDaily(currentNb.id!);
-      if (dailyWord == null) {
-        for (final nb in notebooks) {
-          if (nb.id == currentNb.id) continue;
-          dailyWord = await pickDaily(nb.id!);
-          if (dailyWord != null) break;
+      // Date change detected (persisted index is for new day)
+      final dateChanged = storedIndexStr == null && state.dailyWord != null;
+      // Current word deleted
+      final currentWordGone = state.dailyWord != null &&
+          !await wordRepo.existsByTextInNotebook(state.dailyWord!.text, currentNb.id!);
+
+      if (state.dailyWord == null || dateChanged || currentWordGone) {
+        dailyWordIndex = dateChanged ? 0 : persistedIndex;
+        dailyWord = await _pickDailyWord(currentNb.id!, dailyWordIndex);
+        if (dailyWord != null) {
+          await configRepo.set(_dailyWordConfigKey(), dailyWordIndex.toString());
         }
       }
 
@@ -157,6 +190,7 @@ class LearnNotifier extends StateNotifier<LearnState> {
         dailyLimit: dailyLimit,
         estimatedDays: estimatedDays,
         dailyWord: dailyWord,
+        dailyWordIndex: dailyWordIndex,
         loading: false,
       );
     } catch (_) {
@@ -180,14 +214,13 @@ class LearnNotifier extends StateNotifier<LearnState> {
   Future<void> nextDailyWord() async {
     final nb = state.currentNotebook;
     if (nb == null) return;
-    final wordRepo = _ref.read(wordRepoProvider);
-    final words = await wordRepo.getByNotebook(nb.id!);
-    if (words.isEmpty) return;
 
-    final now = DateTime.now();
-    final seed = now.year * 400 + now.month * 40 + now.day;
     final nextIndex = state.dailyWordIndex + 1;
-    final nextWord = words[(seed + nextIndex) % words.length];
+    final nextWord = await _pickDailyWord(nb.id!, nextIndex);
+    if (nextWord == null) return;
+
+    final configRepo = ConfigRepository();
+    await configRepo.set(_dailyWordConfigKey(), nextIndex.toString());
 
     state = state.copyWith(dailyWord: nextWord, dailyWordIndex: nextIndex);
   }

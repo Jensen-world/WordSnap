@@ -45,6 +45,11 @@ class WordRepository {
     return all.any((w) => (w['text'] as String).toLowerCase().trim() == text.toLowerCase().trim());
   }
 
+  Future<bool> existsByTextInNotebook(String text, int notebookId) async {
+    final all = _store.queryWords(notebookId: notebookId);
+    return all.any((w) => (w['text'] as String).toLowerCase().trim() == text.toLowerCase().trim());
+  }
+
   Future<int> getCount({int? notebookId, bool? isNew, bool? isMastered}) async {
     return _store.countWords(notebookId: notebookId, isNew: isNew, isMastered: isMastered);
   }
