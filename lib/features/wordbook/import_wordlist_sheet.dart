@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/word.dart';
 import '../../data/models/notebook.dart';
-import '../../data/repositories/word_repository.dart';
 import '../../data/models/word_context.dart';
 import '../../data/services/dictionary_service.dart';
 import '../../data/services/file_io.dart'
@@ -130,20 +129,10 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
     }
 
     await wordRepo.insertBatch(words);
-    ref.read(dataRefreshTrigger.notifier).state++;
-    ref.read(learnStateProvider.notifier).load();
 
-    // Fetch words from DB to get their IDs for enrichment
+    // Enrich words with dictionary data before popping
     final wordsWithIds = await wordRepo.getByNotebook(notebookId);
-
-    if (mounted) {
-      Navigator.of(context).pop();
-      _enrichWords(wordsWithIds, dictService, wordRepo);
-    }
-  }
-
-  Future<void> _enrichWords(List<Word> words, DictionaryService dictService, WordRepository wordRepo) async {
-    for (final word in words) {
+    for (final word in wordsWithIds) {
       try {
         final result = await dictService.lookup(word.text);
         if (result == null) continue;
@@ -158,11 +147,15 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
           updatedAt: DateTime.now(),
         );
         await wordRepo.update(updated);
-      } catch (_) {
-        // Skip enrichment failures silently
-      }
+      } catch (_) {}
     }
+
     ref.read(dataRefreshTrigger.notifier).state++;
+    ref.read(learnStateProvider.notifier).load();
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
