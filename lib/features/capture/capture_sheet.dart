@@ -32,8 +32,9 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
     if (word.isEmpty) return;
     ref.read(captureStateProvider.notifier).setInput(word);
     ref.read(captureStateProvider.notifier).lookup();
+    final router = GoRouter.of(context);
     Navigator.of(context).pop();
-    context.push('/capture/result');
+    router.push('/capture/result');
   }
 
   @override

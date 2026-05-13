@@ -222,7 +222,8 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
   }
 
   Widget _resultView(PhotoCaptureState state, {bool showSaveSpinner = false}) {
-    final result = state.lookupResult!;
+    final result = state.lookupResult;
+    if (result == null) return const SizedBox.shrink();
     final bottomPad = 20 + MediaQuery.of(context).padding.bottom;
     return ListView(
       padding: EdgeInsets.fromLTRB(20, 20, 20, bottomPad),
@@ -266,7 +267,8 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
   }
 
   Widget _chatConfirmView(PhotoCaptureState state) {
-    final result = state.lookupResult!;
+    final result = state.lookupResult;
+    if (result == null) return const SizedBox.shrink();
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -363,6 +365,7 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
       ref.read(dataRefreshTrigger.notifier).state++;
       ref.read(learnStateProvider.notifier).load();
     } catch (e) {
+      ref.read(photoCaptureProvider.notifier).backToWords();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e is Exception ? e.toString().replaceFirst('Exception: ', '') : '保存失败')),

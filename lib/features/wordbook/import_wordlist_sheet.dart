@@ -21,8 +21,10 @@ class ImportWordlistSheet extends ConsumerStatefulWidget {
 class _ParsedEntry {
   final String word;
   final String definition;
+  final int _id;
+  static int _nextId = 0;
 
-  const _ParsedEntry(this.word, [this.definition = '']);
+  _ParsedEntry(this.word, [this.definition = '']) : _id = _nextId++;
 }
 
 class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
@@ -208,7 +210,7 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
                 itemBuilder: (_, i) {
                   final e = _entries[i];
                   return Dismissible(
-                    key: ValueKey('${e.word}_$i'),
+                    key: ValueKey(e._id),
                     direction: DismissDirection.endToStart,
                     background: Container(
                       alignment: Alignment.centerRight,
