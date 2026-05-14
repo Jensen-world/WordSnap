@@ -1,8 +1,23 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-14（Session 47 — 聊天逻辑重构设计）
+> 最后更新：2026-05-14（Session 46-48 全部完成）
 
-## Session 47 — 聊天逻辑重构（2026-05-14 设计确认）
+## 当前状态
+
+- **APK 已构建**：`build/app/outputs/flutter-apk/app-debug.apk`
+- **目标**：明天发布，不再引入新问题
+- **今天修复内容**：例句显示、聊天逻辑重构、AI 配置持久化、默认供应商
+
+---
+
+## Session 48 — AI 配置持久化修复 + 默认 DeepSeek
+
+- `_load()` 加 try-catch，`_loadConfig()` 加 `ref.listenManual` 监听加载完成
+- ConfigRepository 默认值：`api.deepseek.com/v1` + `deepseek-chat`
+
+---
+
+## Session 47 — 聊天逻辑重构（2026-05-14 已实施）
 
 ### 新对话模式规则
 | 触发 | 模式 |
