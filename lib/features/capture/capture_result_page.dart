@@ -84,10 +84,12 @@ class _CaptureResultPageState extends ConsumerState<CaptureResultPage> {
                     decoration: const InputDecoration(
                       hintText: '请输入或粘贴你想记录的单词',
                       hintStyle: TextStyle(fontSize: 14, color: Color(0xFF999999)),
+                      filled: true,
+                      fillColor: Color(0xFFF0F0F5),
                       contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
-                        borderSide: BorderSide(color: Color(0xFFE2E2EA)),
+                        borderSide: BorderSide.none,
                       ),
                     ),
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
@@ -137,9 +139,9 @@ class _CaptureResultPageState extends ConsumerState<CaptureResultPage> {
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
-              onPressed: () => context.push('/chat?word=${Uri.encodeComponent(state.result!.word)}&mode=ai'),
+              onPressed: () => context.push('/chat?word=${Uri.encodeComponent(state.result!.word)}'),
               icon: const Icon(Icons.chat_bubble_outline, size: 16),
-              label: const Text('和AI聊这个词', style: TextStyle(fontSize: 13)),
+              label: const Text('在 WordChat 中查看', style: TextStyle(fontSize: 13)),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFFE2E2EA)),
                 foregroundColor: AppColors.signalBlue,
@@ -195,7 +197,7 @@ class _ResultCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF9F9FB),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E2EA)),
+        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -293,7 +295,7 @@ class _NotebookSelector extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFE2E2EA)),
+          color: const Color(0xFFF0F0F5),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

@@ -17,6 +17,13 @@ import sqlite3
 import sys
 import urllib.request
 
+try:
+    import zhconv
+except ImportError:
+    print("zhconv not installed. Run: pip install zhconv")
+    print("This is needed to convert Traditional Chinese to Simplified.")
+    sys.exit(1)
+
 SENTENCES_URL = "https://downloads.tatoeba.org/exports/sentences.csv"
 LINKS_URL = "https://downloads.tatoeba.org/exports/links.csv"
 OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets")
@@ -182,7 +189,7 @@ def main():
 
     for eng_id, cmn_id in pairs:
         eng_text = eng[eng_id]
-        cmn_text = cmn[cmn_id]
+        cmn_text = zhconv.convert(cmn[cmn_id], 'zh-cn')
 
         words = extract_words(eng_text)
         unique_words = set(words)

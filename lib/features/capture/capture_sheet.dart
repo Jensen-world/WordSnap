@@ -73,6 +73,12 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
             decoration: const InputDecoration(
               hintText: '请输入或粘贴你想记录的单词',
               hintStyle: TextStyle(fontSize: 14, color: Color(0xFF999999)),
+              filled: true,
+              fillColor: Color(0xFFF0F0F5),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide.none,
+              ),
             ),
             style: const TextStyle(fontSize: 18),
             textAlign: TextAlign.center,

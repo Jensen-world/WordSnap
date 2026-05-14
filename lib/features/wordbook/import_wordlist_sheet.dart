@@ -85,6 +85,10 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
       }
     }
 
+    // Dedup by lowercase word
+    final seen = <String>{};
+    entries.removeWhere((e) => !seen.add(e.word.toLowerCase()));
+
     if (entries.isEmpty) {
       if (mounted) Navigator.of(context).pop();
       return;
@@ -104,56 +108,64 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
 
     setState(() => _importing = true);
 
-    final notebookRepo = ref.read(notebookRepoProvider);
-    final wordRepo = ref.read(wordRepoProvider);
-    final dictService = DictionaryService();
-    final notebook = Notebook(name: name, createdAt: DateTime.now());
-    final created = await notebookRepo.insert(notebook);
-    final now = DateTime.now();
-    final notebookId = created.id!;
+    try {
+      final notebookRepo = ref.read(notebookRepoProvider);
+      final wordRepo = ref.read(wordRepoProvider);
+      final dictService = DictionaryService();
+      final notebook = Notebook(name: name, createdAt: DateTime.now());
+      final created = await notebookRepo.insert(notebook);
+      final now = DateTime.now();
+      final notebookId = created.id!;
 
-    // Dedup within batch
-    final seen = <String>{};
-    final words = <Word>[];
-    for (final e in _entries) {
-      final lower = e.word.toLowerCase().trim();
-      if (seen.contains(lower)) continue;
-      seen.add(lower);
-      words.add(Word(
-        notebookId: notebookId,
-        text: e.word,
-        definitions: e.definition.isNotEmpty ? [e.definition] : [],
-        contexts: [WordContext(type: ContextType.fileImport, source: name, timestamp: now)],
-        learnedAt: now,
-        createdAt: now,
-        updatedAt: now,
-      ));
+      // Dedup within batch
+      final seen = <String>{};
+      final words = <Word>[];
+      for (final e in _entries) {
+        final lower = e.word.toLowerCase().trim();
+        if (seen.contains(lower)) continue;
+        seen.add(lower);
+        words.add(Word(
+          notebookId: notebookId,
+          text: e.word,
+          definitions: e.definition.isNotEmpty ? [e.definition] : [],
+          contexts: [WordContext(type: ContextType.fileImport, source: name, timestamp: now)],
+          learnedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        ));
+      }
+
+      await wordRepo.insertBatch(words);
+
+      // Enrich words with dictionary data before popping
+      final wordsWithIds = await wordRepo.getByNotebook(notebookId);
+      for (final word in wordsWithIds) {
+        try {
+          final result = await dictService.lookup(word.text);
+          if (result == null) continue;
+          final updated = word.copyWith(
+            phonetic: result.phonetic,
+            partOfSpeech: result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : null,
+            definitions: result.primaryDefinitions,
+            exampleSentence: result.exampleSentence,
+            exampleTranslation: result.exampleTranslation,
+            examples: result.exampleSentence != null ? [result.exampleSentence!] : [],
+            tags: result.tag != null ? result.tag!.split(' ') : [],
+            updatedAt: DateTime.now(),
+          );
+          await wordRepo.update(updated);
+        } catch (_) {}
+      }
+
+      ref.read(dataRefreshTrigger.notifier).state++;
+      ref.read(learnStateProvider.notifier).load();
+    } catch (_) {
+      // Any unhandled exception (DB error, null assertion, etc.) — silently abort
+    } finally {
+      if (mounted) {
+        setState(() => _importing = false);
+      }
     }
-
-    await wordRepo.insertBatch(words);
-
-    // Enrich words with dictionary data before popping
-    final wordsWithIds = await wordRepo.getByNotebook(notebookId);
-    for (final word in wordsWithIds) {
-      try {
-        final result = await dictService.lookup(word.text);
-        if (result == null) continue;
-        final updated = word.copyWith(
-          phonetic: result.phonetic,
-          partOfSpeech: result.meanings.isNotEmpty ? result.meanings.first.partOfSpeech : null,
-          definitions: result.primaryDefinitions,
-          exampleSentence: result.exampleSentence,
-          exampleTranslation: result.exampleTranslation,
-          examples: result.exampleSentence != null ? [result.exampleSentence!] : [],
-          tags: result.tag != null ? result.tag!.split(' ') : [],
-          updatedAt: DateTime.now(),
-        );
-        await wordRepo.update(updated);
-      } catch (_) {}
-    }
-
-    ref.read(dataRefreshTrigger.notifier).state++;
-    ref.read(learnStateProvider.notifier).load();
 
     if (mounted) {
       Navigator.of(context).pop();
@@ -202,7 +214,7 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF9F9FB),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E2EA)),
+                boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 2))],
               ),
               child: ListView.builder(
                 shrinkWrap: true,
@@ -246,6 +258,7 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
           const SizedBox(height: 6),
           TextField(
             controller: _nameCtrl,
+            scrollPadding: const EdgeInsets.only(bottom: 120),
             textInputAction: TextInputAction.done,
             decoration: const InputDecoration(
               hintText: '输入单词本名称',

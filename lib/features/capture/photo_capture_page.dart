@@ -415,7 +415,7 @@ class _ResultCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF9F9FB),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E2EA)),
+        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -496,7 +496,7 @@ class _NotebookSelector extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFE2E2EA)),
+          color: const Color(0xFFF0F0F5),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

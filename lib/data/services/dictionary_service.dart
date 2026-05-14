@@ -95,14 +95,54 @@ class DictionaryService {
   Future<DictionaryResult?> _lookupEcdict(String word) async {
     try {
       final db = await _getDb();
-      final rows = await db.query(
+      var rows = await db.query(
         'stardict',
         where: 'word = ?',
         whereArgs: [word],
         limit: 1,
       );
+      if (rows.isNotEmpty) return DictionaryResult.fromEcdict(rows.first);
+
+      // Exact match failed — try reverse inflection lookup.
+      // Exchange format: key:value/... e.g. "0:run/1:ran/i:running/s:runs"
+      rows = await db.query(
+        'stardict',
+        where: "exchange LIKE ? OR exchange LIKE ?",
+        whereArgs: ['%:$word/%', '%:$word'],
+        limit: 1,
+      );
       if (rows.isEmpty) return null;
-      return DictionaryResult.fromEcdict(rows.first);
+
+      final entry = rows.first;
+      // If the entry has a base form (0:xxx), use it; otherwise use the entry word itself.
+      final exchange = (entry['exchange'] as String?) ?? '';
+      final baseMatch = RegExp(r'(?:^|/)0:([^/]+)').firstMatch(exchange);
+      final baseWord = baseMatch?.group(1) ?? entry['word'] as String;
+
+      if (baseWord == word) {
+        return DictionaryResult.fromEcdict(entry);
+      }
+
+      // Look up the base word for full definition, but preserve original search word.
+      rows = await db.query(
+        'stardict',
+        where: 'word = ?',
+        whereArgs: [baseWord],
+        limit: 1,
+      );
+      if (rows.isEmpty) return DictionaryResult.fromEcdict(entry);
+
+      final baseResult = DictionaryResult.fromEcdict(rows.first);
+      return DictionaryResult(
+        word: word,
+        phonetic: baseResult.phonetic,
+        translation: baseResult.translation,
+        meanings: baseResult.meanings,
+        exchange: baseResult.exchange,
+        tag: baseResult.tag,
+        exampleSentence: baseResult.exampleSentence,
+        exampleTranslation: baseResult.exampleTranslation,
+      );
     } catch (_) {
       return null;
     }

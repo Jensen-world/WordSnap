@@ -26,7 +26,6 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
   void initState() {
     super.initState();
     _loadWords();
-    ref.listen(dataRefreshTrigger, (_, __) => _loadWords());
   }
 
   Future<void> _loadWords() async {
@@ -272,6 +271,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(dataRefreshTrigger, (_, __) => _loadWords());
     return Scaffold(
       backgroundColor: AppColors.canvasWhite,
       appBar: AppBar(
@@ -337,7 +337,7 @@ class _NotebookDetailPageState extends ConsumerState<NotebookDetailPage> {
               padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                border: Border(top: BorderSide(color: Color(0xFFE2E2EA))),
+                border: Border(top: BorderSide(color: Color(0xFFF0F0F5))),
               ),
               child: Row(
                 children: [
@@ -418,7 +418,7 @@ class _FilterTabs extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
+        border: Border(bottom: BorderSide(color: Color(0xFFF0F0F5))),
       ),
       child: Row(
         children: [
@@ -500,7 +500,7 @@ class _DateGroup extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFE2E2EA)),
+            boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 2))],
           ),
           child: Column(
             children: words.map((word) {
@@ -511,7 +511,7 @@ class _DateGroup extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
                     border: word != words.last
-                        ? const Border(bottom: BorderSide(color: Color(0xFFE2E2EA)))
+                        ? const Border(bottom: BorderSide(color: Color(0xFFF0F0F5)))
                         : null,
                   ),
                   child: Row(

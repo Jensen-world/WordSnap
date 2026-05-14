@@ -6,6 +6,7 @@ import '../../features/wordbook/notebook_detail_page.dart';
 import '../../features/wordbook/word_detail_page.dart';
 import '../../features/archive/archive_page.dart';
 import '../../features/settings/settings_page.dart';
+import '../../features/settings/about_page.dart';
 import '../../features/capture/photo_capture_page.dart';
 import '../../features/capture/capture_result_page.dart';
 import '../../features/chat/word_chat_page.dart';
@@ -58,6 +59,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsPage(),
+      routes: [
+        GoRoute(
+          path: 'about',
+          builder: (context, state) => const AboutPage(),
+        ),
+      ],
     ),
     GoRoute(
       path: '/capture/photo',

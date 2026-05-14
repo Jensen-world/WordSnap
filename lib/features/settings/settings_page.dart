@@ -3,15 +3,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/theme/colors.dart';
 import '../../data/services/export_import_service.dart';
 import '../../data/services/file_io.dart'
   if (dart.library.js_interop) '../../data/services/file_web.dart';
-import '../../data/services/llm_dictionary_service.dart';
-import '../../data/repositories/config_repository.dart';
 import '../wordbook/wordbook_provider.dart';
 import 'api_config_provider.dart';
+import 'api_config_form.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -307,39 +307,40 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         children: [
           const SizedBox(height: 8),
           _SectionHeader(title: '数据管理'),
-          _ListTile(
-            title: '导出数据',
-            subtitle: 'JSON 文件，含所有单词本和单词',
-            trailing: _exporting
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.chevron_right, size: 20, color: Color(0xFFBBBBBB)),
-            onTap: _exporting ? null : _handleExport,
-          ),
-          _ListTile(
-            title: '导入数据',
-            subtitle: '从 JSON 文件恢复，同名去重合并',
-            trailing: _importing
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.chevron_right, size: 20, color: Color(0xFFBBBBBB)),
-            onTap: _importing ? null : _handleImport,
-          ),
-          const SizedBox(height: 16),
+          _SectionCard(children: [
+            _ListTile(
+              title: '导出数据',
+              subtitle: 'JSON 文件，含所有单词本和单词',
+              trailing: _exporting
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.chevron_right, size: 20, color: Color(0xFFBBBBBB)),
+              onTap: _exporting ? null : _handleExport,
+            ),
+            _ListTile(
+              title: '导入数据',
+              subtitle: '从 JSON 文件恢复，同名去重合并',
+              trailing: _importing
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.chevron_right, size: 20, color: Color(0xFFBBBBBB)),
+              onTap: _importing ? null : _handleImport,
+            ),
+          ]),
+          const SizedBox(height: 20),
           _SectionHeader(title: 'AI 配置'),
-          _WordChatToggle(),
-          _ApiConfigTile(),
-          const SizedBox(height: 16),
+          _SectionCard(children: [
+            _WordChatToggle(),
+            _ApiConfigTile(),
+          ]),
+          const SizedBox(height: 20),
           _SectionHeader(title: '其他'),
-          _SwitchTile(
-            title: '剪贴板监听',
-            value: _clipboardEnabled,
-            onChanged: (v) => setState(() => _clipboardEnabled = v),
-          ),
-          _ListTile(
-            title: '关于 WordSnap',
-            subtitle: 'v1.0.0',
-            trailing: const SizedBox.shrink(),
-            onTap: null,
-          ),
+          _SectionCard(children: [
+            _SwitchTile(
+              title: '剪贴板监听',
+              value: _clipboardEnabled,
+              onChanged: (v) => setState(() => _clipboardEnabled = v),
+            ),
+            _AboutTile(),
+          ]),
         ],
       ),
     );
@@ -372,11 +373,7 @@ class _ListTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Expanded(
@@ -426,88 +423,6 @@ class _ApiConfigTile extends ConsumerStatefulWidget {
 
 class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
   bool _expanded = false;
-  final _baseUrlCtrl = TextEditingController();
-  final _apiKeyCtrl = TextEditingController();
-  final _modelCtrl = TextEditingController();
-  bool _testing = false;
-  bool _obscureApiKey = true;
-  int _selectedProviderIdx = -1;
-
-  static const _providers = [
-    ('DeepSeek', 'https://api.deepseek.com/v1', 'deepseek-chat'),
-    ('智谱 (ChatGLM)', 'https://open.bigmodel.cn/api/paas/v4', 'glm-4-flash'),
-    ('火山方舟 (豆包)', 'https://ark.cn-beijing.volces.com/api/v3', 'doubao-pro-32k'),
-    ('阿里云百炼 (通义)', 'https://dashscope.aliyuncs.com/compatible-mode/v1', 'qwen-plus'),
-    ('自定义', '', ''),
-  ];
-
-  @override
-  void dispose() {
-    _baseUrlCtrl.dispose();
-    _apiKeyCtrl.dispose();
-    _modelCtrl.dispose();
-    super.dispose();
-  }
-
-  int _matchProvider(String baseUrl, String model) {
-    for (var i = 0; i < _providers.length - 1; i++) {
-      final p = _providers[i];
-      if (p.$2 == baseUrl && p.$3 == model) return i;
-    }
-    return _providers.length - 1;
-  }
-
-  void _onProviderSelected(int index) {
-    setState(() => _selectedProviderIdx = index);
-    final p = _providers[index];
-    _baseUrlCtrl.text = p.$2;
-    _modelCtrl.text = p.$3;
-    ref.read(apiConfigProvider.notifier).setBaseUrl(p.$2);
-    ref.read(apiConfigProvider.notifier).setModel(p.$3);
-    ref.read(configRepoProvider).set('llm_provider', index.toString());
-  }
-
-  void _pasteToField(TextEditingController ctrl) async {
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
-    if (data?.text != null && data!.text!.isNotEmpty) {
-      ctrl.text = data.text!;
-      if (ctrl == _apiKeyCtrl) ref.read(apiConfigProvider.notifier).setApiKey(data.text!);
-      if (ctrl == _baseUrlCtrl) ref.read(apiConfigProvider.notifier).setBaseUrl(data.text!);
-      if (ctrl == _modelCtrl) ref.read(apiConfigProvider.notifier).setModel(data.text!);
-    }
-  }
-
-  Future<void> _test() async {
-    setState(() => _testing = true);
-    final baseUrl = _baseUrlCtrl.text.trim();
-    final apiKey = _apiKeyCtrl.text.trim();
-    final model = _modelCtrl.text.trim();
-    if (apiKey.isEmpty) {
-      setState(() => _testing = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请先填写 API Key')),
-        );
-      }
-      return;
-    }
-
-    final llm = LlmDictionaryService();
-    final error = await llm.testConnection(
-      baseUrl: baseUrl.isNotEmpty ? baseUrl : ConfigRepository.defaultBaseUrl,
-      apiKey: apiKey,
-      model: model.isNotEmpty ? model : ConfigRepository.defaultModel,
-    );
-
-    if (mounted) {
-      setState(() => _testing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error == null ? '连接成功' : '连接失败: $error'),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -520,24 +435,11 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
       );
     }
 
-    if (_baseUrlCtrl.text.isEmpty && config.baseUrl.isNotEmpty) {
-      _baseUrlCtrl.text = config.baseUrl;
-      _apiKeyCtrl.text = config.apiKey;
-      _modelCtrl.text = config.model;
-      if (_selectedProviderIdx < 0) {
-        _selectedProviderIdx = _matchProvider(config.baseUrl, config.model);
-      }
-    }
-
     if (!_expanded) {
       return GestureDetector(
         onTap: () => setState(() => _expanded = true),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               Expanded(
@@ -561,11 +463,7 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
     }
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -575,135 +473,16 @@ class _ApiConfigTileState extends ConsumerState<_ApiConfigTile> {
                 child: Text('LLM 模型配置', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
               ),
               GestureDetector(
-                onTap: () async {
-                  await ref.read(apiConfigProvider.notifier).setBaseUrl(_baseUrlCtrl.text.trim());
-                  await ref.read(apiConfigProvider.notifier).setApiKey(_apiKeyCtrl.text.trim());
-                  await ref.read(apiConfigProvider.notifier).setModel(_modelCtrl.text.trim());
-                  setState(() => _expanded = false);
-                },
+                onTap: () => setState(() => _expanded = false),
                 child: const Icon(Icons.check, size: 20, color: AppColors.mint),
               ),
             ],
           ),
           const SizedBox(height: 4),
           const Text('兼容 OpenAI 协议，支持多家供应商切换', style: TextStyle(fontSize: 11, color: Color(0xFF999999))),
-          const SizedBox(height: 12),
-          // ── 供应商 ──
-          _buildLabel('供应商'),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<int>(
-            initialValue: _selectedProviderIdx < 0 ? null : _selectedProviderIdx,
-            hint: const Text('请选择供应商', style: TextStyle(fontSize: 13, color: Color(0xFFBBBBBB))),
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFFE2E2EA)),
-              ),
-            ),
-            items: List.generate(_providers.length, (i) {
-              return DropdownMenuItem(value: i, child: Text(_providers[i].$1, style: const TextStyle(fontSize: 14)));
-            }),
-            onChanged: (i) {
-              if (i == null) return;
-              _onProviderSelected(i);
-            },
-          ),
-          const SizedBox(height: 10),
-          // ── API 密钥 ──
-          _buildField(
-            'API 密钥',
-            _apiKeyCtrl,
-            hint: 'sk-...',
-            obscure: _obscureApiKey,
-            onChanged: (v) => ref.read(apiConfigProvider.notifier).setApiKey(v),
-            suffix: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _SuffixIcon(
-                  icon: _obscureApiKey ? Icons.visibility_off : Icons.visibility,
-                  onTap: () => setState(() => _obscureApiKey = !_obscureApiKey),
-                ),
-                const SizedBox(width: 2),
-                _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_apiKeyCtrl)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          // ── 接口地址 ──
-          _buildField(
-            '接口地址',
-            _baseUrlCtrl,
-            hint: ConfigRepository.defaultBaseUrl,
-            onChanged: (v) => ref.read(apiConfigProvider.notifier).setBaseUrl(v),
-            suffix: _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_baseUrlCtrl)),
-          ),
-          const SizedBox(height: 8),
-          // ── 模型 ──
-          _buildField(
-            '模型',
-            _modelCtrl,
-            hint: ConfigRepository.defaultModel,
-            onChanged: (v) => ref.read(apiConfigProvider.notifier).setModel(v),
-            suffix: _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_modelCtrl)),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: _testing ? null : _test,
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFE2E2EA)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: _testing
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('测试连接', style: TextStyle(fontSize: 13, color: AppColors.signalBlue)),
-            ),
-          ),
+          const SizedBox(height: 14),
+          const ApiConfigForm(),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLabel(String label) {
-    return Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF999999)));
-  }
-
-  Widget _buildField(String label, TextEditingController ctrl, {bool obscure = false, String hint = '', ValueChanged<String>? onChanged, Widget? suffix}) {
-    return TextField(
-      controller: ctrl,
-      obscureText: obscure,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE2E2EA))),
-        suffixIcon: suffix,
-        suffixIconConstraints: const BoxConstraints(maxHeight: 36),
-      ),
-      style: const TextStyle(fontSize: 13, fontFamily: 'JetBrains Mono'),
-    );
-  }
-}
-
-class _SuffixIcon extends StatelessWidget {
-  final IconData? icon;
-  final String? asset;
-  final VoidCallback onTap;
-  const _SuffixIcon({this.icon, this.asset, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: asset != null
-            ? Image.asset(asset!, width: 18, height: 18, color: const Color(0xFF999999))
-            : Icon(icon, size: 18, color: const Color(0xFF999999)),
       ),
     );
   }
@@ -717,11 +496,7 @@ class _WordChatToggle extends ConsumerWidget {
     final enabled = ref.watch(wordChatEnabledProvider);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
           Expanded(
@@ -758,16 +533,73 @@ class _SwitchTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
           Expanded(child: Text(title, style: const TextStyle(fontSize: 14, color: AppColors.inkBlack))),
           Switch(value: value, onChanged: onChanged, activeThumbColor: AppColors.signalBlue),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  final List<Widget> children;
+  const _SectionCard({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: _withDividers(children),
+      ),
+    );
+  }
+
+  List<Widget> _withDividers(List<Widget> items) {
+    final result = <Widget>[];
+    for (var i = 0; i < items.length; i++) {
+      result.add(items[i]);
+      if (i < items.length - 1) {
+        result.add(const Divider(height: 1, indent: 16, endIndent: 16, color: Color(0xFFF0F0F5)));
+      }
+    }
+    return result;
+  }
+}
+
+class _AboutTile extends StatelessWidget {
+  const _AboutTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/settings/about'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('关于 WordSnap', style: TextStyle(fontSize: 14, color: AppColors.inkBlack)),
+                  SizedBox(height: 2),
+                  Text('版本、源码与隐私说明', style: TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 20, color: Color(0xFFBBBBBB)),
+          ],
+        ),
       ),
     );
   }

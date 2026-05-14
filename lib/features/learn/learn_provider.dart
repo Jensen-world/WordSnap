@@ -125,7 +125,13 @@ class LearnNotifier extends StateNotifier<LearnState> {
       final reviewRepo = _ref.read(reviewRepoProvider);
       final configRepo = ConfigRepository();
       final notebooks = await nbRepo.getAll();
-      final currentId = state.currentNotebookId ?? notebooks.firstOrNull?.id;
+      final savedNotebookIdStr = await configRepo.get('active_notebook_id');
+      final savedNotebookId = savedNotebookIdStr != null ? int.tryParse(savedNotebookIdStr) : null;
+      // Validate saved ID still exists
+      final validSavedId = savedNotebookId != null && notebooks.any((n) => n.id == savedNotebookId)
+          ? savedNotebookId
+          : null;
+      final currentId = validSavedId ?? state.currentNotebookId ?? notebooks.firstOrNull?.id;
       final currentNb = notebooks.where((n) => n.id == currentId).firstOrNull ?? notebooks.firstOrNull;
       if (currentNb == null) {
         state = state.copyWith(loading: false);
@@ -198,8 +204,10 @@ class LearnNotifier extends StateNotifier<LearnState> {
     }
   }
 
-  void setCurrentNotebook(int id) {
+  Future<void> setCurrentNotebook(int id) async {
     state = state.copyWith(currentNotebookId: id);
+    final configRepo = ConfigRepository();
+    await configRepo.set('active_notebook_id', id.toString());
     load();
   }
 

@@ -305,8 +305,6 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
       _updateSession();
     }
 
-    _saveMessage(clean, 'user', clean);
-
     final result = await _dictionaryService.lookup(clean);
     state = state.copyWith(
       localLoading: false,

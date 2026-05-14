@@ -106,7 +106,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                 Container(
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    border: Border(bottom: BorderSide(color: Color(0xFFE2E2EA))),
+                    border: Border(bottom: BorderSide(color: Color(0xFFF0F0F5))),
                   ),
                   child: CapsuleTabBar(
                     currentIndex: widget.navigationShell.currentIndex,

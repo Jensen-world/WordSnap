@@ -33,13 +33,13 @@ class BottomPill extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _IconPillButton(
-                  outlinedIcon: Icons.camera_alt_outlined,
-                  filledIcon: Icons.camera_alt,
+                  outlinedAsset: 'assets/icons/pill_camera_outlined.png',
+                  filledAsset: 'assets/icons/pill_camera_filled.png',
                   onTap: () => context.push('/capture/photo'),
                 ),
                 _IconPillButton(
-                  outlinedAsset: 'assets/icons/edit_outlined.png',
-                  filledAsset: 'assets/icons/edit_filled.png',
+                  outlinedAsset: 'assets/icons/pill_edit_outlined.png',
+                  filledAsset: 'assets/icons/pill_edit_filled.png',
                   onTap: () {
                     showModalBottomSheet(
                       context: context,
@@ -54,8 +54,8 @@ class BottomPill extends ConsumerWidget {
                   },
                 ),
                 _IconPillButton(
-                  outlinedAsset: 'assets/icons/upload_outlined.png',
-                  filledAsset: 'assets/icons/upload_filled.png',
+                  outlinedAsset: 'assets/icons/pill_upload_outlined.png',
+                  filledAsset: 'assets/icons/pill_upload_filled.png',
                   onTap: () {
                     showModalBottomSheet(
                       context: context,
@@ -71,8 +71,8 @@ class BottomPill extends ConsumerWidget {
                 ),
                 if (chatEnabled)
                   _IconPillButton(
-                    outlinedIcon: Icons.chat_bubble_outline,
-                    filledIcon: Icons.chat_bubble,
+                    outlinedAsset: 'assets/icons/pill_chat_outlined.png',
+                    filledAsset: 'assets/icons/pill_chat_filled.png',
                     onTap: () => context.push('/chat'),
                   ),
               ],
@@ -85,17 +85,13 @@ class BottomPill extends ConsumerWidget {
 }
 
 class _IconPillButton extends StatefulWidget {
-  final IconData outlinedIcon;
-  final IconData filledIcon;
-  final String? outlinedAsset;
-  final String? filledAsset;
+  final String outlinedAsset;
+  final String filledAsset;
   final VoidCallback onTap;
 
   const _IconPillButton({
-    this.outlinedIcon = Icons.circle,
-    this.filledIcon = Icons.circle,
-    this.outlinedAsset,
-    this.filledAsset,
+    required this.outlinedAsset,
+    required this.filledAsset,
     required this.onTap,
   });
 
@@ -108,7 +104,6 @@ class _IconPillButtonState extends State<_IconPillButton> {
 
   @override
   Widget build(BuildContext context) {
-    final useAsset = widget.outlinedAsset != null && widget.filledAsset != null;
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) {
@@ -121,18 +116,11 @@ class _IconPillButtonState extends State<_IconPillButton> {
         child: SizedBox(
           width: 24,
           height: 24,
-          child: useAsset
-              ? Image.asset(
-                  _pressed ? widget.filledAsset! : widget.outlinedAsset!,
-                  width: 20,
-                  height: 20,
-                  color: Colors.white,
-                )
-              : Icon(
-                  _pressed ? widget.filledIcon : widget.outlinedIcon,
-                  size: 24,
-                  color: Colors.white,
-                ),
+          child: Image.asset(
+            _pressed ? widget.filledAsset : widget.outlinedAsset,
+            width: 24,
+            height: 24,
+          ),
         ),
       ),
     );

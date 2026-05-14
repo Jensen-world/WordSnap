@@ -1,6 +1,106 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-13（Session 43 — 每日一词切换规则修正 + 单词本红屏修复）
+> 最后更新：2026-05-14（Session 45 — 7 项 Bug 修复：真机测试第二轮反馈）
+
+## Session 45 — 7 项 Bug 修复（2026-05-14）
+
+用户测试 Session 44 的 APK 后报告 7 个新问题，逐一修复：
+
+### 1. 例句翻译出现繁体中文
+- **根因**：`build_tatoeba_db.py` 过滤 `cmn`（官话），同时包含简体和繁体
+- **修复**：build script 引入 `zhconv`，入库前 `zhconv.convert(text, 'zh-cn')` 转为简体
+- 文件：`scripts/build_tatoeba_db.py`
+- 注：需重建 Tatoeba DB 生效（`python scripts/build_tatoeba_db.py`）
+
+### 2. 导入单词表一直转圈
+- **根因**：`_confirm()` 无外层 try-catch，任何异常（DB错误、空断言等）导致 `_importing` 永不重置
+- **修复**：外层 try-catch-finally，finally 中 `setState(() => _importing = false)`
+- 文件：`import_wordlist_sheet.dart`
+
+### 3. 本地查词结果跑到了AI辅助界面
+- **根因 A**：所有路由入口硬编码 `mode=ai` → 配了LLM就直接进AI模式
+- **根因 B**：`localLookup()` 内部 `_saveMessage()` 把本地查词写入聊天表，污染AI历史
+- **根因 C**：标题永远显示 `与AI聊X`，本地模式也误导用户
+- **修复**：移除 `&mode=ai`，标题分模式显示，`localLookup` 不再写聊天记录
+- 文件：`word_detail_page.dart`、`learn_page.dart`、`capture_result_page.dart`、`word_chat_page.dart`、`word_chat_provider.dart`
+
+### 4. 查询新单词不显示收录按钮
+- **根因**：按钮可见性用 `existsByText`（跨全部单词本），保存时用 `existsByTextInNotebook`（单本），逻辑矛盾
+- **修复**：统一为 `existsByTextInNotebook`，查当前默认单词本
+- 文件：`word_chat_page.dart` `_buildLocalMode`
+
+### 5. 聊天长按气泡不弹菜单
+- **根因**：`_ChatBubble` 只给 AI 消息加 `GestureDetector`（`!isUser`），用户自己的消息不响应
+- **修复**：去掉 `!isUser` 条件，所有气泡统一支持长按；加 `HitTestBehavior.opaque`
+- 文件：`word_chat_page.dart` `_ChatBubble.build()`
+
+### 6. LLM配置输入框英文显示
+- **根因**：hint 文本用纯英文 URL/模型名（如 `https://open.bigmodel.cn/api/paas/v4`、`glm-4-flash`）
+- **修复**：hint 统一改为中文（"请输入 API 密钥""请输入接口地址""请输入模型名称"）
+- 文件：`settings_page.dart`、`word_chat_page.dart`
+
+### 7. 聊天AI配置与全局设置不一致
+- **根因**：设置页和聊天抽屉各自实现了一套 AI 配置 UI（两套 controller、方法、样式），代码重复约 200 行
+- **修复**：抽取 `ApiConfigForm` 共享组件，两处统一复用；移除 ~370 行重复代码
+- 文件：新建 `api_config_form.dart`，修改 `settings_page.dart`、`word_chat_page.dart`
+
+### 构建
+- Debug APK 构建成功：`build/app/outputs/flutter-apk/app-debug.apk`
+
+---
+
+
+## Session 44 — 8 项 UI 修复：真机测试反馈（2026-05-14）
+
+用户测试去边框+模块化后的 APK，报告 8 个问题，全部修复：
+
+### 1. 阴影不明显（新学词/待复习卡片 + 聊天框查询结果）
+- **根因**：`_PlanNumberCard` 和 `_LocalResultCard` 背景为 `Color(0xFFF9F9FB)` 近白色，与 `canvasWhite` 背景几乎同色，4% 黑色阴影不可见
+- **修复**：背景改为 `Colors.white`，阴影从 `0x0A` → `0x0F`
+- 涉及：`learn_page.dart:338`、`word_chat_page.dart:1160`
+
+### 2. 查询结果英文释义 fallback
+- **根因**：`DictionaryResult.primaryDefinition` 仅从 ECDICT `translation`（中文）取值，为空时返回空字符串
+- **修复**：增加 fallback 链：`translation` → `meanings.first.definitions`（英文定义，至少有个解释）
+- 涉及：`dictionary_result.dart:105-113`
+
+### 3. 键盘遮住导入页输入框
+- **根因**：`TextField` 缺少 `scrollPadding`，键盘弹起时 `SingleChildScrollView` 不自动滚动
+- **修复**：TextField 添加 `scrollPadding: EdgeInsets.only(bottom: 120)`
+- 涉及：`import_wordlist_sheet.dart:251`
+
+### 4. 单词入口→聊天应新开会话
+- **根因**：`initState` 始终调用 `notifier.init()`（恢复已有会话），`initialWord` 不为空时仍载入当前会话
+- **修复**：分支逻辑 — `initialWord != null` 时调用 `notifier.newSession()` 创建新会话，否则 `notifier.init()`
+- 涉及：`word_chat_page.dart:55-69`
+
+### 5-6. AI 配置页布局重构
+- **问题 5**：模块不清晰 — 5 个字段平铺无分组
+- **问题 6**：输入框压边 — `labelText` 内嵌标签 + `isDense` + `contentPadding: horizontal: 10`
+- **修复**：
+  - 拆为三组：供应商 / 连接配置（API 密钥+接口地址+模型）/ 测试连接，间距增大
+  - `_buildField` 改为外部标签模式（与 WordChat 抽屉一致），`contentPadding` 10→12，移除 `isDense` 和 `labelText`
+- 涉及：`settings_page.dart:557-683`
+
+### 7. 关于独立页面
+- **修复**：新建 `about_page.dart`（App 图标 + WordSnap + v1.0.0 + 源码/反馈/隐私卡片），路由 `/settings/about`，`_AboutTile` 改为导航行
+- 涉及：新建 `lib/features/settings/about_page.dart`，修改 `app_router.dart`、`settings_page.dart`
+
+### APK
+`build/app/outputs/flutter-apk/app-debug.apk`
+
+### 涉及文件
+```
+lib/features/learn/learn_page.dart                    — _PlanNumberCard 背景 white + 阴影 0x0F
+lib/features/chat/word_chat_page.dart                 — _LocalResultCard 同样修复 + initState newSession 分支
+lib/data/services/dictionary_result.dart              — primaryDefinition fallback 链
+lib/features/wordbook/import_wordlist_sheet.dart       — scrollPadding
+lib/features/settings/settings_page.dart              — _ApiConfigTile 重构 + _buildField 外部标签
+lib/features/settings/about_page.dart                 — 新建
+lib/core/router/app_router.dart                       — /settings/about 路由
+```
+
+---
 
 ## Session 43 — 每日一词切换规则修正 + 单词本详情红屏修复（2026-05-13）
 

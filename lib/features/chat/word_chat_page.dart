@@ -6,8 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/colors.dart';
 import '../../data/models/word.dart';
 import '../../data/models/word_context.dart';
-import '../../data/services/llm_dictionary_service.dart';
-import '../../data/repositories/config_repository.dart';
+import '../settings/api_config_form.dart';
 import '../settings/api_config_provider.dart';
 import '../wordbook/wordbook_provider.dart';
 import '../learn/learn_provider.dart';
@@ -31,21 +30,6 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   String? _drawerType;
 
-  final _apiKeyCtrl = TextEditingController();
-  final _baseUrlCtrl = TextEditingController();
-  final _modelCtrl = TextEditingController();
-  bool _testing = false;
-  bool _obscureApiKey = true;
-  int _selectedProviderIdx = -1;
-
-  static const _providers = [
-    ('DeepSeek', 'https://api.deepseek.com/v1', 'deepseek-chat'),
-    ('智谱 (ChatGLM)', 'https://open.bigmodel.cn/api/paas/v4', 'glm-4-flash'),
-    ('火山方舟 (豆包)', 'https://ark.cn-beijing.volces.com/api/v3', 'doubao-pro-32k'),
-    ('阿里云百炼 (通义)', 'https://dashscope.aliyuncs.com/compatible-mode/v1', 'qwen-plus'),
-    ('自定义', '', ''),
-  ];
-
   bool get _aiAvailable {
     final config = ref.read(apiConfigProvider);
     return config.isConfigured;
@@ -55,9 +39,9 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   void initState() {
     super.initState();
     Future.microtask(() async {
-      await ref.read(wordChatProvider.notifier).init();
+      final notifier = ref.read(wordChatProvider.notifier);
       if (widget.initialWord != null) {
-        final notifier = ref.read(wordChatProvider.notifier);
+        await notifier.newSession();
         notifier.setAnchoredWord(widget.initialWord!);
         if (widget.initialMode == 'ai' && _aiAvailable) {
           notifier.setMode(ChatMode.ai);
@@ -65,6 +49,8 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
         } else {
           notifier.localLookup(widget.initialWord!);
         }
+      } else {
+        await notifier.init();
       }
     });
   }
@@ -74,9 +60,6 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     _inputCtrl.dispose();
     _scrollCtrl.dispose();
     _focusNode.dispose();
-    _apiKeyCtrl.dispose();
-    _baseUrlCtrl.dispose();
-    _modelCtrl.dispose();
     super.dispose();
   }
 
@@ -301,7 +284,9 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: Text(state.anchoredWord != null ? '与AI聊${state.anchoredWord}' : 'WordChat'),
+        title: Text(state.anchoredWord != null
+            ? (state.mode == ChatMode.ai ? '与AI聊${state.anchoredWord}' : '查词 · ${state.anchoredWord}')
+            : 'WordChat'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -382,17 +367,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   }
 
   Widget _buildSettingsDrawer() {
-    final config = ref.watch(apiConfigProvider);
     final chatEnabled = ref.watch(wordChatEnabledProvider);
-
-    if (_baseUrlCtrl.text.isEmpty && !config.loading) {
-      _baseUrlCtrl.text = config.baseUrl;
-      _apiKeyCtrl.text = config.apiKey;
-      _modelCtrl.text = config.model;
-      if (_selectedProviderIdx < 0) {
-        _selectedProviderIdx = _matchProvider(config.baseUrl, config.model);
-      }
-    }
 
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.82,
@@ -418,66 +393,15 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  // ── WordChat 开关 ──
                   _buildSwitchTile('WordChat', chatEnabled, (v) {
                     ref.read(wordChatEnabledProvider.notifier).toggle();
                   }),
                   const SizedBox(height: 20),
-                  // ── LLM 模型配置分区 ──
                   const Text('LLM 模型配置', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkBlack)),
                   const SizedBox(height: 4),
                   const Text('兼容 OpenAI 协议，支持多家供应商切换', style: TextStyle(fontSize: 11, color: Color(0xFF999999))),
                   const SizedBox(height: 14),
-                  // ── 供应商 ──
-                  _buildProviderDropdown(),
-                  const SizedBox(height: 14),
-                  // ── API 密钥 ──
-                  _buildField(
-                    'API 密钥',
-                    _apiKeyCtrl,
-                    hint: 'sk-...',
-                    obscure: _obscureApiKey,
-                    suffix: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _SuffixIcon(
-                          icon: _obscureApiKey ? Icons.visibility_off : Icons.visibility,
-                          onTap: () => setState(() => _obscureApiKey = !_obscureApiKey),
-                        ),
-                        const SizedBox(width: 2),
-                        _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_apiKeyCtrl)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  // ── 接口地址 ──
-                  _buildField(
-                    '接口地址',
-                    _baseUrlCtrl,
-                    hint: ConfigRepository.defaultBaseUrl,
-                    suffix: _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_baseUrlCtrl)),
-                  ),
-                  const SizedBox(height: 14),
-                  // ── 模型 ──
-                  _buildField(
-                    '模型',
-                    _modelCtrl,
-                    hint: ConfigRepository.defaultModel,
-                    suffix: _SuffixIcon(asset: 'assets/icons/paste.png', onTap: () => _pasteToField(_modelCtrl)),
-                  ),
-                  const SizedBox(height: 20),
-                  // ── 测试连接 ──
-                  FilledButton(
-                    onPressed: _testing ? null : _testConnection,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.signalBlue,
-                      minimumSize: const Size(double.infinity, 44),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                    ),
-                    child: _testing
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('测试连接', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                  ),
+                  const ApiConfigForm(),
                 ],
               ),
             ),
@@ -485,14 +409,6 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
         ),
       ),
     );
-  }
-
-  int _matchProvider(String baseUrl, String model) {
-    for (var i = 0; i < _providers.length - 1; i++) {
-      final p = _providers[i];
-      if (p.$2 == baseUrl && p.$3 == model) return i;
-    }
-    return _providers.length - 1; // 自定义
   }
 
   Widget _buildSwitchTile(String label, bool value, ValueChanged<bool> onChanged) {
@@ -510,116 +426,6 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
         ),
       ],
     );
-  }
-
-  Widget _buildProviderDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('供应商', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF999999))),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<int>(
-          initialValue: _selectedProviderIdx < 0 ? null : _selectedProviderIdx,
-          hint: const Text('请选择供应商', style: TextStyle(fontSize: 13, color: Color(0xFFBBBBBB))),
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE2E2EA)),
-            ),
-          ),
-          items: List.generate(_providers.length, (i) {
-            return DropdownMenuItem(value: i, child: Text(_providers[i].$1, style: const TextStyle(fontSize: 14)));
-          }),
-          onChanged: (i) {
-            if (i == null) return;
-            _onProviderSelected(i);
-          },
-        ),
-      ],
-    );
-  }
-
-  void _onProviderSelected(int index) {
-    setState(() => _selectedProviderIdx = index);
-    final p = _providers[index];
-    _baseUrlCtrl.text = p.$2;
-    _modelCtrl.text = p.$3;
-    // 保存到 config
-    final notifier = ref.read(apiConfigProvider.notifier);
-    notifier.setBaseUrl(p.$2);
-    notifier.setModel(p.$3);
-    ref.read(configRepoProvider).set('llm_provider', index.toString());
-  }
-
-  void _pasteToField(TextEditingController ctrl) async {
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
-    if (data?.text != null && data!.text!.isNotEmpty) {
-      ctrl.text = data.text!;
-      // 同步保存：追一下当前字段到 config
-      if (ctrl == _apiKeyCtrl) ref.read(apiConfigProvider.notifier).setApiKey(data.text!);
-      if (ctrl == _baseUrlCtrl) ref.read(apiConfigProvider.notifier).setBaseUrl(data.text!);
-      if (ctrl == _modelCtrl) ref.read(apiConfigProvider.notifier).setModel(data.text!);
-    }
-  }
-
-  Widget _buildField(String label, TextEditingController ctrl, {String? hint, bool obscure = false, Widget? suffix}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF999999))),
-        const SizedBox(height: 6),
-        TextField(
-          controller: ctrl,
-          obscureText: obscure,
-          style: const TextStyle(fontSize: 14),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE2E2EA)),
-            ),
-            suffixIcon: suffix,
-            suffixIconConstraints: const BoxConstraints(maxHeight: 36),
-          ),
-          onChanged: (v) {
-            if (ctrl == _apiKeyCtrl) ref.read(apiConfigProvider.notifier).setApiKey(v);
-            if (ctrl == _baseUrlCtrl) ref.read(apiConfigProvider.notifier).setBaseUrl(v);
-            if (ctrl == _modelCtrl) ref.read(apiConfigProvider.notifier).setModel(v);
-          },
-        ),
-      ],
-    );
-  }
-
-  Future<void> _testConnection() async {
-    final apiKey = _apiKeyCtrl.text.trim();
-    if (apiKey.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先填写 API Key')),
-      );
-      return;
-    }
-
-    setState(() => _testing = true);
-
-    final llm = LlmDictionaryService();
-    final baseUrl = _baseUrlCtrl.text.trim();
-    final model = _modelCtrl.text.trim();
-    final error = await llm.testConnection(
-      baseUrl: baseUrl.isNotEmpty ? baseUrl : ConfigRepository.defaultBaseUrl,
-      apiKey: apiKey,
-      model: model.isNotEmpty ? model : ConfigRepository.defaultModel,
-    );
-
-    if (mounted) {
-      setState(() => _testing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error == null ? '连接成功' : '连接失败: $error')),
-      );
-    }
   }
 
   Widget _buildHistoryDrawer(WordChatState state) {
@@ -706,7 +512,15 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
         _LocalResultCard(result: result),
         const SizedBox(height: 16),
         FutureBuilder<bool>(
-          future: ref.read(wordRepoProvider).existsByText(result.word),
+          future: () async {
+            final capture = ref.read(captureStateProvider);
+            if (capture.notebooks.isEmpty) {
+              await ref.read(captureStateProvider.notifier).loadNotebooks();
+            }
+            final notebooks = ref.read(captureStateProvider).notebooks;
+            if (notebooks.isEmpty) return false;
+            return ref.read(wordRepoProvider).existsByTextInNotebook(result.word, notebooks.first.id!);
+          }(),
           builder: (_, snap) {
             final exists = snap.data ?? false;
             if (exists) return const SizedBox.shrink();
@@ -1102,9 +916,10 @@ class _ChatBubble extends StatelessWidget {
       ),
     );
 
-    if (!isUser && onLongPress != null) {
+    if (onLongPress != null) {
       return GestureDetector(
         onLongPress: onLongPress,
+        behavior: HitTestBehavior.opaque,
         child: bubble,
       );
     }
@@ -1153,9 +968,9 @@ class _LocalResultCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9FB),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E2EA)),
+        boxShadow: const [BoxShadow(color: Color(0x0F000000), blurRadius: 12, offset: Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -1236,26 +1051,6 @@ class _LocalResultCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SuffixIcon extends StatelessWidget {
-  final IconData? icon;
-  final String? asset;
-  final VoidCallback onTap;
-  const _SuffixIcon({this.icon, this.asset, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: asset != null
-            ? Image.asset(asset!, width: 18, height: 18, color: const Color(0xFF999999))
-            : Icon(icon, size: 18, color: const Color(0xFF999999)),
       ),
     );
   }

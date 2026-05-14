@@ -294,9 +294,9 @@ class _StudyPlanCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _PlanIndicator(value: '$dailyLimit', label: '每日新学'),
-              Container(width: 1, height: 24, color: const Color(0xFFE2E2EA)),
+              Container(width: 1, height: 24, color: const Color(0xFFF0F0F5)),
               _PlanIndicator(value: '$estimatedDays', label: '预计天数', valueColor: AppColors.lavender),
-              Container(width: 1, height: 24, color: const Color(0xFFE2E2EA)),
+              Container(width: 1, height: 24, color: const Color(0xFFF0F0F5)),
               const _PlanIndicator(value: '10:1', label: '新复比'),
             ],
           ),
@@ -335,9 +335,9 @@ class _PlanNumberCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 18, 14, 18),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9FB),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E2EA)),
+        boxShadow: const [BoxShadow(color: Color(0x0F000000), blurRadius: 12, offset: Offset(0, 2))],
       ),
       child: Column(
         children: [
@@ -474,7 +474,7 @@ class _DailyWordCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 GestureDetector(
-                  onTap: () => context.push('/chat?word=${Uri.encodeComponent(word.text)}&mode=ai'),
+                  onTap: () => context.push('/chat?word=${Uri.encodeComponent(word.text)}'),
                   child: Container(
                     width: 28,
                     height: 28,

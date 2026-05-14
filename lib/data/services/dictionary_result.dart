@@ -109,6 +109,15 @@ class DictionaryResult {
       text = text.replaceFirst(RegExp(r'^[a-z]+\.\s*'), '');
       return text;
     }
+    // Fallback: use first English definition from meanings
+    for (final m in meanings) {
+      for (final d in m.definitions) {
+        final def = d.definition.trim();
+        if (def.isNotEmpty) {
+          return def.replaceFirst(RegExp(r'^[a-z]+\.\s*'), '');
+        }
+      }
+    }
     return '';
   }
 

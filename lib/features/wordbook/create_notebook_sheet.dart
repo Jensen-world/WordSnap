@@ -67,6 +67,12 @@ class _CreateNotebookSheetState extends State<CreateNotebookSheet> {
             autofocus: !isEditing,
             decoration: const InputDecoration(
               hintText: '输入单词本名称...',
+              filled: true,
+              fillColor: Color(0xFFF0F0F5),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
           const SizedBox(height: 20),

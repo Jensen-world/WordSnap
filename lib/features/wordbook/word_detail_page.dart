@@ -210,7 +210,7 @@ class _WordDetailPageState extends ConsumerState<WordDetailPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline, size: 20),
-            onPressed: () => context.push('/chat?word=${Uri.encodeComponent(word.text)}&mode=ai'),
+            onPressed: () => context.push('/chat?word=${Uri.encodeComponent(word.text)}'),
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, size: 20),
@@ -432,7 +432,7 @@ class _Section extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E2EA)),
+        boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
