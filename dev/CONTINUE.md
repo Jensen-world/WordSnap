@@ -1,6 +1,35 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-14（Session 45 — 7 项 Bug 修复：真机测试第二轮反馈）
+> 最后更新：2026-05-14（Session 46 — 例句显示修复 + 聊天逻辑改善）
+
+## Session 46 — 例句显示修复 + 聊天逻辑改善（2026-05-14）
+
+用户反馈例句不显示、聊天逻辑乱。根因分析 + 4 项修复：
+
+### 1. 查词流程重排：Tatoeba 优先
+- **根因**：旧流程 LLM 优先，Tatoeba 作为最后 fallback。LLM 失败/无配置时，Tatoeba 词条覆盖率有限（16万条），很多常见词无例句
+- **修复**：Tatoeba → LLM 顺序调换，离线数据优先，LLM 仅在 Tatoeba 无结果时补充
+- **文件**：`lib/data/services/dictionary_service.dart`
+
+### 2. Tatoeba 例句搜索扩展
+- **根因**：旧查询仅匹配 `word` 列（词条索引词），大量句子虽包含目标词但因索引词不同而搜不到（如 "book" 词条 0 条，但句子中含 "book" 的条目很多）
+- **修复**：精确匹配→LIKE 句子内容 fallback（包含/开头/结尾）
+- **文件**：`lib/data/services/tatoeba_service.dart`
+
+### 3. localLookup 错误处理
+- **根因**：`_dictionaryService.lookup()` 无 try-catch，异常导致 `localLoading` 永不为 false
+- **修复**：try-catch，异常时重置 loading 并返回 null
+- **文件**：`lib/features/chat/word_chat_provider.dart`
+
+### 4. 查词无结果提示优化
+- **根因**：查词返回 null 时显示"正在查询..."，用户以为卡住
+- **修复**：区分"未查过"和"已查无结果"，查无结果时显示"未找到" + 引导切换 AI 模式
+- **文件**：`lib/features/chat/word_chat_page.dart`
+
+### 构建
+- Debug APK：`build/app/outputs/flutter-apk/app-debug.apk`
+
+---
 
 ## Session 45 — 7 项 Bug 修复（2026-05-14）
 

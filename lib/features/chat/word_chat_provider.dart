@@ -305,11 +305,12 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
       _updateSession();
     }
 
-    final result = await _dictionaryService.lookup(clean);
-    state = state.copyWith(
-      localLoading: false,
-      localResult: result,
-    );
+    try {
+      final result = await _dictionaryService.lookup(clean);
+      state = state.copyWith(localLoading: false, localResult: result);
+    } catch (_) {
+      state = state.copyWith(localLoading: false, localResult: null);
+    }
   }
 
   Future<void> sendMessage(String text) async {

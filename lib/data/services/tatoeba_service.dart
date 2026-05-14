@@ -21,19 +21,31 @@ class TatoebaService {
   }
 
   /// Returns the first matching example for a word, or null.
+  /// Falls back to LIKE search on the sentence column if exact word match fails.
   Future<Map<String, String>?> lookup(String word) async {
     final clean = word.trim().toLowerCase();
     if (clean.isEmpty) return null;
 
     try {
       final db = await _getDb();
-      final rows = await db.query(
+      // 1. Exact word match (fast, indexed)
+      var rows = await db.query(
         'tatoeba',
         columns: ['sentence', 'translation'],
         where: 'word = ?',
         whereArgs: [clean],
         limit: 1,
       );
+      // 2. Fallback: search the sentence column for the word
+      if (rows.isEmpty) {
+        rows = await db.query(
+          'tatoeba',
+          columns: ['sentence', 'translation'],
+          where: 'sentence LIKE ? OR sentence LIKE ? OR sentence LIKE ?',
+          whereArgs: ['% $clean %', '$clean %', '% $clean'],
+          limit: 1,
+        );
+      }
       if (rows.isEmpty) return null;
       return {
         'sentence': rows.first['sentence'] as String,

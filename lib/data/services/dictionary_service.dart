@@ -36,57 +36,52 @@ class DictionaryService {
     final cached = await _getCached(clean);
     if (cached != null) return cached;
 
-    // 2. ECDICT first — always returns definitions
+    // 2. ECDICT — always returns definitions
     final ecdictResult = await _lookupEcdict(clean);
 
-    // 3. Try LLM enrichment
-    final apiKey = await _config.get('llm_api_key');
-    if (apiKey != null && apiKey.isNotEmpty) {
-      final baseUrl = await _config.get('llm_base_url') ?? ConfigRepository.defaultBaseUrl;
-      final model = await _config.get('llm_model') ?? ConfigRepository.defaultModel;
-
-      // Full LLM lookup (definitions + examples)
-      final llmResult = await _llm.lookup(clean, baseUrl: baseUrl, apiKey: apiKey, model: model);
-      if (llmResult != null) {
-        await _putCache(llmResult);
-        return llmResult;
+    // 3. Tatoeba offline — always try first, it's fast and offline
+    Map<String, String>? bestExample;
+    if (ecdictResult != null) {
+      final tatoebaExample = await _tatoeba.lookup(clean);
+      if (tatoebaExample != null) {
+        bestExample = tatoebaExample;
       }
+    }
 
-      // LLM main lookup failed — if ECDICT has no examples, try a lightweight call just for the example
-      if (ecdictResult != null &&
-          (ecdictResult.exampleSentence == null || ecdictResult.exampleSentence!.isEmpty)) {
-        final example = await _llm.lookupExample(clean, baseUrl: baseUrl, apiKey: apiKey, model: model);
-        if (example != null) {
-          return DictionaryResult(
-            word: ecdictResult.word,
-            phonetic: ecdictResult.phonetic,
-            translation: ecdictResult.translation,
-            meanings: ecdictResult.meanings,
-            exchange: ecdictResult.exchange,
-            tag: ecdictResult.tag,
-            exampleSentence: example['sentence'],
-            exampleTranslation: example['translation'],
-          );
+    // 4. LLM enrichment — only if Tatoeba had no example
+    if (bestExample == null) {
+      final apiKey = await _config.get('llm_api_key');
+      if (apiKey != null && apiKey.isNotEmpty) {
+        final baseUrl = await _config.get('llm_base_url') ?? ConfigRepository.defaultBaseUrl;
+        final model = await _config.get('llm_model') ?? ConfigRepository.defaultModel;
+
+        final llmResult = await _llm.lookup(clean, baseUrl: baseUrl, apiKey: apiKey, model: model);
+        if (llmResult != null) {
+          await _putCache(llmResult);
+          return llmResult;
+        }
+
+        if (ecdictResult != null) {
+          final example = await _llm.lookupExample(clean, baseUrl: baseUrl, apiKey: apiKey, model: model);
+          if (example != null) {
+            bestExample = example;
+          }
         }
       }
     }
 
-    // 4. Tatoeba offline fallback — if still no examples
-    if (ecdictResult != null &&
-        (ecdictResult.exampleSentence == null || ecdictResult.exampleSentence!.isEmpty)) {
-      final tatoebaExample = await _tatoeba.lookup(clean);
-      if (tatoebaExample != null) {
-        return DictionaryResult(
-          word: ecdictResult.word,
-          phonetic: ecdictResult.phonetic,
-          translation: ecdictResult.translation,
-          meanings: ecdictResult.meanings,
-          exchange: ecdictResult.exchange,
-          tag: ecdictResult.tag,
-          exampleSentence: tatoebaExample['sentence'],
-          exampleTranslation: tatoebaExample['translation'],
-        );
-      }
+    // Return ECDICT result with best available example
+    if (ecdictResult != null && bestExample != null) {
+      return DictionaryResult(
+        word: ecdictResult.word,
+        phonetic: ecdictResult.phonetic,
+        translation: ecdictResult.translation,
+        meanings: ecdictResult.meanings,
+        exchange: ecdictResult.exchange,
+        tag: ecdictResult.tag,
+        exampleSentence: bestExample['sentence'],
+        exampleTranslation: bestExample['translation'],
+      );
     }
 
     return ecdictResult;

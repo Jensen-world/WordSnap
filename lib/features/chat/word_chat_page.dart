@@ -487,19 +487,32 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
 
     final result = state.localResult;
     if (result == null) {
+      final hasLookedUp = state.anchoredWord != null;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.search_rounded, size: 64, color: AppColors.signalBlue),
+              Icon(
+                hasLookedUp ? Icons.search_off_rounded : Icons.search_rounded,
+                size: 64,
+                color: hasLookedUp ? const Color(0xFFBBBBBB) : AppColors.signalBlue,
+              ),
               const SizedBox(height: 16),
               Text(
-                widget.initialWord != null ? '正在查询「${widget.initialWord}」...' : '输入单词开始本地查词',
+                hasLookedUp ? '未找到「${state.anchoredWord}」' : '输入单词开始本地查词',
                 style: const TextStyle(fontSize: 15, color: Color(0xFF666666)),
                 textAlign: TextAlign.center,
               ),
+              if (hasLookedUp) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  '请检查拼写，或切换到 AI 模式获取帮助',
+                  style: TextStyle(fontSize: 12, color: Color(0xFFBBBBBB)),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),
