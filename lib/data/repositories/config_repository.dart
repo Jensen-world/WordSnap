@@ -17,6 +17,6 @@ class ConfigRepository {
   }
 
   // Defaults
-  static const defaultBaseUrl = 'https://open.bigmodel.cn/api/paas/v4';
-  static const defaultModel = 'glm-4-flash';
+  static const defaultBaseUrl = 'https://api.deepseek.com/v1';
+  static const defaultModel = 'deepseek-chat';
 }

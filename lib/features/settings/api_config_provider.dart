@@ -66,10 +66,14 @@ class ApiConfigNotifier extends StateNotifier<ApiConfig> {
   }
 
   Future<void> _load() async {
-    final baseUrl = await _repo.get('llm_base_url') ?? ConfigRepository.defaultBaseUrl;
-    final apiKey = await _repo.get('llm_api_key') ?? '';
-    final model = await _repo.get('llm_model') ?? ConfigRepository.defaultModel;
-    state = state.copyWith(baseUrl: baseUrl, apiKey: apiKey, model: model, loading: false);
+    try {
+      final baseUrl = await _repo.get('llm_base_url') ?? ConfigRepository.defaultBaseUrl;
+      final apiKey = await _repo.get('llm_api_key') ?? '';
+      final model = await _repo.get('llm_model') ?? ConfigRepository.defaultModel;
+      state = state.copyWith(baseUrl: baseUrl, apiKey: apiKey, model: model, loading: false);
+    } catch (_) {
+      state = state.copyWith(loading: false);
+    }
   }
 
   Future<void> setBaseUrl(String value) async {

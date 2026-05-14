@@ -29,10 +29,18 @@ class _ApiConfigFormState extends ConsumerState<ApiConfigForm> {
     ('自定义', '', ''),
   ];
 
+  bool _loaded = false;
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(_loadConfig);
+    Future.microtask(() {
+      _loadConfig();
+      ref.listenManual(apiConfigProvider, (prev, next) {
+        if (_loaded) return;
+        _loadConfig();
+      });
+    });
   }
 
   @override
@@ -46,6 +54,7 @@ class _ApiConfigFormState extends ConsumerState<ApiConfigForm> {
   void _loadConfig() {
     final config = ref.read(apiConfigProvider);
     if (config.loading) return;
+    _loaded = true;
     _baseUrlCtrl.text = config.baseUrl;
     _apiKeyCtrl.text = config.apiKey;
     _modelCtrl.text = config.model;
