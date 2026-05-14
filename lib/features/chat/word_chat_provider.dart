@@ -154,12 +154,12 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
       if (sessions.isEmpty) {
         final now = DateTime.now();
         final id = await db.insert('chat_sessions', {
-          'mode': 'local',
+          'mode': 'ai',
           'created_at': now.toIso8601String(),
           'updated_at': now.toIso8601String(),
         });
-        final newSession = ChatSession(id: id, createdAt: now, updatedAt: now);
-        state = state.copyWith(sessions: [newSession], currentSessionId: id);
+        final newSession = ChatSession(id: id, createdAt: now, updatedAt: now, mode: ChatMode.ai);
+        state = state.copyWith(sessions: [newSession], currentSessionId: id, mode: ChatMode.ai);
       } else {
         state = state.copyWith(
           sessions: sessions,
@@ -186,21 +186,21 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
     } catch (_) {}
   }
 
-  Future<void> newSession() async {
+  Future<void> newSession({ChatMode mode = ChatMode.ai}) async {
     try {
       final db = await DatabaseHelper.instance.db;
       final now = DateTime.now();
       final id = await db.insert('chat_sessions', {
-        'mode': 'local',
+        'mode': mode.name,
         'created_at': now.toIso8601String(),
         'updated_at': now.toIso8601String(),
       });
-      final session = ChatSession(id: id, createdAt: now, updatedAt: now);
+      final session = ChatSession(id: id, createdAt: now, updatedAt: now, mode: mode);
       state = state.copyWith(
         sessions: [session, ...state.sessions],
         currentSessionId: id,
         messages: [],
-        mode: ChatMode.local,
+        mode: mode,
         anchoredWord: null,
         clearLocalResult: true,
       );
@@ -255,9 +255,9 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
     _updateSession();
   }
 
-  void setMode(ChatMode mode) {
-    state = state.copyWith(mode: mode);
-    _updateSession();
+  Future<void> setMode(ChatMode mode) async {
+    if (mode == state.mode) return;
+    await newSession(mode: mode);
   }
 
   Future<void> _updateSession() async {
@@ -299,11 +299,9 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
   Future<void> localLookup(String word) async {
     final clean = word.trim();
     if (clean.isEmpty) return;
-    state = state.copyWith(localLoading: true, clearLocalResult: true);
-    if (state.anchoredWord == null) {
-      state = state.copyWith(anchoredWord: clean);
-      _updateSession();
-    }
+    await newSession(mode: ChatMode.local);
+    state = state.copyWith(localLoading: true, anchoredWord: clean);
+    _updateSession();
 
     try {
       final result = await _dictionaryService.lookup(clean);
@@ -316,6 +314,13 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
   Future<void> sendMessage(String text) async {
     final clean = text.trim();
     if (clean.isEmpty || state.isStreaming) return;
+
+    // First user message becomes the session title (anchoredWord)
+    final isFirstMessage = !state.messages.any((m) => m.role == 'user');
+    if (isFirstMessage) {
+      state = state.copyWith(anchoredWord: clean);
+      _updateSession();
+    }
 
     final word = state.anchoredWord ?? clean;
 

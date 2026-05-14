@@ -30,25 +30,15 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   String? _drawerType;
 
-  bool get _aiAvailable {
-    final config = ref.read(apiConfigProvider);
-    return config.isConfigured;
-  }
-
   @override
   void initState() {
     super.initState();
     Future.microtask(() async {
       final notifier = ref.read(wordChatProvider.notifier);
       if (widget.initialWord != null) {
-        await notifier.newSession();
+        await notifier.newSession(mode: ChatMode.ai);
         notifier.setAnchoredWord(widget.initialWord!);
-        if (widget.initialMode == 'ai' && _aiAvailable) {
-          notifier.setMode(ChatMode.ai);
-          notifier.sendMessage('介绍一下「${widget.initialWord}」这个词');
-        } else {
-          notifier.localLookup(widget.initialWord!);
-        }
+        notifier.sendMessage('介绍一下「${widget.initialWord}」这个词');
       } else {
         await notifier.init();
       }
@@ -68,6 +58,16 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     _scaffoldKey.currentState?.openEndDrawer();
   }
 
+  String _buildTitle(WordChatState state) {
+    final word = state.anchoredWord;
+    if (word == null || word.isEmpty) {
+      if (state.messages.isEmpty) return 'WordChat';
+      return state.mode == ChatMode.ai ? 'AI 对话' : 'WordChat';
+    }
+    if (state.mode == ChatMode.local) return '查词 · $word';
+    return '和AI聊$word';
+  }
+
   void _submit() {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty) return;
@@ -81,12 +81,6 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   }
 
   void _setMode(ChatMode mode) {
-    if (mode == ChatMode.ai && !_aiAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先在设置中配置大模型 API 并开启 WordChat')),
-      );
-      return;
-    }
     ref.read(wordChatProvider.notifier).setMode(mode);
   }
 
@@ -284,9 +278,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: Text(state.anchoredWord != null
-            ? (state.mode == ChatMode.ai ? '与AI聊${state.anchoredWord}' : '查词 · ${state.anchoredWord}')
-            : 'WordChat'),
+        title: Text(_buildTitle(state)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -522,7 +514,10 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        _LocalResultCard(result: result),
+        _LocalResultCard(
+          result: result,
+          onChat: () => _chatAboutWord(result.word),
+        ),
         const SizedBox(height: 16),
         FutureBuilder<bool>(
           future: () async {
@@ -532,7 +527,7 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
             }
             final notebooks = ref.read(captureStateProvider).notebooks;
             if (notebooks.isEmpty) return false;
-            return ref.read(wordRepoProvider).existsByTextInNotebook(result.word, notebooks.first.id!);
+            return ref.read(wordRepoProvider).existsByText(result.word);
           }(),
           builder: (_, snap) {
             final exists = snap.data ?? false;
@@ -554,6 +549,8 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   }
 
   Widget _buildAiMode(WordChatState state) {
+    final config = ref.read(apiConfigProvider);
+
     if (state.messages.isEmpty) {
       return Center(
         child: Padding(
@@ -568,6 +565,29 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
                 style: const TextStyle(fontSize: 15, color: Color(0xFF666666)),
                 textAlign: TextAlign.center,
               ),
+              if (!config.isConfigured) ...[
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () => _openDrawer('settings'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.amberFlash.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.info_outline, size: 14, color: AppColors.amberFlash),
+                        const SizedBox(width: 6),
+                        const Text('请先配置 LLM 模型', style: TextStyle(fontSize: 12, color: AppColors.amberFlash)),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.arrow_forward, size: 12, color: AppColors.amberFlash),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -704,6 +724,13 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
 
   void _sendQuick(String prompt) {
     ref.read(wordChatProvider.notifier).sendMessage(prompt);
+  }
+
+  Future<void> _chatAboutWord(String word) async {
+    final notifier = ref.read(wordChatProvider.notifier);
+    await notifier.newSession(mode: ChatMode.ai);
+    notifier.setAnchoredWord(word);
+    notifier.sendMessage('介绍一下「$word」这个词');
   }
 }
 
@@ -973,8 +1000,9 @@ class _QuickChip extends StatelessWidget {
 
 class _LocalResultCard extends StatelessWidget {
   final dynamic result;
+  final VoidCallback? onChat;
 
-  const _LocalResultCard({required this.result});
+  const _LocalResultCard({required this.result, this.onChat});
 
   @override
   Widget build(BuildContext context) {
@@ -988,9 +1016,29 @@ class _LocalResultCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            result.word,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                result.word,
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.inkBlack),
+              ),
+              if (onChat != null) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: onChat,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.signalBlue.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(LucideIcons.bot, size: 14, color: AppColors.signalBlue),
+                  ),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 6),
           if (result.phonetic != null)
