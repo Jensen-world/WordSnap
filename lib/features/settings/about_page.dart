@@ -56,13 +56,13 @@ class AboutPage extends StatelessWidget {
               label: '源码',
               value: 'GitHub',
               icon: Icons.open_in_new,
-              onTap: () => _openUrl('https://github.com/yclee5206-create/wordsnap'),
+              onTap: () => _openUrl('https://github.com/Jensen-world/WordSnap'),
             ),
             _AboutRow(
               label: '反馈',
               value: 'GitHub Issues',
               icon: Icons.open_in_new,
-              onTap: () => _openUrl('https://github.com/yclee5206-create/wordsnap/issues'),
+              onTap: () => _openUrl('https://github.com/Jensen-world/WordSnap/issues'),
             ),
             _AboutRow(
               label: '隐私',
