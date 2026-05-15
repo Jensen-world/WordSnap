@@ -147,31 +147,6 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
     } catch (_) {}
   }
 
-  Future<void> _loadSessions() async {
-    try {
-      final db = await DatabaseHelper.instance.db;
-      final rows = await db.rawQuery('''
-        SELECT s.*, COUNT(wc.id) as message_count
-        FROM chat_sessions s
-        LEFT JOIN word_chat wc ON wc.session_id = s.id
-        GROUP BY s.id
-        ORDER BY s.updated_at DESC
-      ''');
-      final sessions = rows.map((r) => ChatSession.fromMap(r)).toList();
-
-      if (sessions.isNotEmpty) {
-        state = state.copyWith(
-          sessions: sessions,
-          currentSessionId: sessions.first.id,
-          mode: sessions.first.mode,
-          anchoredWord: sessions.first.anchoredWord,
-        );
-      } else {
-        state = state.copyWith(mode: ChatMode.ai);
-      }
-    } catch (_) {}
-  }
-
   Future<void> _loadSessionMessages(int sessionId) async {
     try {
       final db = await DatabaseHelper.instance.db;

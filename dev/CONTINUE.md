@@ -65,7 +65,7 @@
 | 模式 | 状态 | 标题 |
 |---|---|---|
 | 本地 | 查了 apple | `查词 · apple` |
-| AI | 单词话题（banana） | `和AI聊banana` |
+| AI | 单词话题（banana） | `banana` |
 | AI | 句子话题（如何练口语） | `如何练口语` |
 | AI | 新对话，无消息 | `AI 对话` |
 | — | 空白 | `WordChat` |
