@@ -133,10 +133,18 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
   WordChatNotifier() : super(const WordChatState());
 
   Future<void> init() async {
-    await _loadSessions();
-    if (state.currentSessionId != null) {
-      await _loadSessionMessages(state.currentSessionId!);
-    }
+    try {
+      final db = await DatabaseHelper.instance.db;
+      final rows = await db.rawQuery('''
+        SELECT s.*, COUNT(wc.id) as message_count
+        FROM chat_sessions s
+        LEFT JOIN word_chat wc ON wc.session_id = s.id
+        GROUP BY s.id
+        ORDER BY s.updated_at DESC
+      ''');
+      final sessions = rows.map((r) => ChatSession.fromMap(r)).toList();
+      state = WordChatState(sessions: sessions, mode: ChatMode.ai);
+    } catch (_) {}
   }
 
   Future<void> _loadSessions() async {
@@ -151,22 +159,15 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
       ''');
       final sessions = rows.map((r) => ChatSession.fromMap(r)).toList();
 
-      if (sessions.isEmpty) {
-        final now = DateTime.now();
-        final id = await db.insert('chat_sessions', {
-          'mode': 'ai',
-          'created_at': now.toIso8601String(),
-          'updated_at': now.toIso8601String(),
-        });
-        final newSession = ChatSession(id: id, createdAt: now, updatedAt: now, mode: ChatMode.ai);
-        state = state.copyWith(sessions: [newSession], currentSessionId: id, mode: ChatMode.ai);
-      } else {
+      if (sessions.isNotEmpty) {
         state = state.copyWith(
           sessions: sessions,
           currentSessionId: sessions.first.id,
           mode: sessions.first.mode,
           anchoredWord: sessions.first.anchoredWord,
         );
+      } else {
+        state = state.copyWith(mode: ChatMode.ai);
       }
     } catch (_) {}
   }
@@ -187,35 +188,20 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
   }
 
   Future<void> newSession({ChatMode mode = ChatMode.ai}) async {
-    try {
-      final db = await DatabaseHelper.instance.db;
-      final now = DateTime.now();
-      final id = await db.insert('chat_sessions', {
-        'mode': mode.name,
-        'created_at': now.toIso8601String(),
-        'updated_at': now.toIso8601String(),
-      });
-      final session = ChatSession(id: id, createdAt: now, updatedAt: now, mode: mode);
-      state = state.copyWith(
-        sessions: [session, ...state.sessions],
-        currentSessionId: id,
-        messages: [],
-        mode: mode,
-        anchoredWord: null,
-        clearLocalResult: true,
-      );
-    } catch (_) {}
+    state = WordChatState(
+      sessions: state.sessions,
+      mode: mode,
+    );
   }
 
   Future<void> switchSession(int sessionId) async {
     if (sessionId == state.currentSessionId) return;
     final session = state.sessions.firstWhere((s) => s.id == sessionId);
-    state = state.copyWith(
+    state = WordChatState(
+      sessions: state.sessions,
       currentSessionId: sessionId,
       mode: session.mode,
       anchoredWord: session.anchoredWord,
-      messages: [],
-      clearLocalResult: true,
     );
     await _loadSessionMessages(sessionId);
   }
@@ -228,7 +214,7 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
 
       final remaining = state.sessions.where((s) => s.id != sessionId).toList();
       if (remaining.isEmpty) {
-        await _loadSessions();
+        state = const WordChatState();
       } else {
         state = state.copyWith(sessions: remaining);
         if (state.currentSessionId == sessionId) {
@@ -311,6 +297,34 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
     }
   }
 
+  Future<int> _ensureSession() async {
+    if (state.currentSessionId != null) return state.currentSessionId!;
+    try {
+      final db = await DatabaseHelper.instance.db;
+      final now = DateTime.now();
+      final id = await db.insert('chat_sessions', {
+        'mode': state.mode.name,
+        'anchored_word': state.anchoredWord,
+        'created_at': now.toIso8601String(),
+        'updated_at': now.toIso8601String(),
+      });
+      final session = ChatSession(
+        id: id,
+        createdAt: now,
+        updatedAt: now,
+        mode: state.mode,
+        anchoredWord: state.anchoredWord,
+      );
+      state = state.copyWith(
+        sessions: [session, ...state.sessions],
+        currentSessionId: id,
+      );
+      return id;
+    } catch (_) {
+      throw Exception('创建会话失败');
+    }
+  }
+
   Future<void> sendMessage(String text) async {
     final clean = text.trim();
     if (clean.isEmpty || state.isStreaming) return;
@@ -319,8 +333,8 @@ class WordChatNotifier extends StateNotifier<WordChatState> {
     final isFirstMessage = !state.messages.any((m) => m.role == 'user');
     if (isFirstMessage) {
       state = state.copyWith(anchoredWord: clean);
-      _updateSession();
     }
+    await _ensureSession();
 
     final word = state.anchoredWord ?? clean;
 

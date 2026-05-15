@@ -37,7 +37,6 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
       final notifier = ref.read(wordChatProvider.notifier);
       if (widget.initialWord != null) {
         await notifier.newSession(mode: ChatMode.ai);
-        notifier.setAnchoredWord(widget.initialWord!);
         notifier.sendMessage('介绍一下「${widget.initialWord}」这个词');
       } else {
         await notifier.init();
@@ -61,11 +60,10 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   String _buildTitle(WordChatState state) {
     final word = state.anchoredWord;
     if (word == null || word.isEmpty) {
-      if (state.messages.isEmpty) return 'WordChat';
       return state.mode == ChatMode.ai ? 'AI 对话' : 'WordChat';
     }
     if (state.mode == ChatMode.local) return '查词 · $word';
-    return '和AI聊$word';
+    return word;
   }
 
   void _submit() {
@@ -729,7 +727,6 @@ class _WordChatPageState extends ConsumerState<WordChatPage> {
   Future<void> _chatAboutWord(String word) async {
     final notifier = ref.read(wordChatProvider.notifier);
     await notifier.newSession(mode: ChatMode.ai);
-    notifier.setAnchoredWord(word);
     notifier.sendMessage('介绍一下「$word」这个词');
   }
 }

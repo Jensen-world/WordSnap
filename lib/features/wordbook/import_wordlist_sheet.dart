@@ -5,9 +5,9 @@ import '../../core/theme/colors.dart';
 import '../../data/models/word.dart';
 import '../../data/models/notebook.dart';
 import '../../data/models/word_context.dart';
-import '../../data/services/dictionary_service.dart';
 import '../../data/services/file_io.dart'
   if (dart.library.js_interop) '../../data/services/file_web.dart';
+import '../../data/services/dictionary_service.dart';
 import '../learn/learn_provider.dart';
 import 'wordbook_provider.dart';
 
@@ -47,20 +47,24 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
   }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['txt', 'csv'],
-    );
-    if (result == null || result.files.isEmpty) {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['txt', 'csv'],
+      );
+      if (result == null || result.files.isEmpty) {
+        if (mounted) Navigator.of(context).pop();
+        return;
+      }
+
+      final file = result.files.first;
+      final name = file.name;
+      final content = await readImportFile(file);
+
+      _parseContent(name, content);
+    } catch (_) {
       if (mounted) Navigator.of(context).pop();
-      return;
     }
-
-    final file = result.files.first;
-    final name = file.name;
-    final content = await readImportFile(file);
-
-    _parseContent(name, content);
   }
 
   void _parseContent(String fileName, String content) {
@@ -117,7 +121,6 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
       final now = DateTime.now();
       final notebookId = created.id!;
 
-      // Dedup within batch
       final seen = <String>{};
       final words = <Word>[];
       for (final e in _entries) {
@@ -137,11 +140,10 @@ class _ImportWordlistSheetState extends ConsumerState<ImportWordlistSheet> {
 
       await wordRepo.insertBatch(words);
 
-      // Enrich words with dictionary data before popping
       final wordsWithIds = await wordRepo.getByNotebook(notebookId);
       for (final word in wordsWithIds) {
         try {
-          final result = await dictService.lookup(word.text);
+          final result = await dictService.lookup(word.text, enrichWithLlm: false);
           if (result == null) continue;
           final updated = word.copyWith(
             phonetic: result.phonetic,

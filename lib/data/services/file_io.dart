@@ -13,5 +13,8 @@ Future<String> readImportFile(PlatformFile picked) async {
   if (picked.path != null) {
     return File(picked.path!).readAsString();
   }
+  if (picked.bytes != null) {
+    return String.fromCharCodes(picked.bytes!);
+  }
   throw Exception('无法读取文件');
 }

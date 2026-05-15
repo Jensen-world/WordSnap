@@ -173,7 +173,7 @@ class LearnNotifier extends StateNotifier<LearnState> {
       final dateChanged = storedIndexStr == null && state.dailyWord != null;
       // Current word deleted
       final currentWordGone = state.dailyWord != null &&
-          !await wordRepo.existsByTextInNotebook(state.dailyWord!.text, currentNb.id!);
+          !await wordRepo.existsByText(state.dailyWord!.text);
 
       if (state.dailyWord == null || dateChanged || currentWordGone) {
         dailyWordIndex = dateChanged ? 0 : persistedIndex;

@@ -28,7 +28,7 @@ class DictionaryService {
     return _db!;
   }
 
-  Future<DictionaryResult?> lookup(String word) async {
+  Future<DictionaryResult?> lookup(String word, {bool enrichWithLlm = true}) async {
     final clean = word.trim().toLowerCase();
     if (clean.isEmpty) return null;
 
@@ -48,8 +48,8 @@ class DictionaryService {
       }
     }
 
-    // 4. LLM enrichment — only if Tatoeba had no example
-    if (bestExample == null) {
+    // 4. LLM enrichment — only if Tatoeba had no example and caller opts in
+    if (enrichWithLlm && bestExample == null) {
       final apiKey = await _config.get('llm_api_key');
       if (apiKey != null && apiKey.isNotEmpty) {
         final baseUrl = await _config.get('llm_base_url') ?? ConfigRepository.defaultBaseUrl;

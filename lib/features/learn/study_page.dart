@@ -176,7 +176,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
       backgroundColor: AppColors.canvasWhite,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text('拾词集 · 学习中'),
+        title: const Text('学习中'),
         leading: IconButton(icon: const Icon(Icons.close), onPressed: () { ref.read(dataRefreshTrigger.notifier).state++; ref.read(learnStateProvider.notifier).load(); context.pop(); }),
         actions: [
           Padding(

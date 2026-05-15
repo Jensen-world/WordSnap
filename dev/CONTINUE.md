@@ -1,12 +1,43 @@
 # WordSnap — 断点续接指南
 
-> 最后更新：2026-05-14（Session 46-48 全部完成）
+> 最后更新：2026-05-15（发布前最后的 bug 修复）
 
 ## 当前状态
 
-- **APK 已构建**：`build/app/outputs/flutter-apk/app-debug.apk`
-- **目标**：明天发布，不再引入新问题
-- **今天修复内容**：例句显示、聊天逻辑重构、AI 配置持久化、默认供应商
+- **APK 已构建**：`build/dist/WordSnap-v1.0.0-release-20260515.apk`
+- **目标**：准备发布
+- **本次修复**：学习页标题、每日一词切单词本逻辑、红屏修复、导入恢复、聊天逻辑修复
+
+---
+
+## Session 49 — 发布前 bug 收尾（2026-05-15）
+
+### 学习页标题
+- `study_page.dart:179`：`'拾词集 · 学习中'` → `'学习中'`
+
+### 每日一词切单词本不变
+- **问题**：切换单词本后每日一词会变
+- **根因**：`learn_provider.dart` `currentWordGone` 用 `existsByTextInNotebook` 只查当前单词本，切本后旧词不在新本里被误判为"已删除"
+- **修复**：改用 `existsByText` 跨全部单词本查，只有词真的从数据库删除才换
+- **每日一词变更规则**：每日更新 | 点换一个 | 词被删除 | 数据清空 — 其余情况不变
+
+### 聊天逻辑修复（Session 47 收尾）
+- `word_chat_provider.dart` `copyWith` null bug 修复：`newSession()` / `switchSession()` 改用构造函数直设，`??` 不会把 null 当真清空
+- `init()` 每次打开 = 新对话（AI 模式），旧对话在历史记录
+- 会话惰性创建：`_ensureSession()` 在发第一条消息时才建 DB 行，不再有空会话
+- AI 模式标题 = 第一条用户消息原文，无前缀
+- `word_chat_page.dart` 外部入口去掉多余的 `setAnchoredWord`
+
+### 红屏修复
+- `capture_sheet.dart`：`reset()` 移入 `Future.microtask`，`_confirm()` 加防重复点击
+
+### 导入恢复
+- `import_wordlist_sheet.dart`：`_pickFile()` 加 try-catch、`file_io.dart` 加 bytes fallback、`_confirm()` 恢复离线词典富化（`enrichWithLlm: false`）
+- `dictionary_service.dart`：`lookup()` 加 `enrichWithLlm` 参数，批量导入时跳过 LLM
+
+### 其他小修复
+- `api_config_form.dart`：DropdownButtonFormField 加 `ValueKey` 强制重建、`_selectedProviderIdx` 包 `setState`
+- `about_page.dart`：隐私文案改为"所有数据仅保存在本机，云端不上传任何信息。"
 
 ---
 

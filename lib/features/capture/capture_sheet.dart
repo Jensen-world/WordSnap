@@ -17,8 +17,10 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
   @override
   void initState() {
     super.initState();
-    ref.read(captureStateProvider.notifier).reset();
-    Future.microtask(() => ref.read(captureStateProvider.notifier).loadNotebooks());
+    Future.microtask(() {
+      ref.read(captureStateProvider.notifier).reset();
+      ref.read(captureStateProvider.notifier).loadNotebooks();
+    });
   }
 
   @override
@@ -27,11 +29,14 @@ class _CaptureSheetState extends ConsumerState<CaptureSheet> {
     super.dispose();
   }
 
-  void _confirm() {
+  Future<void> _confirm() async {
     final word = _controller.text.trim();
     if (word.isEmpty) return;
+    final state = ref.read(captureStateProvider);
+    if (state.searching) return;
     ref.read(captureStateProvider.notifier).setInput(word);
-    ref.read(captureStateProvider.notifier).lookup();
+    await ref.read(captureStateProvider.notifier).lookup();
+    if (!mounted) return;
     final router = GoRouter.of(context);
     Navigator.of(context).pop();
     router.push('/capture/result');

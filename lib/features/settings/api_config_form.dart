@@ -58,7 +58,9 @@ class _ApiConfigFormState extends ConsumerState<ApiConfigForm> {
     _baseUrlCtrl.text = config.baseUrl;
     _apiKeyCtrl.text = config.apiKey;
     _modelCtrl.text = config.model;
-    _selectedProviderIdx = _matchProvider(config.baseUrl, config.model);
+    setState(() {
+      _selectedProviderIdx = _matchProvider(config.baseUrl, config.model);
+    });
   }
 
   int _matchProvider(String baseUrl, String model) {
@@ -128,6 +130,7 @@ class _ApiConfigFormState extends ConsumerState<ApiConfigForm> {
         _buildLabel('供应商'),
         const SizedBox(height: 6),
         DropdownButtonFormField<int>(
+          key: ValueKey('provider_$_selectedProviderIdx'),
           initialValue: _selectedProviderIdx < 0 ? null : _selectedProviderIdx,
           hint: const Text('请选择供应商', style: TextStyle(fontSize: 13, color: Color(0xFFBBBBBB))),
           decoration: InputDecoration(

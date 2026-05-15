@@ -66,7 +66,7 @@ class AboutPage extends StatelessWidget {
             ),
             _AboutRow(
               label: '隐私',
-              value: '所有数据仅保存在本机，不上传',
+              value: '所有数据仅保存在本机，云端不上传任何信息。',
               icon: Icons.lock,
             ),
           ]),
