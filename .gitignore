@@ -80,8 +80,9 @@ app.*.map.json
 /WordSnap 1.0/
 
 # Project root temp files
-/*.jpg
-/*.png
-/*.psd
-/*.pdf
 /settings_snapshot.md
+
+# Moved into organized folders
+/screenshots/web/
+/screenshots/bugs/
+/images/design/
