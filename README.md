@@ -1,6 +1,6 @@
 # WordSnap
 
-一个完全离线的英语词汇学习 App，支持拍照 OCR 取词、SRS 间隔复习、多单词本管理、数据导入导出。
+本地私有化查词 & AI 辅助学英语。拍照即查、离线词典、智能聊天，数据绝不上传。
 
 <p align="center">
   <img src="screenshots/01-learn.png" width="24%" alt="记单词主页" />
@@ -13,12 +13,13 @@
 
 - **拍照取词** — Tesseract OCR 离线识别，拍一张照即可收录单词
 - **手动查词** — 内置 ECDICT 精简词库（58K 词条），中英文释义、音标、词形变化
+- **AI 辅助聊天** — 接入 LLM（DeepSeek 等），针对单词智能对话学英语
+- **离线优先** — 词典 + Tatoeba 例句库全部本地，不依赖网络
 - **SRS 间隔复习** — 10:1 新词复习比，10 次正确 = 掌握
 - **多单词本** — 自由创建、编辑、移动、批量管理单词
 - **学习档案** — 已掌握/复习中/词汇总量统计 + 10 个成就里程碑
-- **数据自由** — JSON 导入/导出 + 系统分享，数据完全由你控制
-- **完全离线** — 不依赖任何网络服务，OCR + 词典全部本地运行
-- **剪贴板监听** — 复制英文即弹出收录提示
+- **数据自由** — TXT/CSV 导入 + JSON 导出，数据完全由你控制
+- **隐私优先** — 所有数据仅保存在本机，云端不上传任何信息
 
 ## 技术栈
 
@@ -36,8 +37,8 @@
 
 ```bash
 # 克隆
-git clone https://github.com/yclee5206-create/wordsnap.git
-cd wordsnap
+git clone https://github.com/Jensen-world/WordSnap.git
+cd WordSnap
 
 # 安装依赖
 flutter pub get
@@ -100,4 +101,4 @@ flutter test integration_test/ -d <device_id>  # 集成测试（需真机）
 
 ## License
 
-[Apache License 2.0](LICENSE) © 2026 yclee5206-create
+[MIT](LICENSE) © 2026 Jensen-world
