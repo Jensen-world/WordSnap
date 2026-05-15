@@ -3,10 +3,10 @@
 本地私有化查词 & AI 辅助学英语。拍照即查、离线词典、智能聊天，数据绝不上传。
 
 <p align="center">
-  <img src="screenshots/01-learn.png" width="24%" alt="记单词主页" />
-  <img src="screenshots/02-study.png" width="24%" alt="学习卡片" />
-  <img src="screenshots/03-wordbooks.png" width="24%" alt="单词本列表" />
-  <img src="screenshots/04-archive.png" width="24%" alt="档案卡" />
+  <img src="screenshots/01-learn.jpg" width="24%" alt="每日一词主页" />
+  <img src="screenshots/02-study.jpg" width="24%" alt="学习卡片" />
+  <img src="screenshots/03-wordbooks.jpg" width="24%" alt="单词本列表" />
+  <img src="screenshots/04-settings.jpg" width="24%" alt="设置中心" />
 </p>
 
 ## 功能
